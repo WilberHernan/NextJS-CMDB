@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useCallback, useEffect, useState } from "react";
-import { Scan, Camera, Search, Image as ImageIcon, RefreshCw } from "lucide-react";
+import { useRef, useCallback, useState } from "react";
+import { Scan, Camera, Search, ImageIcon, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/Loader";
 
@@ -13,8 +13,6 @@ interface ScanCardProps {
   onSwitchMode: (mode: "scanner" | "camera") => void;
   onScan: (text: string) => void;
   onFileScan: (file: File) => void;
-  startLiveScan: (videoEl: HTMLVideoElement) => Promise<void>;
-  stopLiveScan: () => Promise<void>;
 }
 
 export function ScanCard({
@@ -25,44 +23,19 @@ export function ScanCard({
   onSwitchMode,
   onScan,
   onFileScan,
-  startLiveScan,
-  stopLiveScan,
 }: ScanCardProps) {
   const [scanning, setScanning] = useState(false);
-  const [showImageFallback, setShowImageFallback] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  // Stop camera on unmount
-  useEffect(() => {
-    return () => {
-      stopLiveScan().catch(() => {});
-    };
-  }, [stopLiveScan]);
-
-  /** Switch to camera mode — starts live scan DIRECTLY from user gesture.
-   *  iOS Safari requires getUserMedia() to be called within the same
-   *  synchronous execution as the user tap. */
-  const handleCameraMode = useCallback(async () => {
-    setShowImageFallback(false);
-    onSwitchMode("camera");
-
-    // The <video> is always mounted (hidden when not in camera mode),
-    // so videoRef.current is immediately available — no need to wait
-    // for a React re-render.
-    if (videoRef.current) {
-      await startLiveScan(videoRef.current).catch(() => {});
-    }
-  }, [onSwitchMode, startLiveScan]);
-
-  /** Switch to scanner — stop camera first */
-  const handleScannerMode = useCallback(async () => {
-    await stopLiveScan().catch(() => {});
+  const handleScannerMode = useCallback(() => {
     onSwitchMode("scanner");
-  }, [onSwitchMode, stopLiveScan]);
+  }, [onSwitchMode]);
+
+  const handleCameraMode = useCallback(() => {
+    onSwitchMode("camera");
+  }, [onSwitchMode]);
 
   const handleInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,12 +69,6 @@ export function ScanCard({
     [onFileScan]
   );
 
-  const handleRetryCamera = useCallback(() => {
-    if (videoRef.current) {
-      startLiveScan(videoRef.current).catch(() => {});
-    }
-  }, [startLiveScan]);
-
   return (
     <section className="relative text-center rounded-3xl glass border-border-default p-8 sm:p-9 overflow-hidden">
       <div className="absolute top-0 left-[15%] right-[15%] h-[1.5px] bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
@@ -112,7 +79,7 @@ export function ScanCard({
       <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-7 relative z-10">
         {scanMode === "scanner"
           ? "Posiciona el cursor en el campo y escanea la placa con el lector."
-          : "Apuntá a la placa del equipo. La detección es automática."}
+          : "Sacá una foto clara a la placa del equipo."}
       </p>
 
       <div className="flex gap-3 justify-center mb-6 relative z-10">
@@ -186,109 +153,114 @@ export function ScanCard({
             className={cn(
               "absolute bottom-[3px] left-[15%] right-[15%] h-[2px] rounded-full bg-gradient-to-r from-transparent via-accent to-transparent",
               "transition-opacity duration-300",
-              scanning && "opacity-60 animate-scan-pulse"
+              "opacity-60 animate-scan-pulse"
             )}
           />
         </div>
       )}
 
-      {/* === CAMERA MODE (video + overlay + controls) ===
-          The <video> is ALWAYS mounted (hidden when not camera mode) so
-          videoRef.current is available immediately when the user taps
-          "Cámara".  This is critical for iOS Safari, which requires
-          getUserMedia() to be called within the same user gesture. */}
+      {/* === CAMERA MODE (native camera / photo upload) === */}
       <div className={cn("relative z-10", scanMode !== "camera" && "hidden")}>
-        <div className="space-y-3">
+        <div className="space-y-4">
+          {/* Hidden file input — capture="environment" opens the
+              native camera on Android/iOS; on PC it falls through to
+              the file picker. */}
           <input
             ref={fileInputRef}
             type="file"
             accept="image/*"
+            capture="environment"
             onChange={handleFileChange}
             className="hidden"
           />
 
-          {/* Live camera viewfinder */}
+          {/* Photo area — icon + instructions */}
           <div
             className={cn(
-              "relative mx-auto max-w-md overflow-hidden rounded-2xl",
-              "bg-black/90 border border-border-default",
-              "shadow-neu-pressed"
+              "relative mx-auto max-w-md rounded-2xl border-2 border-dashed p-10 text-center transition-all duration-300",
+              cameraReady
+                ? "border-accent/40 bg-accent/5"
+                : "border-border-default bg-surface-elevated",
+              "min-h-[240px] flex flex-col items-center justify-center gap-4"
             )}
           >
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="block w-full aspect-[4/3] object-cover"
-            />
-
-            {/* Scanning overlay — reticle in the middle */}
-            <div className="pointer-events-none absolute inset-0">
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
-              <div className="absolute inset-[12%]">
-                <div className="relative w-full h-full">
-                  {/* Corner brackets */}
-                  <div className="absolute top-0 left-0 w-8 h-8 border-t-[3px] border-l-[3px] border-accent rounded-tl-md" />
-                  <div className="absolute top-0 right-0 w-8 h-8 border-t-[3px] border-r-[3px] border-accent rounded-tr-md" />
-                  <div className="absolute bottom-0 left-0 w-8 h-8 border-b-[3px] border-l-[3px] border-accent rounded-bl-md" />
-                  <div className="absolute bottom-0 right-0 w-8 h-8 border-b-[3px] border-r-[3px] border-accent rounded-br-md" />
-                  {/* Scanning line */}
-                  <div
-                    className={cn(
-                      "absolute left-[5%] right-[5%] h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent rounded-full",
-                      cameraReady && "animate-scan-line"
-                    )}
-                    style={{ top: "50%" }}
-                  />
+            {cameraReady ? (
+              <>
+                <div className="rounded-full bg-accent/10 p-3">
+                  <CheckCircle2 className="h-10 w-10 text-accent" />
                 </div>
-              </div>
-            </div>
+                <p className="text-base font-semibold text-foreground">
+                  Código detectado
+                </p>
+                <p className="text-sm text-muted-foreground font-mono tracking-wide">
+                  {cameraStatus}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium",
+                    "bg-accent text-white shadow-lg shadow-accent/20",
+                    "hover:brightness-110 transition-all"
+                  )}
+                >
+                  <Camera className="h-4 w-4" />
+                  Leer otra placa
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="rounded-full bg-surface-input p-4">
+                  <Camera className="h-12 w-12 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground mb-1">
+                    Tomá una foto clara de la placa
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    La foto se analizará automáticamente
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className={cn(
+                    "inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold",
+                    "bg-accent text-white shadow-lg shadow-accent/20",
+                    "hover:brightness-110 active:scale-[0.98] transition-all"
+                  )}
+                >
+                  <ImageIcon className="h-5 w-5" />
+                  Tomar foto
+                </button>
 
-            {/* Status badge */}
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 max-w-[90%]">
-              <div
-                className={cn(
-                  "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium",
-                  "bg-black/70 backdrop-blur-sm border border-white/10 text-white",
-                  !cameraReady && "text-amber-300"
+                {/* Status message (error / progress) */}
+                {cameraStatus && (
+                  <p className="text-xs text-amber-400 max-w-xs">
+                    {cameraStatus}
+                  </p>
                 )}
-              >
-                {cameraReady ? (
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                ) : (
-                  <RefreshCw className="w-3 h-3 animate-spin" />
-                )}
-                <span className="truncate">{cameraStatus}</span>
-              </div>
-            </div>
+              </>
+            )}
           </div>
 
-          {/* Actions row */}
-          <div className="flex flex-wrap items-center justify-center gap-2">
+          {/* Secondary fallback link */}
+          <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
+            <span>O</span>
             <button
               type="button"
-              onClick={handleRetryCamera}
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium",
-                "bg-surface-elevated text-muted-foreground border border-border-default",
-                "hover:text-foreground transition-colors"
-              )}
+              onClick={() => {
+                // Remove capture on mobile to browse gallery
+                const input = fileInputRef.current;
+                if (input) {
+                  input.removeAttribute("capture");
+                  input.click();
+                  input.setAttribute("capture", "environment");
+                }
+              }}
+              className="underline hover:text-foreground transition-colors"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
-              Reintentar cámara
-            </button>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium",
-                "bg-surface-elevated text-muted-foreground border border-border-default",
-                "hover:text-foreground transition-colors"
-              )}
-            >
-              <ImageIcon className="w-3.5 h-3.5" />
-              Subir imagen
+              Elegir desde la galería
             </button>
           </div>
         </div>

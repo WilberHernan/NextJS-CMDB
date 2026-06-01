@@ -19,8 +19,6 @@ export function ScannerSection({ loading, onScan }: ScannerSectionProps) {
     cameraStatus,
     cameraReady,
     setScanMode,
-    startLiveScan,
-    stopLiveScan,
     scanFile,
   } = useScanner(onScan);
 
@@ -44,8 +42,6 @@ export function ScannerSection({ loading, onScan }: ScannerSectionProps) {
       onSwitchMode={setScanMode}
       onScan={onScan}
       onFileScan={handleFileScan}
-      startLiveScan={startLiveScan}
-      stopLiveScan={stopLiveScan}
     />
   );
 }

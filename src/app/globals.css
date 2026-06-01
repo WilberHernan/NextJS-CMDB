@@ -61,9 +61,6 @@
 
     --grad-mesh: radial-gradient(ellipse at 20% 30%, rgba(57,169,0,0.04) 0%, transparent 50%),
                  radial-gradient(ellipse at 80% 70%, rgba(59,130,246,0.03) 0%, transparent 50%);
-
-    --scan-line-opacity: 0.6;
-    --scan-glow: rgba(22, 163, 74, 0.04);
   }
 
   .dark {
@@ -122,8 +119,7 @@
                  radial-gradient(ellipse at 80% 70%, rgba(96,165,250,0.06) 0%, transparent 50%),
                  radial-gradient(ellipse at 50% 50%, rgba(74,222,128,0.03) 0%, transparent 70%);
 
-    --scan-line-opacity: 0.4;
-    --scan-glow: rgba(74, 222, 128, 0.06);
+
   }
 
   *, *::before, *::after {
@@ -596,16 +592,6 @@
     transform: translateY(0) scale(0.98);
     box-shadow: 0 2px 8px var(--sena-green-glow);
   }
-
-  /* Scanning line that travels vertically across the viewfinder */
-  @keyframes scan-line {
-    0%   { transform: translateY(-100%); opacity: 0.2; }
-    10%  { opacity: 1; }
-    50%  { transform: translateY(100%); opacity: 1; }
-    51%  { opacity: 0; }
-    100% { transform: translateY(100%); opacity: 0; }
-  }
-  .animate-scan-line { animation: scan-line 1.6s ease-in-out infinite; }
 
   .animate-pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
   .animate-scan-pulse { animation: scan-pulse 1.5s ease-in-out infinite; }
