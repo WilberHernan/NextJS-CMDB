@@ -152,6 +152,8 @@
   .text-foreground { color: var(--text-primary); }
   .text-muted-foreground { color: var(--text-secondary); }
   .text-accent { color: var(--accent); }
+  .bg-accent { background: var(--accent); }
+  .bg-accent-hover { background: var(--accent-hover); }
 
   .bg-surface-base { background: var(--bg-base); }
   .bg-surface { background: var(--bg-surface); }
