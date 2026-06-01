@@ -1,16 +1,23 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import { useTheme } from "@/hooks/useTheme";
 import { useEquipment } from "@/hooks/useEquipment";
-import { useScanner } from "@/hooks/useScanner";
 import { Header } from "@/components/Header";
-import { ScanCard } from "@/components/ScanCard";
 import { EquipmentForm } from "@/components/EquipmentForm";
 import { Alert } from "@/components/Alert";
 import { EmptyState } from "@/components/EmptyState";
 import { COLUMNAS, DEFAULT_NUEVO_EQUIPO } from "@/types/equipment";
 import { findMatchingOption, sanitizarPlaca } from "@/lib/utils";
+
+// ZXing is browser-only (uses navigator, MediaDevices). Dynamic import
+// with ssr: false keeps it out of the server bundle.
+const ScannerSection = dynamic(
+  () =>
+    import("@/components/ScannerSection").then((m) => m.ScannerSection),
+  { ssr: false, loading: () => null }
+);
 
 type BadgeVariant = "default" | "blue" | "secondary";
 
@@ -70,14 +77,6 @@ export default function Home() {
     [buscar]
   );
 
-  const {
-    scanMode,
-    cameraStatus,
-    cameraReady,
-    setScanMode,
-    scanFile,
-  } = useScanner(handleScan);
-
   const validacionesIndices = Object.keys(validaciones).map(Number);
 
   const hojaBadgeText = (() => {
@@ -108,18 +107,6 @@ export default function Home() {
     cargarValidaciones();
     cargarMapeoSede();
   }, [cargarValidaciones, cargarMapeoSede]);
-
-  const handleFileScan = useCallback(
-    async (file: File) => {
-      try {
-        await scanFile(file);
-        // The scanner hook already calls handleScan internally
-      } catch {
-        // status already set inside scanFile
-      }
-    },
-    [scanFile]
-  );
 
   const handleModoNuevo = useCallback(
     (placa: string) => {
@@ -236,15 +223,7 @@ export default function Home() {
       <div className="relative z-10 max-w-[1200px] mx-auto px-4 sm:px-8 py-5 sm:py-7 flex flex-col gap-5">
         <Header theme={theme} onToggleTheme={toggleTheme} />
 
-        <ScanCard
-          scanMode={scanMode}
-          loading={loading}
-          cameraStatus={cameraStatus}
-          cameraReady={cameraReady}
-          onSwitchMode={setScanMode}
-          onScan={handleScan}
-          onFileScan={handleFileScan}
-        />
+        <ScannerSection loading={loading} onScan={handleScan} />
 
         {/* Status area */}
         <div className="min-h-[60px] flex items-center">
