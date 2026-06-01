@@ -3,6 +3,7 @@ import {
   appendSheetRow,
   updateSheetRow,
   deleteSheetRow,
+  formatSheetRow,
 } from "@/services/sheets";
 import type { EquipoResponse, EquipmentValue, ApiResult } from "@/types/equipment";
 import { sanitizarPlaca } from "@/lib/utils";
@@ -90,8 +91,16 @@ export async function actualizarEquipo(datos: {
         }
       }
 
-      await appendSheetRow(hojaDestino, valoresLimpios);
+      const appendResult = await appendSheetRow(hojaDestino, valoresLimpios);
       await deleteSheetRow(hoja, rowNum);
+
+      // Pintar la fila movida de azul (como equipo nuevo en la hoja destino)
+      if (appendResult?.updates?.updatedRange) {
+        const rowMatch = appendResult.updates.updatedRange.match(/[A-Z]+(\d+):/);
+        if (rowMatch) {
+          await formatSheetRow(hojaDestino, parseInt(rowMatch[1]), "#dbeafe");
+        }
+      }
 
       return {
         exito: true,
@@ -100,6 +109,7 @@ export async function actualizarEquipo(datos: {
     }
 
     await updateSheetRow(hoja, rowNum, valoresLimpios);
+    await formatSheetRow(hoja, rowNum, "#dcfce7");
     return { exito: true, mensaje: "¡CMDB Actualizada con éxito!" };
   } catch (e) {
     return {
@@ -138,7 +148,16 @@ export async function crearEquipo(datos: {
       }
     }
 
-    await appendSheetRow(hoja, valoresLimpios);
+    const result = await appendSheetRow(hoja, valoresLimpios);
+
+    // Pintar la fila nueva de azul (#dbeafe) como en el original
+    if (result?.updates?.updatedRange) {
+      const rowMatch = result.updates.updatedRange.match(/[A-Z]+(\d+):/);
+      if (rowMatch) {
+        await formatSheetRow(hoja, parseInt(rowMatch[1]), "#dbeafe");
+      }
+    }
+
     return {
       exito: true,
       mensaje: `Equipo registrado exitosamente en ${hoja}`,

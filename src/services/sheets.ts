@@ -101,7 +101,7 @@ export async function updateSheetRow(
   return res.data;
 }
 
-export async function deleteSheetRow(sheetName: string, row: number) {
+export async function getSheetId(sheetName: string): Promise<number> {
   const client = await getSheetsClient();
   const spreadsheetId = getSpreadsheetId();
 
@@ -117,6 +117,51 @@ export async function deleteSheetRow(sheetName: string, row: number) {
   if (sheetId === undefined || sheetId === null) {
     throw new Error(`Sheet "${sheetName}" not found`);
   }
+  return sheetId;
+}
+
+export async function formatSheetRow(
+  sheetName: string,
+  row: number,
+  hexColor: string
+) {
+  const client = await getSheetsClient();
+  const spreadsheetId = getSpreadsheetId();
+  const id = await getSheetId(sheetName);
+
+  const r = parseInt(hexColor.slice(1, 3), 16) / 255;
+  const g = parseInt(hexColor.slice(3, 5), 16) / 255;
+  const b = parseInt(hexColor.slice(5, 7), 16) / 255;
+
+  await client.spreadsheets.batchUpdate({
+    spreadsheetId,
+    requestBody: {
+      requests: [
+        {
+          repeatCell: {
+            range: {
+              sheetId: id,
+              startRowIndex: row - 1,
+              endRowIndex: row,
+              startColumnIndex: 0,
+            },
+            cell: {
+              userEnteredFormat: {
+                backgroundColor: { red: r, green: g, blue: b },
+              },
+            },
+            fields: "userEnteredFormat.backgroundColor",
+          },
+        },
+      ],
+    },
+  });
+}
+
+export async function deleteSheetRow(sheetName: string, row: number) {
+  const client = await getSheetsClient();
+  const spreadsheetId = getSpreadsheetId();
+  const sheetId = await getSheetId(sheetName);
 
   await client.spreadsheets.batchUpdate({
     spreadsheetId,

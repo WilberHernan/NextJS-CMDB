@@ -31,6 +31,7 @@ export default function Home() {
     crear,
     cargarValidaciones,
     cargarMapeoSede,
+    mapeoSedeId,
   } = useEquipment();
 
   const [valores, setValores] = useState<string[]>(
@@ -139,10 +140,21 @@ export default function Home() {
       setValores((prev) => {
         const next = [...prev];
         next[index] = value;
+
+        // Sincronización ID SEDE (7) ↔ NOMBRE DE LA SEDE (8)
+        // Cuando cambia ID SEDE, auto-completa NOMBRE DE LA SEDE
+        if (index === 7 && mapeoSedeId.idASede[value]) {
+          next[8] = mapeoSedeId.idASede[value];
+        }
+        // Cuando cambia NOMBRE DE LA SEDE, auto-completa ID SEDE
+        if (index === 8 && mapeoSedeId.sedeAId[value]) {
+          next[7] = mapeoSedeId.sedeAId[value];
+        }
+
         return next;
       });
     },
-    []
+    [mapeoSedeId]
   );
 
   const handleGuardar = useCallback(async () => {
