@@ -146,7 +146,7 @@ export function ScanCard({
               onKeyDown={handleKeyDown}
               autoFocus
               autoComplete="off"
-              className="w-full bg-transparent py-[18px] pl-14 pr-5 text-base font-semibold font-mono tracking-wide text-foreground placeholder:text-muted-foreground/60 placeholder:font-normal placeholder:font-sans placeholder:tracking-normal outline-none"
+              className="w-full bg-transparent py-[18px] pl-14 pr-5 text-base font-semibold font-mono tracking-wide text-foreground placeholder:text-muted-foreground-60 placeholder:font-normal placeholder:font-sans placeholder:tracking-normal outline-none"
             />
           </div>
           <div

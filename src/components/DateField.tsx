@@ -37,7 +37,7 @@ export function DateField({ value, onChange, className }: DateFieldProps) {
   return (
     <div
       onClick={handleWrapperClick}
-      className={`group relative w-full rounded-xl p-[1px] cursor-pointer transition-all duration-200 bg-border-default hover:bg-border-hover focus-within:bg-accent/30 ${className ?? ""}`}
+      className={`group relative w-full rounded-xl p-[1px] cursor-pointer transition-all duration-200 bg-border-default hover:bg-border-hover focus-within:bg-accent-30 ${className ?? ""}`}
     >
       {/* Gradient border glow */}
       <div
@@ -51,7 +51,7 @@ export function DateField({ value, onChange, className }: DateFieldProps) {
           readOnly
           value={value || ""}
           placeholder="DD/MM/AAAA"
-          className="w-full rounded-[11px] bg-transparent px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 cursor-pointer outline-none font-sans"
+          className="w-full rounded-[11px] bg-transparent px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground-60 cursor-pointer outline-none font-sans"
         />
         <input
           ref={dateInputRef}

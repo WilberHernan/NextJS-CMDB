@@ -56,7 +56,7 @@ export function DynamicField({
         rows={3}
         value={value || ""}
         onChange={(e) => handleChange(e.target.value)}
-        className="flex w-full rounded-xl border border-border-default bg-surface-input px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 shadow-neu-pressed hover:border-border-hover focus:border-accent focus:shadow-[0_0_0_3px_rgba(74,222,128,0.1)] focus:outline-none transition-all duration-200 font-sans resize-vertical min-h-[90px] leading-relaxed"
+        className="flex w-full rounded-[12px] border border-border-subtle bg-surface-input px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground-60 shadow-neu-pressed hover:border-border-default focus:border-accent focus:shadow-[0_0_0_3px_rgba(74,222,128,0.1)] focus:outline-none transition-all duration-200 font-sans resize-vertical min-h-[90px] leading-relaxed"
       />
     );
   }
@@ -67,7 +67,7 @@ export function DynamicField({
       value={value || ""}
       readOnly={readOnly || isPlaca}
       onChange={(e) => handleChange(e.target.value)}
-      className={`flex w-full rounded-xl border border-border-default bg-surface-input px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 shadow-neu-pressed hover:border-border-hover focus:border-accent focus:shadow-[0_0_0_3px_rgba(74,222,128,0.1)] focus:outline-none transition-all duration-200 font-sans ${isPlaca ? "bg-surface-elevated text-muted-foreground font-semibold font-mono cursor-not-allowed border-dashed shadow-none" : ""}`}
+      className={`flex w-full rounded-[12px] border border-border-subtle bg-surface-input px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground-60 shadow-neu-pressed hover:border-border-default focus:border-accent focus:shadow-[0_0_0_3px_rgba(74,222,128,0.1)] focus:outline-none transition-all duration-200 font-sans ${isPlaca ? "bg-surface-elevated text-muted-foreground font-semibold font-mono cursor-not-allowed border-dashed shadow-none" : ""}`}
     />
   );
 }

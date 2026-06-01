@@ -46,43 +46,36 @@ export function CustomSelect({
   return (
     <div
       ref={wrapperRef}
-      className={cn(
-        "relative w-full rounded-xl p-[1px] transition-all duration-200",
-        "bg-border-default hover:bg-border-hover",
-        open && "bg-accent/30",
-        className
-      )}
+      className={cn("group relative w-full", className)}
     >
-      {/* Gradient border glow */}
+      {/* Gradient border glow — matches CMDB_SENA .custom-select::before */}
       <div
         className={cn(
-          "absolute inset-[-1px] rounded-[13px] opacity-0 transition-opacity duration-300 pointer-events-none",
+          "absolute inset-[-2px] rounded-[16px] opacity-0 transition-opacity duration-300 pointer-events-none",
           "bg-gradient-to-r from-accent via-sena-green-light to-accent bg-[length:400%_400%] animate-gradient-shift",
-          open && "opacity-40"
+          "group-hover:opacity-20",
+          open && "opacity-30"
         )}
-        style={{ filter: "blur(4px)", zIndex: -1 }}
+        style={{ filter: "blur(8px)", zIndex: -1 }}
       />
 
       <button
         type="button"
         onClick={() => setOpen(!open)}
         className={cn(
-          "flex w-full items-center justify-between gap-2 rounded-[11px] bg-surface-input px-4 py-3 text-sm text-left relative",
-          "shadow-neu-pressed transition-all duration-200 outline-none font-sans",
-          open && "shadow-neu-pressed"
+          "flex w-full items-center justify-between gap-2 rounded-[12px] bg-surface-base px-4 py-3 text-sm text-left text-foreground relative",
+          "border border-border-subtle transition-all duration-200 outline-none font-sans",
+          "hover:border-border-default hover:bg-surface focus:border-accent",
+          "shadow-neu-pressed",
+          open && "border-accent"
         )}
       >
-        <span
-          className={cn(
-            "truncate",
-            !value && "text-muted-foreground/60"
-          )}
-        >
+        <span className={cn("truncate", !value && "text-tertiary")}>
           {value || placeholder}
         </span>
         <ChevronDown
           className={cn(
-            "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
+            "h-4 w-4 shrink-0 text-tertiary transition-transform duration-200",
             open && "rotate-180 text-accent"
           )}
         />
@@ -91,12 +84,19 @@ export function CustomSelect({
       {open && (
         <div
           className={cn(
-            "absolute top-[calc(100%+8px)] left-0 right-0 z-50",
-            "rounded-2xl border border-border-default bg-surface/95 backdrop-blur-xl",
-            "shadow-2xl shadow-black/40",
-            "py-2 px-2 max-h-[280px] overflow-y-auto",
+            "absolute top-[calc(100%+12px)] left-0 right-0 z-50",
+            "rounded-[20px] border",
+            "p-2 max-h-[300px] overflow-y-auto",
             "animate-scale-in origin-top"
           )}
+          style={{
+            background: "var(--glass-bg)",
+            backdropFilter: "blur(20px) saturate(160%)",
+            WebkitBackdropFilter: "blur(20px) saturate(160%)",
+            borderColor: "var(--glass-border)",
+            boxShadow:
+              "0 16px 48px rgba(0,0,0,0.4), inset 0 1px 0 var(--glass-highlight)",
+          }}
         >
           {options.map((opt) => (
             <button
@@ -104,11 +104,14 @@ export function CustomSelect({
               type="button"
               onClick={() => handleSelect(opt)}
               className={cn(
-                "flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-left",
+                "flex w-full items-center gap-2.5 rounded-xl px-4 py-3 text-sm text-left",
                 "transition-all duration-150",
+                "text-muted-foreground",
                 "hover:bg-surface-hover hover:text-foreground",
+                "hover:shadow-[inset_2px_2px_4px_var(--neu-shadow-dark),inset_-2px_-2px_4px_var(--neu-shadow-light)]",
+                "mb-0.5 last:mb-0",
                 opt === value &&
-                  "bg-accent/10 text-accent font-semibold border border-accent/25"
+                  "bg-accent-soft text-accent font-semibold border border-border-accent"
               )}
             >
               <Check

@@ -10,23 +10,38 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        foreground: "var(--text-primary)",
+        "muted-foreground": "var(--text-secondary)",
+        "muted-foreground-60": "var(--text-muted-60)",
+        accent: {
+          DEFAULT: "var(--accent)",
+          hover: "var(--accent-hover)",
+          soft: "var(--accent-soft)",
+          muted: "var(--accent-muted)",
+          25: "var(--accent-25)",
+          30: "var(--accent-30)",
+          35: "var(--accent-35)",
+          45: "var(--accent-45)",
+          50: "color-mix(in srgb, var(--accent) 50%, transparent)",
+        },
+        surface: {
+          DEFAULT: "var(--bg-surface)",
+          elevated: "var(--bg-elevated)",
+          hover: "var(--bg-hover)",
+          active: "var(--bg-active)",
+          input: "var(--bg-input)",
+          95: "color-mix(in srgb, var(--bg-surface) 95%, transparent)",
+        },
+        border: {
+          subtle: "var(--border-subtle)",
+          DEFAULT: "var(--border-default)",
+          hover: "var(--border-hover)",
+          accent: "var(--border-accent)",
+        },
         sena: {
           green: "#39a900",
           "green-light": "#4ade80",
           glow: "rgba(57, 169, 0, 0.35)",
-        },
-        surface: {
-          DEFAULT: "#0c0e14",
-          elevated: "#11131a",
-          hover: "#181b24",
-          active: "#1e2230",
-          input: "#0a0c12",
-        },
-        border: {
-          subtle: "rgba(255, 255, 255, 0.04)",
-          DEFAULT: "rgba(255, 255, 255, 0.07)",
-          hover: "rgba(255, 255, 255, 0.14)",
-          accent: "rgba(74, 222, 128, 0.25)",
         },
       },
       fontFamily: {

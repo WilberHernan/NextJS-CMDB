@@ -257,7 +257,7 @@ export default function Home() {
           saving={saving}
         />
 
-        <footer className="text-center pt-6 pb-2 text-[10px] tracking-wider text-muted-foreground/60">
+        <footer className="text-center pt-6 pb-2 text-[10px] tracking-wider text-muted-foreground-60">
           CMDB SENA CCYS — Cauca 2026
         </footer>
       </div>
