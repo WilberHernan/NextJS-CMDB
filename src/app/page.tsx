@@ -109,6 +109,55 @@ export default function Home() {
     cargarMapeoSede();
   }, [cargarValidaciones, cargarMapeoSede]);
 
+  // Procesar parámetros de URL para modo nuevo desde script local
+  const urlParamsRef = useRef(false);
+  useEffect(() => {
+    if (urlParamsRef.current) return;
+    if (Object.keys(validaciones).length === 0) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const modo = params.get("modo");
+    const placa = params.get("placa");
+
+    if (modo === "nuevo" && placa) {
+      const mapeo: Record<string, number> = {
+        hostname: 0, marca: 3, modelo: 4, serial: 5, placa: 6,
+        procesador: 16, disco1_tipo: 17, disco1_tam: 18,
+        disco2_tipo: 19, disco2_tam: 20, tipo_memoria: 21, ram: 22,
+        video: 23, mac_cableada: 31, mac_wifi: 32, so: 33, version_so: 34,
+        fecha_mantenimiento: 47, fecha_impacto: 48,
+      };
+
+      const nuevos = Array(COLUMNAS.length).fill("");
+      Object.entries(DEFAULT_NUEVO_EQUIPO).forEach(([idx, val]) => {
+        nuevos[parseInt(idx)] = val;
+      });
+
+      for (const [key, idx] of Object.entries(mapeo)) {
+        const val = params.get(key);
+        if (val) {
+          const upperVal = val.toString().toUpperCase().trim();
+          const opts = validaciones[idx];
+          if (opts && opts.length > 0) {
+            const match = findMatchingOption(upperVal, opts);
+            nuevos[idx] = match || upperVal;
+          } else {
+            nuevos[idx] = upperVal;
+          }
+        }
+      }
+
+      nuevos[6] = sanitizarPlaca(placa);
+      setValores(nuevos);
+      setEsModoNuevo(true);
+      setFormVisible(true);
+      setAlertInfo(null);
+
+      window.history.replaceState({}, "", window.location.pathname);
+      urlParamsRef.current = true;
+    }
+  }, [validaciones]);
+
   const handleModoNuevo = useCallback(
     (placa: string) => {
       setEsModoNuevo(true);
