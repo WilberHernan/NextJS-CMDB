@@ -71,7 +71,7 @@ export function ScanCard({
 
   return (
     <section className="relative text-center rounded-3xl glass border-border-default p-8 sm:p-9 overflow-hidden">
-      <div className="absolute top-0 left-[15%] right-[15%] h-[1.5px] bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
+      <div className="absolute top-0 left-[15%] right-[15%] h-[1.5px] bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent opacity-40" />
 
       <h2 className="text-2xl font-bold text-foreground mb-2 tracking-tight relative z-10">
         Escanea la placa del equipo
@@ -90,7 +90,7 @@ export function ScanCard({
             "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200",
             "shadow-neu border border-border-subtle",
             scanMode === "scanner"
-              ? "bg-accent/10 text-accent border-accent/25 shadow-neu-pressed"
+              ? "bg-accent-soft text-accent border-border-accent shadow-neu-pressed"
               : "bg-surface-elevated text-muted-foreground hover:text-foreground hover:-translate-y-0.5"
           )}
         >
@@ -104,7 +104,7 @@ export function ScanCard({
             "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200",
             "shadow-neu border border-border-subtle",
             scanMode === "camera"
-              ? "bg-accent/10 text-accent border-accent/25 shadow-neu-pressed"
+              ? "bg-accent-soft text-accent border-border-accent shadow-neu-pressed"
               : "bg-surface-elevated text-muted-foreground hover:text-foreground hover:-translate-y-0.5"
           )}
         >
@@ -118,7 +118,7 @@ export function ScanCard({
         <div
           className={cn(
             "relative max-w-lg mx-auto rounded-2xl p-[2px] transition-all duration-200",
-            "bg-gradient-to-r from-accent via-sena-green-light to-accent bg-[length:400%_400%] animate-gradient-shift",
+            "bg-gradient-to-r from-[var(--accent)] via-sena-green-light to-[var(--accent)] bg-[length:400%_400%] animate-gradient-shift",
             scanning
               ? "opacity-100 shadow-lg shadow-sena-glow"
               : "opacity-85 hover:opacity-100"
@@ -128,7 +128,7 @@ export function ScanCard({
           <div
             className={cn(
               "absolute inset-[-2px] rounded-[22px] transition-opacity duration-300 pointer-events-none",
-              "bg-gradient-to-r from-accent via-sena-green-light to-accent bg-[length:400%_400%] animate-gradient-shift",
+              "bg-gradient-to-r from-[var(--accent)] via-sena-green-light to-[var(--accent)] bg-[length:400%_400%] animate-gradient-shift",
               scanning ? "opacity-50" : "opacity-0"
             )}
             style={{ filter: "blur(8px)", zIndex: -1 }}
@@ -151,7 +151,7 @@ export function ScanCard({
           </div>
           <div
             className={cn(
-              "absolute bottom-[3px] left-[15%] right-[15%] h-[2px] rounded-full bg-gradient-to-r from-transparent via-accent to-transparent",
+              "absolute bottom-[3px] left-[15%] right-[15%] h-[2px] rounded-full bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent",
               "transition-opacity duration-300",
               "opacity-60 animate-scan-pulse"
             )}
@@ -179,14 +179,14 @@ export function ScanCard({
             className={cn(
               "relative mx-auto max-w-md rounded-2xl border-2 border-dashed p-10 text-center transition-all duration-300",
               cameraReady
-                ? "border-accent/40 bg-accent/5"
+                ? "border-border-accent bg-accent-muted"
                 : "border-border-default bg-surface-elevated",
               "min-h-[240px] flex flex-col items-center justify-center gap-4"
             )}
           >
             {cameraReady ? (
               <>
-                <div className="rounded-full bg-accent/10 p-3">
+                <div className="rounded-full bg-accent-soft p-3">
                   <CheckCircle2 className="h-10 w-10 text-accent" />
                 </div>
                 <p className="text-base font-semibold text-foreground">
@@ -200,9 +200,9 @@ export function ScanCard({
                   onClick={() => fileInputRef.current?.click()}
                   className={cn(
                     "inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium",
-                    "bg-accent/25 backdrop-blur-xl border border-white/20 shadow-lg shadow-black/10",
+                    "bg-accent-25 backdrop-blur-xl border border-white/20 shadow-lg shadow-black/10",
                     "text-white",
-                    "hover:bg-accent/35 hover:-translate-y-0.5 active:bg-accent/45 active:translate-y-0",
+                    "hover:bg-accent-35 hover:-translate-y-0.5 active:bg-accent-45 active:translate-y-0",
                     "transition-all duration-200"
                   )}
                 >
@@ -228,9 +228,9 @@ export function ScanCard({
                   onClick={() => fileInputRef.current?.click()}
                   className={cn(
                     "inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold",
-                    "bg-accent/25 backdrop-blur-xl border border-white/20 shadow-lg shadow-black/10",
+                    "bg-accent-25 backdrop-blur-xl border border-white/20 shadow-lg shadow-black/10",
                     "text-white",
-                    "hover:bg-accent/35 hover:-translate-y-0.5 active:bg-accent/45 active:translate-y-0",
+                    "hover:bg-accent-35 hover:-translate-y-0.5 active:bg-accent-45 active:translate-y-0",
                     "transition-all duration-200"
                   )}
                 >

@@ -11,6 +11,9 @@
     --accent: #16a34a;
     --accent-hover: #15803d;
     --accent-soft: rgba(22, 163, 74, 0.10);
+    --accent-25: rgba(22, 163, 74, 0.25);
+    --accent-35: rgba(22, 163, 74, 0.35);
+    --accent-45: rgba(22, 163, 74, 0.45);
     --accent-muted: rgba(22, 163, 74, 0.05);
 
     --danger: #dc2626;
@@ -67,6 +70,9 @@
     --accent: #22c55e;
     --accent-hover: #16a34a;
     --accent-soft: rgba(34, 197, 94, 0.12);
+    --accent-25: rgba(34, 197, 94, 0.25);
+    --accent-35: rgba(34, 197, 94, 0.35);
+    --accent-45: rgba(34, 197, 94, 0.45);
     --accent-muted: rgba(34, 197, 94, 0.06);
 
     --danger: #f87171;
@@ -154,7 +160,11 @@
   .text-accent { color: var(--accent); }
   .bg-accent { background: var(--accent); }
   .bg-accent-hover { background: var(--accent-hover); }
-
+  .bg-accent-soft { background: var(--accent-soft); }
+  .bg-accent-25 { background: var(--accent-25); }
+  .bg-accent-35 { background: var(--accent-35); }
+  .bg-accent-45 { background: var(--accent-45); }
+  .bg-accent-muted { background: var(--accent-muted); }
   .bg-surface-base { background: var(--bg-base); }
   .bg-surface { background: var(--bg-surface); }
   .bg-surface-elevated { background: var(--bg-elevated); }
