@@ -110,6 +110,15 @@ export function useScanner(onScan: (placa: string) => void): UseScannerReturn {
     [processScan]
   );
 
+  /** Detect iOS (Safari) — stricter permission model, requires user gesture */
+  const isIOS = useCallback(() => {
+    if (typeof navigator === "undefined") return false;
+    return (
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (typeof navigator !== "undefined" && "maxTouchPoints" in navigator && navigator.maxTouchPoints > 1 && /Mac/.test(navigator.userAgent))
+    );
+  }, []);
+
   const startLiveScan = useCallback(
     async (videoEl: HTMLVideoElement, deviceId?: string) => {
       try {
@@ -147,18 +156,60 @@ export function useScanner(onScan: (placa: string) => void): UseScannerReturn {
         setCameraStatus("Apuntá a la placa del equipo");
         setCameraReady(true);
       } catch (err) {
+        const name = err instanceof DOMException ? err.name : "";
         const message = err instanceof Error ? err.message : String(err);
-        setCameraStatus(
-          message.includes("Permission") || message.includes("NotAllowed")
-            ? "Permiso de cámara denegado. Habilitalo en los ajustes del navegador."
-            : message.includes("NotFound") || message.includes("Requested device not found")
-            ? "No se encontró ninguna cámara en el dispositivo."
-            : `Error de cámara: ${message}`
-        );
+
+        // Platform-aware error messages
+        const isMobile = isIOS() || /Android/.test(navigator.userAgent);
+
+        if (
+          name === "NotAllowedError" ||
+          message.includes("Permission") ||
+          message.includes("NotAllowed") ||
+          message.includes("not allowed by the user agent")
+        ) {
+          if (isIOS()) {
+            setCameraStatus(
+              "Permiso denegado. iOS requiere Safari > Ajustes > Safari > Cámara > Permitir. " +
+              "También verificá que el botón silencio físico no esté activado."
+            );
+          } else if (/Android/.test(navigator.userAgent)) {
+            setCameraStatus(
+              "Permiso denegado. Tocá el candado 🔒 en la barra de direcciones " +
+              "y activá Cámara. Si está en gris, andá a Ajustes > Apps > Chrome > Cámara."
+            );
+          } else {
+            setCameraStatus(
+              "Permiso de cámara denegado. Habilitalo en los ajustes del navegador " +
+              "y recargá la página."
+            );
+          }
+        } else if (
+          name === "NotFoundError" ||
+          message.includes("NotFound") ||
+          message.includes("Requested device not found")
+        ) {
+          setCameraStatus(
+            "No se encontró ninguna cámara en el dispositivo. " +
+            (isMobile ? "" : "Usá el botón 'Subir imagen' como alternativa.")
+          );
+        } else if (message.includes("gUM") && isMobile) {
+          // Common on iOS when getUserMedia is not called from user gesture
+          setCameraStatus(
+            "Error de cámara en iOS. Asegurate de tocar el botón Cámara directamente, " +
+            "no al recargar la página."
+          );
+        } else {
+          setCameraStatus(
+            isMobile
+              ? `Error de cámara: ${message.slice(0, 80)}`
+              : "No se pudo iniciar la cámara. Usá 'Subir imagen' como alternativa."
+          );
+        }
         setCameraReady(false);
       }
     },
-    [getReader, handleResult]
+    [getReader, handleResult, isIOS]
   );
 
   const stopLiveScan = useCallback(async () => {
@@ -175,8 +226,9 @@ export function useScanner(onScan: (placa: string) => void): UseScannerReturn {
 
   const listCameras = useCallback(async () => {
     try {
-      // Need to ask for permission first to get device labels
-      await navigator.mediaDevices.getUserMedia({ video: true });
+      // Passive enumeration — does NOT trigger a permission prompt.
+      // Labels will be empty-string until the user has granted camera
+      // permission in a previous getUserMedia call during this session.
       const devices = await BrowserMultiFormatReader.listVideoInputDevices();
       return devices;
     } catch {

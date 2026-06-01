@@ -4,7 +4,6 @@ import { useRef, useCallback, useEffect, useState } from "react";
 import { Scan, Camera, Search, Image as ImageIcon, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/Loader";
-import { useScanner } from "@/hooks/useScanner";
 
 interface ScanCardProps {
   scanMode: "scanner" | "camera";
@@ -14,6 +13,8 @@ interface ScanCardProps {
   onSwitchMode: (mode: "scanner" | "camera") => void;
   onScan: (text: string) => void;
   onFileScan: (file: File) => void;
+  startLiveScan: (videoEl: HTMLVideoElement) => Promise<void>;
+  stopLiveScan: () => Promise<void>;
 }
 
 export function ScanCard({
@@ -24,6 +25,8 @@ export function ScanCard({
   onSwitchMode,
   onScan,
   onFileScan,
+  startLiveScan,
+  stopLiveScan,
 }: ScanCardProps) {
   const [scanning, setScanning] = useState(false);
   const [showImageFallback, setShowImageFallback] = useState(false);
@@ -31,29 +34,35 @@ export function ScanCard({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const { startLiveScan, stopLiveScan, processScan } = useScanner(onScan);
-
-  // Refs for live video
   const videoRef = useRef<HTMLVideoElement>(null);
-  const liveActiveRef = useRef(false);
 
-  // Start/stop live scan when mode changes
+  // Stop camera on unmount
   useEffect(() => {
-    if (scanMode === "camera" && videoRef.current) {
-      setShowImageFallback(false);
-      startLiveScan(videoRef.current).catch(() => {});
-    } else {
-      if (liveActiveRef.current) {
-        stopLiveScan().catch(() => {});
-      }
-    }
-
     return () => {
-      if (liveActiveRef.current) {
-        stopLiveScan().catch(() => {});
-      }
+      stopLiveScan().catch(() => {});
     };
-  }, [scanMode, startLiveScan, stopLiveScan]);
+  }, [stopLiveScan]);
+
+  /** Switch to camera mode — starts live scan DIRECTLY from user gesture.
+   *  iOS Safari requires getUserMedia() to be called within the same
+   *  synchronous execution as the user tap. */
+  const handleCameraMode = useCallback(async () => {
+    setShowImageFallback(false);
+    onSwitchMode("camera");
+
+    // The <video> is always mounted (hidden when not in camera mode),
+    // so videoRef.current is immediately available — no need to wait
+    // for a React re-render.
+    if (videoRef.current) {
+      await startLiveScan(videoRef.current).catch(() => {});
+    }
+  }, [onSwitchMode, startLiveScan]);
+
+  /** Switch to scanner — stop camera first */
+  const handleScannerMode = useCallback(async () => {
+    await stopLiveScan().catch(() => {});
+    onSwitchMode("scanner");
+  }, [onSwitchMode, stopLiveScan]);
 
   const handleInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -109,7 +118,7 @@ export function ScanCard({
       <div className="flex gap-3 justify-center mb-6 relative z-10">
         <button
           type="button"
-          onClick={() => onSwitchMode("scanner")}
+          onClick={handleScannerMode}
           className={cn(
             "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200",
             "shadow-neu border border-border-subtle",
@@ -123,7 +132,7 @@ export function ScanCard({
         </button>
         <button
           type="button"
-          onClick={() => onSwitchMode("camera")}
+          onClick={handleCameraMode}
           className={cn(
             "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200",
             "shadow-neu border border-border-subtle",
@@ -137,7 +146,8 @@ export function ScanCard({
         </button>
       </div>
 
-      {scanMode === "scanner" ? (
+      {/* === SCANNER MODE (input field) === */}
+      {scanMode === "scanner" && (
         <div
           className={cn(
             "relative max-w-lg mx-auto rounded-2xl p-[2px] transition-all duration-200",
@@ -180,8 +190,15 @@ export function ScanCard({
             )}
           />
         </div>
-      ) : (
-        <div className="relative z-10 space-y-3">
+      )}
+
+      {/* === CAMERA MODE (video + overlay + controls) ===
+          The <video> is ALWAYS mounted (hidden when not camera mode) so
+          videoRef.current is available immediately when the user taps
+          "Cámara".  This is critical for iOS Safari, which requires
+          getUserMedia() to be called within the same user gesture. */}
+      <div className={cn("relative z-10", scanMode !== "camera" && "hidden")}>
+        <div className="space-y-3">
           <input
             ref={fileInputRef}
             type="file"
@@ -275,7 +292,7 @@ export function ScanCard({
             </button>
           </div>
         </div>
-      )}
+      </div>
 
       {loading && <Loader />}
     </section>
