@@ -56,7 +56,7 @@ export function Header({ theme, onToggleTheme }: HeaderProps) {
             <img
               src={senaLogo.src}
               alt="SENA"
-              className="w-8 h-8 object-contain block brightness-0 invert"
+              className="w-8 h-8 object-contain block"
             />
           </div>
           <div>
