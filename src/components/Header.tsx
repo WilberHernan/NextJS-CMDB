@@ -52,13 +52,11 @@ export function Header({ theme, onToggleTheme }: HeaderProps) {
         }
       >
         <div className="flex items-center gap-3.5">
-          <div className="flex items-center justify-center w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br from-sena-green to-accent shadow-lg shadow-sena-glow">
-            <img
-              src={senaLogo.src}
-              alt="SENA"
-              className="w-8 h-8 object-contain block"
-            />
-          </div>
+          <img
+            src={senaLogo.src}
+            alt="SENA"
+            className="w-9 h-9 object-contain block shrink-0"
+          />
           <div>
             <div className="text-lg font-bold tracking-tight leading-tight text-foreground">
               SENA CCYS

@@ -200,8 +200,9 @@ export function ScanCard({
                   onClick={() => fileInputRef.current?.click()}
                   className={cn(
                     "inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium",
-                    "bg-accent text-white shadow-lg shadow-accent/20",
-                    "hover:brightness-110 transition-all"
+                    "bg-accent text-white shadow-neu border border-border-subtle",
+                    "hover:brightness-110 hover:-translate-y-0.5 active:shadow-neu-pressed active:translate-y-0",
+                    "transition-all duration-200"
                   )}
                 >
                   <Camera className="h-4 w-4" />
@@ -226,8 +227,9 @@ export function ScanCard({
                   onClick={() => fileInputRef.current?.click()}
                   className={cn(
                     "inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold",
-                    "bg-accent text-white shadow-lg shadow-accent/20",
-                    "hover:brightness-110 active:scale-[0.98] transition-all"
+                    "bg-accent text-white shadow-neu border border-border-subtle",
+                    "hover:brightness-110 hover:-translate-y-0.5 active:shadow-neu-pressed active:translate-y-0",
+                    "transition-all duration-200"
                   )}
                 >
                   <ImageIcon className="h-5 w-5" />
