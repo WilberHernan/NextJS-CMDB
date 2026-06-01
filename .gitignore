@@ -40,3 +40,6 @@ next-env.d.ts
 # service account / secrets
 gen-lang-client-*.json
 service-account-key.json
+
+# Reference material (not part of the project)
+/CMDB_SENA/

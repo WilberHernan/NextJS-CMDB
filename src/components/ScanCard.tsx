@@ -1,13 +1,16 @@
 "use client";
 
-import { useRef, useCallback, useState } from "react";
-import { Scan, Camera, Search } from "lucide-react";
+import { useRef, useCallback, useEffect, useState } from "react";
+import { Scan, Camera, Search, Image as ImageIcon, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/Loader";
+import { useScanner } from "@/hooks/useScanner";
 
 interface ScanCardProps {
   scanMode: "scanner" | "camera";
   loading: boolean;
+  cameraStatus: string;
+  cameraReady: boolean;
   onSwitchMode: (mode: "scanner" | "camera") => void;
   onScan: (text: string) => void;
   onFileScan: (file: File) => void;
@@ -16,14 +19,41 @@ interface ScanCardProps {
 export function ScanCard({
   scanMode,
   loading,
+  cameraStatus,
+  cameraReady,
   onSwitchMode,
   onScan,
   onFileScan,
 }: ScanCardProps) {
   const [scanning, setScanning] = useState(false);
+  const [showImageFallback, setShowImageFallback] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const { startLiveScan, stopLiveScan, processScan } = useScanner(onScan);
+
+  // Refs for live video
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const liveActiveRef = useRef(false);
+
+  // Start/stop live scan when mode changes
+  useEffect(() => {
+    if (scanMode === "camera" && videoRef.current) {
+      setShowImageFallback(false);
+      startLiveScan(videoRef.current).catch(() => {});
+    } else {
+      if (liveActiveRef.current) {
+        stopLiveScan().catch(() => {});
+      }
+    }
+
+    return () => {
+      if (liveActiveRef.current) {
+        stopLiveScan().catch(() => {});
+      }
+    };
+  }, [scanMode, startLiveScan, stopLiveScan]);
 
   const handleInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,9 +81,17 @@ export function ScanCard({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) onFileScan(file);
+      // reset so the same file can be re-selected
+      e.target.value = "";
     },
     [onFileScan]
   );
+
+  const handleRetryCamera = useCallback(() => {
+    if (videoRef.current) {
+      startLiveScan(videoRef.current).catch(() => {});
+    }
+  }, [startLiveScan]);
 
   return (
     <section className="relative text-center rounded-3xl glass border-border-default p-8 sm:p-9 overflow-hidden">
@@ -65,7 +103,7 @@ export function ScanCard({
       <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-7 relative z-10">
         {scanMode === "scanner"
           ? "Posiciona el cursor en el campo y escanea la placa con el lector."
-          : "Apunta a la placa, toca el botón y saca la foto."}
+          : "Apuntá a la placa del equipo. La detección es automática."}
       </p>
 
       <div className="flex gap-3 justify-center mb-6 relative z-10">
@@ -109,6 +147,16 @@ export function ScanCard({
               : "opacity-85 hover:opacity-100"
           )}
         >
+          {/* Glow blur ::before equivalent */}
+          <div
+            className={cn(
+              "absolute inset-[-2px] rounded-[22px] transition-opacity duration-300 pointer-events-none",
+              "bg-gradient-to-r from-accent via-sena-green-light to-accent bg-[length:400%_400%] animate-gradient-shift",
+              scanning ? "opacity-50" : "opacity-0"
+            )}
+            style={{ filter: "blur(8px)", zIndex: -1 }}
+          />
+
           <div className="relative flex items-center rounded-[14px] bg-surface-input shadow-neu-pressed">
             <Search className="absolute left-5 h-[18px] w-[18px] text-muted-foreground pointer-events-none transition-all duration-300" />
             <input
@@ -133,23 +181,99 @@ export function ScanCard({
           />
         </div>
       ) : (
-        <div className="relative z-10">
+        <div className="relative z-10 space-y-3">
           <input
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            capture="environment"
             onChange={handleFileChange}
             className="hidden"
           />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="inline-flex items-center justify-center gap-2.5 px-9 py-4 text-base font-bold rounded-2xl bg-surface-input text-foreground shadow-neu border border-border-subtle hover:bg-surface-hover transition-all duration-200 active:scale-[0.98]"
+
+          {/* Live camera viewfinder */}
+          <div
+            className={cn(
+              "relative mx-auto max-w-md overflow-hidden rounded-2xl",
+              "bg-black/90 border border-border-default",
+              "shadow-neu-pressed"
+            )}
           >
-            <Camera className="h-5 w-5" />
-            <span>Tomar foto del código de barras</span>
-          </button>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="block w-full aspect-[4/3] object-cover"
+            />
+
+            {/* Scanning overlay — reticle in the middle */}
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+              <div className="absolute inset-[12%]">
+                <div className="relative w-full h-full">
+                  {/* Corner brackets */}
+                  <div className="absolute top-0 left-0 w-8 h-8 border-t-[3px] border-l-[3px] border-accent rounded-tl-md" />
+                  <div className="absolute top-0 right-0 w-8 h-8 border-t-[3px] border-r-[3px] border-accent rounded-tr-md" />
+                  <div className="absolute bottom-0 left-0 w-8 h-8 border-b-[3px] border-l-[3px] border-accent rounded-bl-md" />
+                  <div className="absolute bottom-0 right-0 w-8 h-8 border-b-[3px] border-r-[3px] border-accent rounded-br-md" />
+                  {/* Scanning line */}
+                  <div
+                    className={cn(
+                      "absolute left-[5%] right-[5%] h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent rounded-full",
+                      cameraReady && "animate-scan-line"
+                    )}
+                    style={{ top: "50%" }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Status badge */}
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 max-w-[90%]">
+              <div
+                className={cn(
+                  "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium",
+                  "bg-black/70 backdrop-blur-sm border border-white/10 text-white",
+                  !cameraReady && "text-amber-300"
+                )}
+              >
+                {cameraReady ? (
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+                ) : (
+                  <RefreshCw className="w-3 h-3 animate-spin" />
+                )}
+                <span className="truncate">{cameraStatus}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Actions row */}
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={handleRetryCamera}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium",
+                "bg-surface-elevated text-muted-foreground border border-border-default",
+                "hover:text-foreground transition-colors"
+              )}
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Reintentar cámara
+            </button>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium",
+                "bg-surface-elevated text-muted-foreground border border-border-default",
+                "hover:text-foreground transition-colors"
+              )}
+            >
+              <ImageIcon className="w-3.5 h-3.5" />
+              Subir imagen
+            </button>
+          </div>
         </div>
       )}
 

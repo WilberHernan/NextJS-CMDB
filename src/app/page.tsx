@@ -3,37 +3,28 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useTheme } from "@/hooks/useTheme";
 import { useEquipment } from "@/hooks/useEquipment";
+import { useScanner } from "@/hooks/useScanner";
 import { Header } from "@/components/Header";
 import { ScanCard } from "@/components/ScanCard";
 import { EquipmentForm } from "@/components/EquipmentForm";
 import { Alert } from "@/components/Alert";
 import { EmptyState } from "@/components/EmptyState";
-import {
-  COLUMNAS,
-  DEFAULT_NUEVO_EQUIPO,
-} from "@/types/equipment";
+import { COLUMNAS, DEFAULT_NUEVO_EQUIPO } from "@/types/equipment";
 import { findMatchingOption, sanitizarPlaca } from "@/lib/utils";
 
 type BadgeVariant = "default" | "blue" | "secondary";
 
 export default function Home() {
   const { theme, toggleTheme } = useTheme();
-  const [scanMode, setScanMode] = useState<"scanner" | "camera">("scanner");
   const {
     loading,
     validaciones,
-    mapeoSedeId,
     buscar,
     actualizar,
     crear,
     cargarValidaciones,
     cargarMapeoSede,
   } = useEquipment();
-
-  const [alertInfo, setAlertInfo] = useState<{
-    type: "success" | "error" | "info" | "warning";
-    message: string;
-  } | null>(null);
 
   const [valores, setValores] = useState<string[]>(
     Array(COLUMNAS.length).fill("")
@@ -44,8 +35,48 @@ export default function Home() {
   const [formVisible, setFormVisible] = useState(false);
   const [saving, setSaving] = useState(false);
   const [emptyStatePlaca, setEmptyStatePlaca] = useState<string | null>(null);
-  const [scannerKey, setScannerKey] = useState(0);
+  const [alertInfo, setAlertInfo] = useState<{
+    type: "success" | "error" | "info" | "warning";
+    message: string;
+  } | null>(null);
   const propietarioOriginalRef = useRef<string>("");
+
+  // Stable callback to avoid scanner re-init loops
+  const handleScan = useCallback(
+    async (placa: string) => {
+      setAlertInfo(null);
+      setEmptyStatePlaca(null);
+
+      const data = await buscar(placa);
+
+      if (data) {
+        setEsModoNuevo(false);
+        setHojaActual(data.hoja);
+        setFilaActual(String(data.fila));
+        setValores([...data.valores]);
+        propietarioOriginalRef.current = (
+          data.valores[2] || ""
+        ).toString().toUpperCase().trim();
+        setFormVisible(true);
+        setAlertInfo({
+          type: "success",
+          message: "Equipo encontrado correctamente.",
+        });
+      } else {
+        setFormVisible(false);
+        setEmptyStatePlaca(placa);
+      }
+    },
+    [buscar]
+  );
+
+  const {
+    scanMode,
+    cameraStatus,
+    cameraReady,
+    setScanMode,
+    scanFile,
+  } = useScanner(handleScan);
 
   const validacionesIndices = Object.keys(validaciones).map(Number);
 
@@ -78,51 +109,16 @@ export default function Home() {
     cargarMapeoSede();
   }, [cargarValidaciones, cargarMapeoSede]);
 
-  const handleScan = useCallback(
-    async (text: string) => {
-      const placa = sanitizarPlaca(text);
-      if (!placa) return;
-
-      setAlertInfo(null);
-      setEmptyStatePlaca(null);
-
-      const data = await buscar(placa);
-
-      if (data) {
-        setEsModoNuevo(false);
-        setHojaActual(data.hoja);
-        setFilaActual(String(data.fila));
-        setValores([...data.valores]);
-        propietarioOriginalRef.current = (
-          data.valores[2] || ""
-        ).toString().toUpperCase().trim();
-        setFormVisible(true);
-        setAlertInfo({ type: "success", message: "Equipo encontrado correctamente." });
-      } else {
-        setFormVisible(false);
-        setEmptyStatePlaca(placa);
-      }
-    },
-    [buscar]
-  );
-
   const handleFileScan = useCallback(
     async (file: File) => {
       try {
-        const { Html5Qrcode } = await import("html5-qrcode");
-        const reader = new Html5Qrcode("camera-reader");
-        const decodedText = await reader.scanFile(file, true);
-        reader.clear();
-        handleScan(decodedText);
+        await scanFile(file);
+        // The scanner hook already calls handleScan internally
       } catch {
-        setAlertInfo({
-          type: "error",
-          message:
-            "No se detectó código. Intente tomar la foto más cerca y sin reflejos.",
-        });
+        // status already set inside scanFile
       }
     },
-    [handleScan]
+    [scanFile]
   );
 
   const handleModoNuevo = useCallback(
@@ -137,7 +133,6 @@ export default function Home() {
       });
       nuevos[6] = placa.toUpperCase();
 
-      // Intentar hacer match con validaciones
       validacionesIndices.forEach((idx) => {
         const opts = validaciones[idx] || [];
         if (opts.length > 0) {
@@ -176,7 +171,10 @@ export default function Home() {
       const hojaDestino =
         propietario === "TELEFONICA" ? "EquiposTelefonica" : "EquiposSena";
 
-      setAlertInfo({ type: "info", message: "Registrando nuevo equipo en CMDB..." });
+      setAlertInfo({
+        type: "info",
+        message: "Registrando nuevo equipo en CMDB...",
+      });
 
       const respuesta = await crear(hojaDestino, valoresLimpios);
       setSaving(false);
@@ -192,7 +190,10 @@ export default function Home() {
         });
       }
     } else {
-      setAlertInfo({ type: "info", message: "Sincronizando con CMDB, por favor espere..." });
+      setAlertInfo({
+        type: "info",
+        message: "Sincronizando con CMDB, por favor espere...",
+      });
 
       const respuesta = await actualizar(
         filaActual,
@@ -216,7 +217,6 @@ export default function Home() {
   const handleRetry = useCallback(() => {
     setEmptyStatePlaca(null);
     setAlertInfo(null);
-    setScannerKey((k) => k + 1);
   }, []);
 
   return (
@@ -237,9 +237,10 @@ export default function Home() {
         <Header theme={theme} onToggleTheme={toggleTheme} />
 
         <ScanCard
-          key={scannerKey}
           scanMode={scanMode}
           loading={loading}
+          cameraStatus={cameraStatus}
+          cameraReady={cameraReady}
           onSwitchMode={setScanMode}
           onScan={handleScan}
           onFileScan={handleFileScan}

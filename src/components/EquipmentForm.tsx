@@ -3,7 +3,6 @@
 import React from "react";
 import { FileText, Save, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { DynamicField } from "@/components/DynamicField";
 import {
   COLUMNAS,
@@ -101,23 +100,26 @@ export function EquipmentForm({
         </div>
 
         <div className="mt-8 pt-6 border-t border-border-default flex justify-center">
-          <Button
-            size="lg"
-            onClick={onGuardar}
-            disabled={saving}
-          >
-            {esModoNuevo ? (
-              <>
-                <Sparkles className="h-4 w-4" />
-                Registrar Nuevo Equipo
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4" />
-                Guardar Actualización
-              </>
-            )}
-          </Button>
+          <div className={cn("btn-save-wrap", saving && "disabled")}>
+            <button
+              type="button"
+              className="btn-save"
+              onClick={onGuardar}
+              disabled={saving}
+            >
+              {esModoNuevo ? (
+                <>
+                  <Sparkles className="h-4 w-4" />
+                  Registrar Nuevo Equipo
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  Guardar Actualización
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

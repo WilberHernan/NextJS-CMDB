@@ -37,9 +37,15 @@ export function DateField({ value, onChange, className }: DateFieldProps) {
   return (
     <div
       onClick={handleWrapperClick}
-      className={`relative w-full rounded-xl p-[1px] cursor-pointer transition-all duration-200 bg-border-default hover:bg-border-hover focus-within:bg-accent/30 focus-within:shadow-[0_0_0_1px_rgba(74,222,128,0.3)] ${className ?? ""}`}
+      className={`group relative w-full rounded-xl p-[1px] cursor-pointer transition-all duration-200 bg-border-default hover:bg-border-hover focus-within:bg-accent/30 ${className ?? ""}`}
     >
-      <div className="flex items-center rounded-[11px] bg-surface-input shadow-neu-pressed">
+      {/* Gradient border glow */}
+      <div
+        className="absolute inset-[-1px] rounded-[13px] opacity-0 group-hover:opacity-30 focus-within:opacity-40 transition-opacity duration-300 pointer-events-none bg-gradient-to-r from-accent via-sena-green-light to-accent bg-[length:400%_400%] animate-gradient-shift"
+        style={{ filter: "blur(4px)", zIndex: -1 }}
+      />
+
+      <div className="flex items-center rounded-[11px] bg-surface-input shadow-neu-pressed relative">
         <input
           type="text"
           readOnly
@@ -54,7 +60,7 @@ export function DateField({ value, onChange, className }: DateFieldProps) {
           onChange={handleDateChange}
           className="absolute inset-0 w-full h-full opacity-[0.01] cursor-pointer border-none bg-transparent text-transparent"
         />
-        <Calendar className="mr-3 h-4 w-4 shrink-0 text-muted-foreground pointer-events-none transition-colors duration-200 group-hover:text-accent" />
+        <Calendar className="mr-3 h-4 w-4 shrink-0 text-muted-foreground pointer-events-none transition-colors duration-300 group-hover:text-accent" />
       </div>
     </div>
   );

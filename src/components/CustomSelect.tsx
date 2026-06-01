@@ -48,17 +48,26 @@ export function CustomSelect({
       ref={wrapperRef}
       className={cn(
         "relative w-full rounded-xl p-[1px] transition-all duration-200",
-        open
-          ? "bg-accent/30 shadow-[0_0_0_1px_rgba(74,222,128,0.3)]"
-          : "bg-border-default hover:bg-border-hover",
+        "bg-border-default hover:bg-border-hover",
+        open && "bg-accent/30",
         className
       )}
     >
+      {/* Gradient border glow */}
+      <div
+        className={cn(
+          "absolute inset-[-1px] rounded-[13px] opacity-0 transition-opacity duration-300 pointer-events-none",
+          "bg-gradient-to-r from-accent via-sena-green-light to-accent bg-[length:400%_400%] animate-gradient-shift",
+          open && "opacity-40"
+        )}
+        style={{ filter: "blur(4px)", zIndex: -1 }}
+      />
+
       <button
         type="button"
         onClick={() => setOpen(!open)}
         className={cn(
-          "flex w-full items-center justify-between gap-2 rounded-[11px] bg-surface-input px-4 py-3 text-sm text-left",
+          "flex w-full items-center justify-between gap-2 rounded-[11px] bg-surface-input px-4 py-3 text-sm text-left relative",
           "shadow-neu-pressed transition-all duration-200 outline-none font-sans",
           open && "shadow-neu-pressed"
         )}
