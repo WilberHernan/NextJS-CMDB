@@ -3,6 +3,7 @@
 import React from "react";
 import { FileText, Save, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { GradientButton } from "@/components/ui/gradient-button";
 import { DynamicField } from "@/components/DynamicField";
 import {
   COLUMNAS,
@@ -45,8 +46,8 @@ export function EquipmentForm({
     <div className="animate-fade-in-up">
       <div className="rounded-3xl glass border-border-default p-6 sm:p-8">
         <div className="flex items-center justify-between flex-wrap gap-3 mb-7 pb-5 border-b border-border-default">
-          <h3 className="text-lg font-bold text-foreground flex items-center gap-2.5 tracking-tight">
-            <FileText className="h-5 w-5" />
+          <h3 className="font-display text-[1.25rem] sm:text-[1.375rem] font-semibold text-foreground flex items-center gap-2.5 tracking-display-tight">
+            <FileText className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
             Ficha del Equipo
           </h3>
           <Badge variant={hojaBadgeVariant}>
@@ -63,8 +64,8 @@ export function EquipmentForm({
             return (
               <React.Fragment key={index}>
                 {section && (
-                  <div className="col-span-full flex items-center gap-3 mt-2 mb-1 pb-2">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+                  <div className="col-span-full flex items-baseline gap-3 mt-4 mb-1 pb-2 first:mt-0">
+                    <span className="text-[0.6875rem] font-semibold uppercase tracking-display-loose text-muted-foreground whitespace-nowrap">
                       {section}
                     </span>
                     <div className="flex-1 h-px bg-gradient-to-r from-border-default to-transparent" />
@@ -77,8 +78,8 @@ export function EquipmentForm({
                     isObservaciones && "col-span-full"
                   )}
                 >
-                  <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <span className="inline-flex items-center justify-center min-w-[20px] h-5 text-[10px] font-bold rounded-md bg-surface-elevated text-muted-foreground border border-border-default font-mono">
+                  <label className="text-[0.6875rem] font-semibold uppercase tracking-display-loose text-muted-foreground flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center min-w-[20px] h-5 text-[10px] font-semibold rounded-md bg-surface-elevated text-muted-foreground border border-border-default font-mono">
                       {index + 1}
                     </span>
                     {nombre}
@@ -100,26 +101,21 @@ export function EquipmentForm({
         </div>
 
         <div className="mt-8 pt-6 border-t border-border-default flex justify-center">
-          <div className={cn("btn-save-wrap", saving && "disabled")}>
-            <button
-              type="button"
-              className="btn-save"
-              onClick={onGuardar}
-              disabled={saving}
-            >
-              {esModoNuevo ? (
-                <>
-                  <Sparkles className="h-4 w-4" />
-                  Registrar Nuevo Equipo
-                </>
+          <GradientButton
+            variant="primary"
+            size="lg"
+            onClick={onGuardar}
+            loading={saving}
+            icon={
+              esModoNuevo ? (
+                <Sparkles className="h-4 w-4" />
               ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  Guardar Actualización
-                </>
-              )}
-            </button>
-          </div>
+                <Save className="h-4 w-4" />
+              )
+            }
+          >
+            {esModoNuevo ? "Registrar Nuevo Equipo" : "Guardar Actualización"}
+          </GradientButton>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { CheckCircle, XCircle, AlertCircle, Info } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AlertProps {
   type: "success" | "error" | "info" | "warning";
@@ -9,37 +9,37 @@ interface AlertProps {
   className?: string;
 }
 
-const icons = {
-  success: CheckCircle,
-  error: XCircle,
-  info: Info,
-  warning: AlertCircle,
-};
-
-const styles = {
-  success:
-    "bg-green-500/10 text-green-400 border-green-500/20",
-  error:
-    "bg-red-500/10 text-red-400 border-red-500/20",
-  info:
-    "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  warning:
-    "bg-amber-500/10 text-amber-400 border-amber-500/20",
-};
+// One source of color per alert: the icon. The rest is typographic.
+const config = {
+  success: { Icon: CheckCircle, colorVar: "var(--success)" },
+  error: { Icon: XCircle, colorVar: "var(--danger)" },
+  info: { Icon: Info, colorVar: "var(--info)" },
+  warning: { Icon: AlertCircle, colorVar: "var(--warning)" },
+} as const;
 
 export function Alert({ type, message, className }: AlertProps) {
-  const Icon = icons[type];
+  const { Icon, colorVar } = config[type];
 
   return (
     <div
+      role="status"
+      aria-live="polite"
       className={cn(
-        "flex items-center gap-3 w-full rounded-2xl border px-4 py-3.5 text-sm font-medium animate-slide-down",
-        styles[type],
+        "flex items-center gap-3 w-full",
+        "rounded-2xl border border-border-default bg-surface-elevated",
+        "px-4 py-3.5 text-sm font-medium text-foreground",
+        "shadow-neu-flat",
+        "animate-slide-down",
         className
       )}
     >
-      <Icon className="h-4 w-4 shrink-0" />
-      <span>{message}</span>
+      <Icon
+        className="h-[18px] w-[18px] shrink-0"
+        strokeWidth={2.25}
+        style={{ color: colorVar }}
+        aria-hidden
+      />
+      <span className="flex-1 leading-relaxed text-pretty">{message}</span>
     </div>
   );
 }

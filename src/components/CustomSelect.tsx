@@ -48,34 +48,25 @@ export function CustomSelect({
       ref={wrapperRef}
       className={cn("group relative w-full", className)}
     >
-      {/* Gradient border glow — matches CMDB_SENA .custom-select::before */}
-      <div
-        className={cn(
-          "absolute inset-[-2px] rounded-[16px] opacity-0 transition-opacity duration-300 pointer-events-none",
-          "bg-gradient-to-r from-accent via-sena-green-light to-accent bg-[length:400%_400%] animate-gradient-shift",
-          "group-hover:opacity-20",
-          open && "opacity-30"
-        )}
-        style={{ filter: "blur(8px)", zIndex: -1 }}
-      />
-
       <button
         type="button"
         onClick={() => setOpen(!open)}
         className={cn(
-          "flex w-full items-center justify-between gap-2 rounded-[12px] bg-surface-base px-4 py-3 text-sm text-left text-foreground relative",
-          "border border-border-subtle transition-all duration-200 outline-none font-sans",
-          "hover:border-border-default hover:bg-surface focus:border-accent",
-          "shadow-neu-pressed",
-          open && "border-accent"
+          // Matches the scanner input's visual language: same radius, bg, shadow, focus ring.
+          "flex w-full items-center justify-between gap-2 rounded-md bg-surface-input px-4 py-3 text-sm text-left text-foreground relative",
+          "border border-border-default shadow-neu-pressed",
+          "transition-all duration-200 ease-cinematic outline-none font-sans",
+          "hover:border-border-hover",
+          "focus-visible:border-accent focus-visible:shadow-[var(--focus-ring)]",
+          open && "border-accent shadow-[var(--focus-ring)]"
         )}
       >
-        <span className={cn("truncate", !value && "text-tertiary")}>
+        <span className={cn("truncate", !value && "text-muted-foreground")}>
           {value || placeholder}
         </span>
         <ChevronDown
           className={cn(
-            "h-4 w-4 shrink-0 text-tertiary transition-transform duration-200",
+            "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
             open && "rotate-180 text-accent"
           )}
         />
@@ -85,18 +76,10 @@ export function CustomSelect({
         <div
           className={cn(
             "absolute top-[calc(100%+12px)] left-0 right-0 z-50",
-            "rounded-[20px] border",
+            "rounded-md glass",
             "p-2 max-h-[300px] overflow-y-auto",
             "animate-scale-in origin-top"
           )}
-          style={{
-            background: "var(--glass-bg)",
-            backdropFilter: "blur(20px) saturate(160%)",
-            WebkitBackdropFilter: "blur(20px) saturate(160%)",
-            borderColor: "var(--glass-border)",
-            boxShadow:
-              "0 16px 48px rgba(0,0,0,0.4), inset 0 1px 0 var(--glass-highlight)",
-          }}
         >
           {options.map((opt) => (
             <button
@@ -104,7 +87,7 @@ export function CustomSelect({
               type="button"
               onClick={() => handleSelect(opt)}
               className={cn(
-                "flex w-full items-center gap-2.5 rounded-xl px-4 py-3 text-sm text-left",
+                "flex w-full items-center gap-2.5 rounded-md px-4 py-3 text-sm text-left",
                 "transition-all duration-150",
                 "text-muted-foreground",
                 "hover:bg-surface-hover hover:text-foreground",

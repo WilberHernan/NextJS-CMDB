@@ -43,9 +43,53 @@ const config: Config = {
           "green-light": "#4ade80",
           glow: "rgba(57, 169, 0, 0.35)",
         },
+        success: {
+          DEFAULT: "var(--success)",
+          soft: "var(--success-soft)",
+          foreground: "var(--success)",
+        },
+        danger: {
+          DEFAULT: "var(--danger)",
+          soft: "var(--danger-soft)",
+          foreground: "var(--danger)",
+        },
+        info: {
+          DEFAULT: "var(--info)",
+          soft: "var(--info-soft)",
+          foreground: "var(--info)",
+        },
+        warning: {
+          DEFAULT: "var(--warning)",
+          soft: "var(--warning-soft)",
+          foreground: "var(--warning)",
+        },
+      },
+      borderRadius: {
+        sm: "6px",
+        md: "10px",
+        lg: "14px",
+        xl: "18px",
+        "2xl": "24px",
+        full: "9999px",
       },
       fontFamily: {
-        mono: ["SF Mono", "Monaco", "Consolas", "monospace"],
+        sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: [
+          "var(--font-mono)",
+          "SF Mono",
+          "Monaco",
+          "Consolas",
+          "monospace",
+        ],
+      },
+      letterSpacing: {
+        "display-tight": "-0.035em",
+        "display-loose": "0.04em",
+      },
+      transitionTimingFunction: {
+        "cinematic": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "entry": "cubic-bezier(0.16, 1, 0.3, 1)",
       },
       animation: {
         "spin-slow": "spin 3s linear infinite",

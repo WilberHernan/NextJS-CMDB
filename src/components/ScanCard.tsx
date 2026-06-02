@@ -3,6 +3,7 @@
 import { useRef, useCallback, useState } from "react";
 import { Scan, Camera, Search, ImageIcon, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { GradientButton } from "@/components/ui/gradient-button";
 import { Loader } from "@/components/Loader";
 
 interface ScanCardProps {
@@ -24,7 +25,6 @@ export function ScanCard({
   onScan,
   onFileScan,
 }: ScanCardProps) {
-  const [scanning, setScanning] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const typingTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -63,7 +63,6 @@ export function ScanCard({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) onFileScan(file);
-      // reset so the same file can be re-selected
       e.target.value = "";
     },
     [onFileScan]
@@ -71,12 +70,10 @@ export function ScanCard({
 
   return (
     <section className="relative text-center rounded-3xl glass border-border-default p-8 sm:p-9 overflow-hidden">
-      <div className="absolute top-0 left-[15%] right-[15%] h-[1.5px] bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent opacity-40" />
-
-      <h2 className="text-2xl font-bold text-foreground mb-2 tracking-tight relative z-10">
+      <h2 className="font-display text-[1.625rem] sm:text-[1.75rem] font-semibold text-foreground mb-2 tracking-display-tight relative z-10">
         Escanea la placa del equipo
       </h2>
-      <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-7 relative z-10">
+      <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-7 relative z-10 text-balance">
         {scanMode === "scanner"
           ? "Posiciona el cursor en el campo y escanea la placa con el lector."
           : "Sacá una foto clara a la placa del equipo."}
@@ -87,8 +84,8 @@ export function ScanCard({
           type="button"
           onClick={handleScannerMode}
           className={cn(
-            "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200",
-            "shadow-neu border border-border-subtle",
+            "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ease-cinematic",
+            "shadow-neu border border-border-default",
             scanMode === "scanner"
               ? "bg-accent-soft text-accent border-border-accent shadow-neu-pressed"
               : "bg-surface-elevated text-muted-foreground hover:text-foreground hover:-translate-y-0.5"
@@ -101,8 +98,8 @@ export function ScanCard({
           type="button"
           onClick={handleCameraMode}
           className={cn(
-            "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200",
-            "shadow-neu border border-border-subtle",
+            "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ease-cinematic",
+            "shadow-neu border border-border-default",
             scanMode === "camera"
               ? "bg-accent-soft text-accent border-border-accent shadow-neu-pressed"
               : "bg-surface-elevated text-muted-foreground hover:text-foreground hover:-translate-y-0.5"
@@ -113,58 +110,75 @@ export function ScanCard({
         </button>
       </div>
 
-      {/* === SCANNER MODE (input field) === */}
+      {/* === SCANNER MODE (input field) ===
+          - No animated gradients. The native blinking caret IS the scanner signal.
+          - Focus uses a thin, solid border + soft ring (functional, not decorative). */}
       {scanMode === "scanner" && (
-        <div
-          className={cn(
-            "relative max-w-lg mx-auto rounded-2xl p-[2px] transition-all duration-200",
-            "bg-gradient-to-r from-[var(--accent)] via-sena-green-light to-[var(--accent)] bg-[length:400%_400%] animate-gradient-shift",
-            scanning
-              ? "opacity-100 shadow-lg shadow-sena-glow"
-              : "opacity-85 hover:opacity-100"
-          )}
-        >
-          {/* Glow blur ::before equivalent */}
+        <div className="relative max-w-lg mx-auto group">
           <div
             className={cn(
-              "absolute inset-[-2px] rounded-[22px] transition-opacity duration-300 pointer-events-none",
-              "bg-gradient-to-r from-[var(--accent)] via-sena-green-light to-[var(--accent)] bg-[length:400%_400%] animate-gradient-shift",
-              scanning ? "opacity-50" : "opacity-0"
+              // Scanner field sits between inputs (10px) and containers (16-24px)
+              // at 12px — same radius as the buttons/chips tier, so it reads as
+              // "the main interactive surface" without feeling like a pill.
+              "relative flex items-center rounded-xl bg-surface-input",
+              "border border-border-default",
+              "shadow-neu-pressed",
+              "transition-all duration-200 ease-cinematic",
+              "group-focus-within:border-accent group-focus-within:shadow-[var(--focus-ring)]"
             )}
-            style={{ filter: "blur(8px)", zIndex: -1 }}
-          />
-
-          <div className="relative flex items-center rounded-[14px] bg-surface-input shadow-neu-pressed">
-            <Search className="absolute left-5 h-[18px] w-[18px] text-muted-foreground pointer-events-none transition-all duration-300" />
+          >
+            <Search
+              className={cn(
+                "absolute left-5 h-[18px] w-[18px] text-muted-foreground pointer-events-none",
+                "transition-colors duration-200",
+                "group-focus-within:text-accent"
+              )}
+            />
             <input
               ref={inputRef}
               type="text"
-              placeholder="Esperando lectura del escáner..."
-              onFocus={() => setScanning(true)}
-              onBlur={() => setScanning(false)}
+              placeholder="Esperando lectura del escáner…"
               onChange={handleInput}
               onKeyDown={handleKeyDown}
               autoFocus
               autoComplete="off"
-              className="w-full bg-transparent py-[18px] pl-14 pr-5 text-base font-semibold font-mono tracking-wide text-foreground placeholder:text-muted-foreground-60 placeholder:font-normal placeholder:font-sans placeholder:tracking-normal outline-none"
+              spellCheck={false}
+              className={cn(
+                "w-full bg-transparent py-[18px] pl-14 pr-5",
+                "text-base font-semibold font-mono tracking-wide text-foreground",
+                "placeholder:text-muted-foreground-60 placeholder:font-normal placeholder:font-sans placeholder:tracking-normal",
+                "outline-none"
+              )}
             />
           </div>
+
+          {/* Single, intentional status line — replaces the animated gradient.
+              Reuses the same SENA-green as a "ready" indicator (only when focused + empty). */}
           <div
             className={cn(
-              "absolute bottom-[3px] left-[15%] right-[15%] h-[2px] rounded-full bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent",
-              "transition-opacity duration-300",
-              "opacity-60 animate-scan-pulse"
+              "mt-3 flex items-center justify-center gap-2",
+              "text-[0.6875rem] font-medium uppercase tracking-display-loose",
+              "text-muted-foreground-60",
+              "transition-colors duration-200",
+              "group-focus-within:text-accent"
             )}
-          />
+          >
+            <span
+              className={cn(
+                "inline-block h-[5px] w-[5px] rounded-full bg-accent",
+                "transition-opacity duration-200",
+                "opacity-40 group-focus-within:opacity-100"
+              )}
+              aria-hidden
+            />
+            Listo para escanear
+          </div>
         </div>
       )}
 
       {/* === CAMERA MODE (native camera / photo upload) === */}
       <div className={cn("relative z-10", scanMode !== "camera" && "hidden")}>
         <div className="space-y-4">
-          {/* Hidden file input — capture="environment" opens the
-              native camera on Android/iOS; on PC it falls through to
-              the file picker. */}
           <input
             ref={fileInputRef}
             type="file"
@@ -174,10 +188,9 @@ export function ScanCard({
             className="hidden"
           />
 
-          {/* Photo area — icon + instructions */}
           <div
             className={cn(
-              "relative mx-auto max-w-md rounded-2xl border-2 border-dashed p-10 text-center transition-all duration-300",
+              "relative mx-auto max-w-md rounded-2xl border-2 border-dashed p-10 text-center transition-all duration-200 ease-cinematic",
               cameraReady
                 ? "border-border-accent bg-accent-muted"
                 : "border-border-default bg-surface-elevated",
@@ -195,20 +208,14 @@ export function ScanCard({
                 <p className="text-sm text-muted-foreground font-mono tracking-wide">
                   {cameraStatus}
                 </p>
-                <button
-                  type="button"
+                <GradientButton
+                  variant="primary"
+                  size="sm"
                   onClick={() => fileInputRef.current?.click()}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium",
-                    "bg-accent-25 backdrop-blur-xl border border-white/20 shadow-lg shadow-black/10",
-                    "text-white",
-                    "hover:bg-accent-35 hover:-translate-y-0.5 active:bg-accent-45 active:translate-y-0",
-                    "transition-all duration-200"
-                  )}
+                  icon={<Camera className="h-4 w-4" />}
                 >
-                  <Camera className="h-4 w-4" />
                   Leer otra placa
-                </button>
+                </GradientButton>
               </>
             ) : (
               <>
@@ -223,38 +230,27 @@ export function ScanCard({
                     La foto se analizará automáticamente
                   </p>
                 </div>
-                <button
-                  type="button"
+                <GradientButton
+                  variant="primary"
+                  size="md"
                   onClick={() => fileInputRef.current?.click()}
-                  className={cn(
-                    "inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold",
-                    "bg-accent-25 backdrop-blur-xl border border-white/20 shadow-lg shadow-black/10",
-                    "text-white",
-                    "hover:bg-accent-35 hover:-translate-y-0.5 active:bg-accent-45 active:translate-y-0",
-                    "transition-all duration-200"
-                  )}
+                  icon={<ImageIcon className="h-5 w-5" />}
                 >
-                  <ImageIcon className="h-5 w-5" />
                   Tomar foto
-                </button>
+                </GradientButton>
 
-                {/* Status message (error / progress) */}
                 {cameraStatus && (
-                  <p className="text-xs text-amber-400 max-w-xs">
-                    {cameraStatus}
-                  </p>
+                  <p className="text-xs text-warning max-w-xs">{cameraStatus}</p>
                 )}
               </>
             )}
           </div>
 
-          {/* Secondary fallback link */}
           <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
             <span>O</span>
             <button
               type="button"
               onClick={() => {
-                // Remove capture on mobile to browse gallery
                 const input = fileInputRef.current;
                 if (input) {
                   input.removeAttribute("capture");

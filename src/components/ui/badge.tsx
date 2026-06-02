@@ -3,20 +3,21 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-semibold font-mono transition-colors duration-200",
+  // Typographic, not colored: editorial hierarchy via spacing, weight, and tracking.
+  "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[0.6875rem] font-semibold uppercase tracking-display-loose transition-colors duration-200",
   {
     variants: {
       variant: {
         default:
-          "bg-accent-soft text-accent border border-border-accent",
+          "text-foreground bg-surface-elevated border border-border-default",
         secondary:
-          "bg-surface-elevated text-muted-foreground border border-border-default",
-        blue: "bg-blue-500/10 text-blue-400 border border-blue-500/25",
+          "text-muted-foreground bg-surface-elevated border border-border-default",
+        blue: "text-muted-foreground bg-surface-elevated border border-border-default",
         destructive:
-          "bg-red-500/10 text-red-400 border border-red-500/25",
+          "text-muted-foreground bg-surface-elevated border border-border-default",
         success:
-          "bg-green-500/10 text-green-400 border border-green-500/25",
-        outline: "border border-border-default text-foreground",
+          "text-muted-foreground bg-surface-elevated border border-border-default",
+        outline: "text-foreground border border-border-default",
       },
     },
     defaultVariants: {

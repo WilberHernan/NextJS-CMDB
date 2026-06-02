@@ -10,7 +10,7 @@ Migrado desde Google Apps Script a Next.js moderno.
 - **UI**: shadcn/ui, Lucide Icons, Radix UI
 - **Backend**: Next.js Route Handlers
 - **Persistencia**: Google Sheets API (con capa de abstracción para migración futura a SQL)
-- **Validación**: Zod (preparado para integración con React Hook Form)
+- **Validación**: validación server-side + dropdowns dinámicos desde hoja de validaciones
 
 ## Requisitos
 
@@ -69,6 +69,8 @@ src/
 │   └── page.tsx           # Página principal
 ├── components/
 │   ├── ui/                # Componentes base (shadcn-style)
+│   │   ├── gradient-button.tsx
+│   │   └── skeleton.tsx
 │   ├── Alert.tsx
 │   ├── CustomSelect.tsx
 │   ├── DateField.tsx
@@ -79,20 +81,18 @@ src/
 │   ├── Loader.tsx
 │   └── ScanCard.tsx
 ├── hooks/
-│   ├── useEquipment.ts    # Lógica de negocio (CRUD)
-│   ├── useScanner.ts      # Lógica de escaneo
-│   └── useTheme.ts        # Tema dark/light
+│   ├── useEquipment.ts        # Lógica de negocio (CRUD)
+│   ├── useEquipmentForm.ts    # Lógica de UI del formulario
+│   ├── useScanner.ts          # Lógica de escaneo
+│   └── useTheme.ts            # Tema dark/light
 ├── lib/
-│   └── utils.ts           # Utilidades (cn, sanitize, date format)
+│   └── utils.ts               # Utilidades (cn, sanitize, date format)
 ├── repositories/
 │   └── equipment.repository.ts  # Acceso a datos (Google Sheets)
 ├── services/
-│   └── sheets.ts          # Cliente Google Sheets API
-├── types/
-│   ├── api.ts
-│   └── equipment.ts       # Tipos: columnas, secciones, equipos
-└── validators/
-    └── equipment.ts       # Validaciones Zod
+│   └── sheets.ts              # Cliente Google Sheets API
+└── types/
+    └── equipment.ts           # Tipos: columnas, secciones, equipos
 ```
 
 ## Funcionalidades

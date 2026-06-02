@@ -1,324 +1,82 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useTheme } from "@/hooks/useTheme";
-import { useEquipment } from "@/hooks/useEquipment";
+import { useEquipmentForm } from "@/hooks/useEquipmentForm";
 import { Header } from "@/components/Header";
 import { EquipmentForm } from "@/components/EquipmentForm";
 import { Alert } from "@/components/Alert";
 import { EmptyState } from "@/components/EmptyState";
-import { COLUMNAS, DEFAULT_NUEVO_EQUIPO } from "@/types/equipment";
-import { findMatchingOption, sanitizarPlaca } from "@/lib/utils";
 
 // ZXing is browser-only (uses navigator, MediaDevices). Dynamic import
 // with ssr: false keeps it out of the server bundle.
 const ScannerSection = dynamic(
-  () =>
-    import("@/components/ScannerSection").then((m) => m.ScannerSection),
+  () => import("@/components/ScannerSection").then((m) => m.ScannerSection),
   { ssr: false, loading: () => null }
 );
 
-type BadgeVariant = "default" | "blue" | "secondary";
-
 export default function Home() {
   const { theme, toggleTheme } = useTheme();
-  const {
-    loading,
-    validaciones,
-    buscar,
-    actualizar,
-    crear,
-    cargarValidaciones,
-    cargarMapeoSede,
-    mapeoSedeId,
-  } = useEquipment();
+  const form = useEquipmentForm();
 
-  const [valores, setValores] = useState<string[]>(
-    Array(COLUMNAS.length).fill("")
-  );
-  const [esModoNuevo, setEsModoNuevo] = useState(false);
-  const [hojaActual, setHojaActual] = useState("");
-  const [filaActual, setFilaActual] = useState("");
-  const [formVisible, setFormVisible] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [emptyStatePlaca, setEmptyStatePlaca] = useState<string | null>(null);
-  const [alertInfo, setAlertInfo] = useState<{
-    type: "success" | "error" | "info" | "warning";
-    message: string;
-  } | null>(null);
-  const propietarioOriginalRef = useRef<string>("");
-
-  // Stable callback to avoid scanner re-init loops
-  const handleScan = useCallback(
-    async (placa: string) => {
-      setAlertInfo(null);
-      setEmptyStatePlaca(null);
-
-      const data = await buscar(placa);
-
-      if (data) {
-        setEsModoNuevo(false);
-        setHojaActual(data.hoja);
-        setFilaActual(String(data.fila));
-        setValores([...data.valores]);
-        propietarioOriginalRef.current = (
-          data.valores[2] || ""
-        ).toString().toUpperCase().trim();
-        setFormVisible(true);
-        setAlertInfo({
-          type: "success",
-          message: "Equipo encontrado correctamente.",
-        });
-      } else {
-        setFormVisible(false);
-        setEmptyStatePlaca(placa);
-      }
-    },
-    [buscar]
-  );
-
-  const validacionesIndices = Object.keys(validaciones).map(Number);
-
-  const hojaBadgeText = (() => {
-    if (esModoNuevo) return "NUEVO EQUIPO";
-    if (!formVisible || !hojaActual) return "";
-
-    const propIndex = 2;
-    const propValue = (valores[propIndex] || "").toUpperCase().trim();
-    const hojaDestino =
-      propValue === "TELEFONICA" ? "EquiposTelefonica" : "EquiposSena";
-
-    if (
-      hojaDestino !== hojaActual &&
-      propietarioOriginalRef.current &&
-      propValue !== propietarioOriginalRef.current
-    ) {
-      return `Se moverá a: ${hojaDestino}`;
-    }
-    return `${hojaActual} · Fila ${filaActual}`;
-  })();
-
-  const hojaBadgeVariant: BadgeVariant =
-    esModoNuevo || hojaBadgeText.startsWith("Se moverá")
-      ? "blue"
-      : "default";
-
-  useEffect(() => {
-    cargarValidaciones();
-    cargarMapeoSede();
-  }, [cargarValidaciones, cargarMapeoSede]);
-
-  // Procesar parámetros de URL para modo nuevo desde script local
-  const urlParamsRef = useRef(false);
-  useEffect(() => {
-    if (urlParamsRef.current) return;
-    if (Object.keys(validaciones).length === 0) return;
-
-    const params = new URLSearchParams(window.location.search);
-    const modo = params.get("modo");
-    const placa = params.get("placa");
-
-    if (modo === "nuevo" && placa) {
-      const mapeo: Record<string, number> = {
-        hostname: 0, marca: 3, modelo: 4, serial: 5, placa: 6,
-        procesador: 16, disco1_tipo: 17, disco1_tam: 18,
-        disco2_tipo: 19, disco2_tam: 20, tipo_memoria: 21, ram: 22,
-        video: 23, mac_cableada: 31, mac_wifi: 32, so: 33, version_so: 34,
-        fecha_mantenimiento: 47, fecha_impacto: 48,
-      };
-
-      const nuevos = Array(COLUMNAS.length).fill("");
-      Object.entries(DEFAULT_NUEVO_EQUIPO).forEach(([idx, val]) => {
-        nuevos[parseInt(idx)] = val;
-      });
-
-      for (const [key, idx] of Object.entries(mapeo)) {
-        const val = params.get(key);
-        if (val) {
-          const upperVal = val.toString().toUpperCase().trim();
-          const opts = validaciones[idx];
-          if (opts && opts.length > 0) {
-            const match = findMatchingOption(upperVal, opts);
-            nuevos[idx] = match || upperVal;
-          } else {
-            nuevos[idx] = upperVal;
-          }
-        }
-      }
-
-      nuevos[6] = sanitizarPlaca(placa);
-      setValores(nuevos);
-      setEsModoNuevo(true);
-      setFormVisible(true);
-      setAlertInfo(null);
-
-      window.history.replaceState({}, "", window.location.pathname);
-      urlParamsRef.current = true;
-    }
-  }, [validaciones]);
-
-  const handleModoNuevo = useCallback(
-    (placa: string) => {
-      setEsModoNuevo(true);
-      setFormVisible(true);
-      setEmptyStatePlaca(null);
-
-      const nuevos = Array(COLUMNAS.length).fill("");
-      Object.entries(DEFAULT_NUEVO_EQUIPO).forEach(([idx, val]) => {
-        nuevos[parseInt(idx)] = val;
-      });
-      nuevos[6] = placa.toUpperCase();
-
-      validacionesIndices.forEach((idx) => {
-        const opts = validaciones[idx] || [];
-        if (opts.length > 0) {
-          const match = findMatchingOption(nuevos[idx] || "", opts);
-          if (match) nuevos[idx] = match;
-        }
-      });
-
-      setValores(nuevos);
-      setAlertInfo(null);
-    },
-    [validaciones, validacionesIndices]
-  );
-
-  const handleValorChange = useCallback(
-    (index: number, value: string) => {
-      setValores((prev) => {
-        const next = [...prev];
-        next[index] = value;
-
-        // Sincronización ID SEDE (7) ↔ NOMBRE DE LA SEDE (8)
-        // Cuando cambia ID SEDE, auto-completa NOMBRE DE LA SEDE
-        if (index === 7 && mapeoSedeId.idASede[value]) {
-          next[8] = mapeoSedeId.idASede[value];
-        }
-        // Cuando cambia NOMBRE DE LA SEDE, auto-completa ID SEDE
-        if (index === 8 && mapeoSedeId.sedeAId[value]) {
-          next[7] = mapeoSedeId.sedeAId[value];
-        }
-
-        return next;
-      });
-    },
-    [mapeoSedeId]
-  );
-
-  const handleGuardar = useCallback(async () => {
-    setSaving(true);
-    setAlertInfo(null);
-
-    const valoresLimpios = valores.map((v) =>
-      typeof v === "string" ? v.replace(/'/g, "-").toUpperCase() : v
-    );
-
-    if (esModoNuevo) {
-      const propietario = valoresLimpios[2] || "";
-      const hojaDestino =
-        propietario === "TELEFONICA" ? "EquiposTelefonica" : "EquiposSena";
-
-      setAlertInfo({
-        type: "info",
-        message: "Registrando nuevo equipo en CMDB...",
-      });
-
-      const respuesta = await crear(hojaDestino, valoresLimpios);
-      setSaving(false);
-
-      if (respuesta?.exito) {
-        setAlertInfo({ type: "success", message: respuesta.mensaje });
-        setFormVisible(false);
-        setEsModoNuevo(false);
-      } else {
-        setAlertInfo({
-          type: "error",
-          message: `Error al registrar: ${respuesta?.mensaje || "Error desconocido"}`,
-        });
-      }
-    } else {
-      setAlertInfo({
-        type: "info",
-        message: "Sincronizando con CMDB, por favor espere...",
-      });
-
-      const respuesta = await actualizar(
-        filaActual,
-        hojaActual,
-        valoresLimpios
-      );
-      setSaving(false);
-
-      if (respuesta?.exito) {
-        setAlertInfo({ type: "success", message: respuesta.mensaje });
-        setFormVisible(false);
-      } else {
-        setAlertInfo({
-          type: "error",
-          message: `Fallo en la base de datos: ${respuesta?.mensaje || "Error desconocido"}`,
-        });
-      }
-    }
-  }, [valores, esModoNuevo, crear, actualizar, filaActual, hojaActual]);
-
-  const handleRetry = useCallback(() => {
-    setEmptyStatePlaca(null);
-    setAlertInfo(null);
-  }, []);
+  // Header bottom bar only fires on success — the user just found/registered
+  // an equipment. Errors and info alerts don't trigger it.
+  const isSuccess = form.alertInfo?.type === "success";
 
   return (
     <div className="relative min-h-screen bg-surface-base">
-      {/* Mesh background */}
-      <div className="fixed inset-0 z-0 pointer-events-none bg-surface-base">
-        <div
-          className="absolute inset-0"
-          style={{ background: "var(--grad-mesh)" }}
-        />
-      </div>
-
-      {/* Glow orbs */}
-      <div className="fixed top-[-100px] right-[-80px] w-[300px] h-[300px] rounded-full bg-sena-green/10 blur-[60px] pointer-events-none z-0" />
-      <div className="fixed bottom-[-60px] left-[-60px] w-[250px] h-[250px] rounded-full bg-blue-500/10 blur-[60px] pointer-events-none z-0" />
-
       <div className="relative z-10 max-w-[1200px] mx-auto px-4 sm:px-8 py-5 sm:py-7 flex flex-col gap-5">
-        <Header theme={theme} onToggleTheme={toggleTheme} />
+        {/* Stagger mount: header → scanner → status → form.
+            Each section fades+rises 80ms after the previous one. */}
+        <div className="animate-stagger-1">
+          <Header
+            theme={theme}
+            onToggleTheme={toggleTheme}
+            highlightSuccess={isSuccess}
+          />
+        </div>
 
-        <ScannerSection loading={loading} onScan={handleScan} />
+        <div className="animate-stagger-2">
+          <ScannerSection loading={form.loading} onScan={form.handleScan} />
+        </div>
 
         {/* Status area */}
-        <div className="min-h-[60px] flex items-center">
-          {alertInfo && (
-            <Alert type={alertInfo.type} message={alertInfo.message} />
+        <div className="min-h-[60px] flex items-center px-1 animate-stagger-3">
+          {form.alertInfo && (
+            <Alert type={form.alertInfo.type} message={form.alertInfo.message} />
           )}
         </div>
 
         {/* Empty state */}
-        {emptyStatePlaca && (
+        {form.emptyStatePlaca && (
           <EmptyState
-            placa={emptyStatePlaca}
-            onRetry={handleRetry}
-            onRegisterNew={() => handleModoNuevo(emptyStatePlaca)}
+            placa={form.emptyStatePlaca}
+            onRetry={form.handleRetry}
+            onRegisterNew={() => form.handleModoNuevo(form.emptyStatePlaca!)}
           />
         )}
 
         {/* Equipment form */}
-        <EquipmentForm
-          visible={formVisible}
-          esModoNuevo={esModoNuevo}
-          hojaActual={hojaActual}
-          filaActual={filaActual}
-          hojaBadgeText={hojaBadgeText}
-          hojaBadgeVariant={hojaBadgeVariant}
-          valores={valores}
-          validaciones={validaciones}
-          validacionesIndices={validacionesIndices}
-          onValorChange={handleValorChange}
-          onGuardar={handleGuardar}
-          saving={saving}
-        />
+        {form.formVisible && (
+          <div className="animate-stagger-4">
+            <EquipmentForm
+              visible={form.formVisible}
+              esModoNuevo={form.esModoNuevo}
+              hojaActual={form.hojaActual}
+              filaActual={form.filaActual}
+              hojaBadgeText={form.hojaBadgeText}
+              hojaBadgeVariant={form.hojaBadgeVariant}
+              valores={form.valores}
+              validaciones={form.validaciones}
+              validacionesIndices={form.validacionesIndices}
+              onValorChange={form.handleValorChange}
+              onGuardar={form.handleGuardar}
+              saving={form.saving}
+            />
+          </div>
+        )}
 
-        <footer className="text-center pt-6 pb-2 text-[10px] tracking-wider text-muted-foreground-60">
+        <footer className="text-center pt-6 pb-2 text-[10px] tracking-display-loose uppercase text-muted-foreground-60">
           CMDB SENA CCYS — Cauca 2026
         </footer>
       </div>
