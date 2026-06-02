@@ -133,11 +133,11 @@
     --shadow-glow: 0 0 30px rgba(134, 239, 172, 0.08);
     --shadow-button: 0 2px 8px rgba(0, 0, 0, 0.4);
     --shadow-button-hover: 0 6px 20px rgba(134, 239, 172, 0.20);
-    --focus-ring: 0 0 0 3px rgba(134, 239, 172, 0.18);
+    --focus-ring: 0 0 0 2px rgba(134, 239, 172, 0.12);
 
     /* SENA brand glow — used by "Registrar nuevo" button.
-       Reduced from 0.35 to 0.10 in dark so it doesn't dominate. */
-    --sena-green-glow: rgba(57, 169, 0, 0.10);
+       Reduced from 0.35 to 0.04 in dark so it doesn't dominate. */
+    --sena-green-glow: rgba(57, 169, 0, 0.04);
 
     --glass-bg: rgba(18, 18, 23, 0.75);
     --glass-border: transparent;
@@ -256,15 +256,19 @@
   }
 
   /* All borders stay transparent in dark. The neumorphic top highlight
-     on .glass + the elevated background color do the edge definition. */
+     on .glass + the elevated background color do the edge definition.
+     IMPORTANT: only :focus — NOT :focus-within. The :focus-within
+     pseudo-class would propagate up the DOM tree and turn the
+     border of the ENTIRE card green when any input inside is focused.
+     Individual components that need focus-within (DateField wrapper,
+     scanner wrapper) use their own .focus-within:border-accent utility. */
   .dark * {
     border-color: transparent;
   }
   .dark *:hover {
     border-color: var(--border-hover);
   }
-  .dark *:focus,
-  .dark *:focus-within {
+  .dark *:focus {
     border-color: var(--accent);
   }
 
