@@ -97,9 +97,19 @@ export function ScanCard({
 
   return (
     <section className="relative text-center rounded-3xl glass border-border-default p-8 sm:p-9 overflow-hidden">
-      <h2 className="font-display text-[1.625rem] sm:text-[1.75rem] font-semibold text-foreground mb-2 tracking-display-tight relative z-10">
-        Escanea la placa del equipo
-      </h2>
+      <div
+        className="mb-7 relative z-10"
+        style={{ animation: "title-mount 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both" }}
+      >
+        <h2 className="font-display uppercase leading-[0.95] text-foreground">
+          <span className="block text-[1.875rem] sm:text-[2.25rem] font-bold tracking-[-0.03em]">
+            Escanea la placa
+          </span>
+          <span className="block text-base sm:text-lg font-medium tracking-[0.2em] text-muted-foreground mt-3">
+            del equipo
+          </span>
+        </h2>
+      </div>
       <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-7 relative z-10 text-balance">
         {scanMode === "scanner"
           ? "Posiciona el cursor en el campo y escanea la placa con el lector."

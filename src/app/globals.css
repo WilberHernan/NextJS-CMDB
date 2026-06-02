@@ -371,6 +371,24 @@
   /* Success highlight bar — driven by .animate-success-bar on the inner span. */
   .animate-success-bar { animation: success-bar-in 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; transform-origin: left; }
 
+  /* === CINEMATIC TITLE ===
+     One refined mount on page load — translateY 20px + blur 8px → 0,
+     0.95s with tight easing. The type does the work after that:
+     uppercase, big, tight tracking, SOLID color. No gradient, no
+     shimmer, no decorative noise. Confidence over effects. */
+  @keyframes title-mount {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+      filter: blur(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
