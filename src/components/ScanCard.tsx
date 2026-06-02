@@ -1,72 +1,98 @@
 "use client";
 
-import { useRef, useCallback, useState } from "react";
-import { Scan, Camera, Search, ImageIcon, CheckCircle2 } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
+import { Scan, Camera, Search, ImageIcon, CheckCircle2, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { Loader } from "@/components/Loader";
+import type { ScanStage } from "@/hooks/useScanner";
 
 interface ScanCardProps {
   scanMode: "scanner" | "camera";
   loading: boolean;
-  cameraStatus: string;
-  cameraReady: boolean;
   onSwitchMode: (mode: "scanner" | "camera") => void;
   onScan: (text: string) => void;
   onFileScan: (file: File) => void;
+  stage: ScanStage;
+  pendingValue: string | null;
+  onConfirm: (value: string) => void;
+  onCancel: () => void;
+}
+
+const STAGE_COPY: Record<Exclude<ScanStage, "idle" | "done" | "error">, string> = {
+  preprocessing: "Preparando imagen...",
+  decoding: "Analizando código de barras...",
+  ocr: "Buscando número en texto...",
+};
+
+function isInProgress(stage: ScanStage): stage is Exclude<ScanStage, "idle" | "done" | "error"> {
+  return stage === "preprocessing" || stage === "decoding" || stage === "ocr";
 }
 
 export function ScanCard({
   scanMode,
   loading,
-  cameraStatus,
-  cameraReady,
   onSwitchMode,
   onScan,
   onFileScan,
+  stage,
+  pendingValue,
+  onConfirm,
+  onCancel,
 }: ScanCardProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const typingTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editedValue, setEditedValue] = useState("");
 
-  const handleScannerMode = useCallback(() => {
-    onSwitchMode("scanner");
-  }, [onSwitchMode]);
+  useEffect(() => {
+    if (pendingValue !== null) setEditedValue(pendingValue);
+  }, [pendingValue]);
 
-  const handleCameraMode = useCallback(() => {
-    onSwitchMode("camera");
-  }, [onSwitchMode]);
+  const handleScannerMode = () => onSwitchMode("scanner");
+  const handleCameraMode = () => onSwitchMode("camera");
 
-  const handleInput = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    clearTimeout(typingTimerRef.current);
+    const val = e.target.value;
+    if (val.length > 0) {
+      typingTimerRef.current = setTimeout(() => onScan(val), 400);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
       clearTimeout(typingTimerRef.current);
-      const val = e.target.value;
-      if (val.length > 0) {
-        typingTimerRef.current = setTimeout(() => onScan(val), 400);
-      }
-    },
-    [onScan]
-  );
+      onScan((e.target as HTMLInputElement).value);
+    }
+  };
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        clearTimeout(typingTimerRef.current);
-        onScan((e.target as HTMLInputElement).value);
-      }
-    },
-    [onScan]
-  );
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) onFileScan(file);
+    e.target.value = "";
+  };
 
-  const handleFileChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) onFileScan(file);
-      e.target.value = "";
-    },
-    [onFileScan]
-  );
+  const triggerCamera = () => fileInputRef.current?.click();
+  const triggerGallery = () => {
+    const input = fileInputRef.current;
+    if (input) {
+      input.removeAttribute("capture");
+      input.click();
+      input.setAttribute("capture", "environment");
+    }
+  };
+
+  const handleConfirm = () => {
+    if (editedValue.trim().length === 0) return;
+    onConfirm(editedValue);
+  };
+
+  const handleRescan = () => {
+    setEditedValue("");
+    onCancel();
+  };
 
   return (
     <section className="relative text-center rounded-3xl glass border-border-default p-8 sm:p-9 overflow-hidden">
@@ -110,16 +136,10 @@ export function ScanCard({
         </button>
       </div>
 
-      {/* === SCANNER MODE (input field) ===
-          - No animated gradients. The native blinking caret IS the scanner signal.
-          - Focus uses a thin, solid border + soft ring (functional, not decorative). */}
       {scanMode === "scanner" && (
         <div className="relative max-w-lg mx-auto group">
           <div
             className={cn(
-              // Scanner field sits between inputs (10px) and containers (16-24px)
-              // at 12px — same radius as the buttons/chips tier, so it reads as
-              // "the main interactive surface" without feeling like a pill.
               "relative flex items-center rounded-xl bg-surface-input",
               "border border-border-default",
               "shadow-neu-pressed",
@@ -152,8 +172,6 @@ export function ScanCard({
             />
           </div>
 
-          {/* Single, intentional status line — replaces the animated gradient.
-              Reuses the same SENA-green as a "ready" indicator (only when focused + empty). */}
           <div
             className={cn(
               "mt-3 flex items-center justify-center gap-2",
@@ -176,7 +194,6 @@ export function ScanCard({
         </div>
       )}
 
-      {/* === CAMERA MODE (native camera / photo upload) === */}
       <div className={cn("relative z-10", scanMode !== "camera" && "hidden")}>
         <div className="space-y-4">
           <input
@@ -188,81 +205,164 @@ export function ScanCard({
             className="hidden"
           />
 
-          <div
-            className={cn(
-              "relative mx-auto max-w-md rounded-2xl border-2 border-dashed p-10 text-center transition-all duration-200 ease-cinematic",
-              cameraReady
-                ? "border-border-accent bg-accent-muted"
-                : "border-border-default bg-surface-elevated",
-              "min-h-[240px] flex flex-col items-center justify-center gap-4"
-            )}
-          >
-            {cameraReady ? (
-              <>
-                <div className="rounded-full bg-accent-soft p-3">
-                  <CheckCircle2 className="h-10 w-10 text-accent" />
+          {stage === "done" && pendingValue !== null ? (
+            <div
+              className={cn(
+                "relative mx-auto max-w-md rounded-xl p-5",
+                "bg-success-soft border border-border-accent",
+                "text-left"
+              )}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="rounded-full bg-accent-soft p-2">
+                  <CheckCircle2 className="h-5 w-5 text-accent" />
                 </div>
-                <p className="text-base font-semibold text-foreground">
+                <p className="text-sm font-semibold text-foreground">
                   Código detectado
                 </p>
-                <p className="text-sm text-muted-foreground font-mono tracking-wide">
-                  {cameraStatus}
-                </p>
-                <GradientButton
-                  variant="primary"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  icon={<Camera className="h-4 w-4" />}
-                >
-                  Leer otra placa
-                </GradientButton>
-              </>
-            ) : (
-              <>
-                <div className="rounded-full bg-surface-input p-4">
-                  <Camera className="h-12 w-12 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground mb-1">
-                    Tomá una foto clara de la placa
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    La foto se analizará automáticamente
-                  </p>
-                </div>
+              </div>
+              <input
+                type="text"
+                value={editedValue}
+                onChange={(e) => setEditedValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleConfirm();
+                  }
+                }}
+                autoFocus
+                autoComplete="off"
+                spellCheck={false}
+                placeholder="Placa detectada"
+                className={cn(
+                  "w-full bg-surface-input px-4 py-3 rounded-xl",
+                  "border border-border-default",
+                  "text-base font-semibold text-foreground",
+                  "placeholder:text-muted-foreground-60 placeholder:font-normal",
+                  "outline-none",
+                  "transition-all duration-200 ease-cinematic",
+                  "focus:border-accent focus:shadow-[var(--focus-ring)]"
+                )}
+              />
+              <p className="mt-2 text-xs text-muted-foreground">
+                Verificá el valor y corregilo si es necesario.
+              </p>
+              <div className="mt-4 flex gap-3">
                 <GradientButton
                   variant="primary"
                   size="md"
-                  onClick={() => fileInputRef.current?.click()}
-                  icon={<ImageIcon className="h-5 w-5" />}
+                  onClick={handleConfirm}
+                  disabled={editedValue.trim().length === 0}
+                  className="flex-1"
                 >
-                  Tomar foto
+                  Confirmar
                 </GradientButton>
-
-                {cameraStatus && (
-                  <p className="text-xs text-warning max-w-xs">{cameraStatus}</p>
-                )}
-              </>
-            )}
-          </div>
-
-          <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
-            <span>O</span>
-            <button
-              type="button"
-              onClick={() => {
-                const input = fileInputRef.current;
-                if (input) {
-                  input.removeAttribute("capture");
-                  input.click();
-                  input.setAttribute("capture", "environment");
-                }
-              }}
-              className="underline hover:text-foreground transition-colors"
+                <button
+                  type="button"
+                  onClick={handleRescan}
+                  className={cn(
+                    "flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl",
+                    "bg-surface-elevated text-muted-foreground hover:text-foreground",
+                    "border border-border-default shadow-neu",
+                    "transition-all duration-200 ease-cinematic",
+                    "hover:-translate-y-0.5"
+                  )}
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  <span className="text-sm font-semibold">Re-escanear</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div
+              className={cn(
+                "relative mx-auto max-w-md rounded-2xl border-2 border-dashed p-10 text-center transition-all duration-200 ease-cinematic",
+                stage === "error"
+                  ? "border-danger bg-danger-soft"
+                  : "border-border-default bg-surface-elevated",
+                "min-h-[240px] flex flex-col items-center justify-center gap-4"
+              )}
             >
-              Elegir desde la galería
-            </button>
-          </div>
+              {isInProgress(stage) ? (
+                <>
+                  <div className="rounded-full bg-accent-soft p-4">
+                    <div className="h-12 w-12 rounded-full border-4 border-accent-soft border-t-accent animate-spin-slow" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground mb-1">
+                      {STAGE_COPY[stage]}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Esto puede tardar unos segundos
+                    </p>
+                  </div>
+                </>
+              ) : stage === "error" ? (
+                <>
+                  <div className="rounded-full bg-danger-soft p-4">
+                    <ImageIcon className="h-12 w-12 text-danger" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground mb-1">
+                      No se detectó código
+                    </p>
+                    <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+                      Intentá con más luz, la foto más de cerca o capturá el
+                      número impreso debajo del código.
+                    </p>
+                  </div>
+                  <GradientButton
+                    variant="primary"
+                    size="md"
+                    onClick={triggerCamera}
+                    icon={<Camera className="h-5 w-5" />}
+                  >
+                    Reintentar
+                  </GradientButton>
+                </>
+              ) : (
+                <>
+                  <div className="rounded-full bg-surface-input p-4">
+                    <Camera className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground mb-1">
+                      Tomá una foto clara de la placa
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      La foto se analizará automáticamente
+                    </p>
+                  </div>
+                  <GradientButton
+                    variant="primary"
+                    size="md"
+                    onClick={triggerCamera}
+                    icon={<ImageIcon className="h-5 w-5" />}
+                  >
+                    Tomar foto
+                  </GradientButton>
+                </>
+              )}
+            </div>
+          )}
+
+          {stage !== "done" && (
+            <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
+              <span>O</span>
+              <button
+                type="button"
+                onClick={triggerGallery}
+                disabled={isInProgress(stage)}
+                className={cn(
+                  "underline hover:text-foreground transition-colors",
+                  isInProgress(stage) && "opacity-50 pointer-events-none"
+                )}
+              >
+                Elegir desde la galería
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

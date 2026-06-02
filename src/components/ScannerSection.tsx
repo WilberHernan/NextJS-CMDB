@@ -16,10 +16,12 @@ interface ScannerSectionProps {
 export function ScannerSection({ loading, onScan }: ScannerSectionProps) {
   const {
     scanMode,
-    cameraStatus,
-    cameraReady,
     setScanMode,
     scanFile,
+    stage,
+    pendingValue,
+    confirmPending,
+    cancelPending,
   } = useScanner(onScan);
 
   const handleFileScan = useCallback(
@@ -37,11 +39,13 @@ export function ScannerSection({ loading, onScan }: ScannerSectionProps) {
     <ScanCard
       scanMode={scanMode}
       loading={loading}
-      cameraStatus={cameraStatus}
-      cameraReady={cameraReady}
       onSwitchMode={setScanMode}
       onScan={onScan}
       onFileScan={handleFileScan}
+      stage={stage}
+      pendingValue={pendingValue}
+      onConfirm={confirmPending}
+      onCancel={cancelPending}
     />
   );
 }
