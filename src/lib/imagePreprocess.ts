@@ -1,10 +1,37 @@
 import type { BrowserMultiFormatReader } from "@zxing/browser";
 
 const CONTRAST_FACTOR = 1.3;
-const BINARIZE_THRESHOLD = 128;
-const MIN_TEXT_LENGTH = 4;
-const MAX_TEXT_LENGTH = 20;
-const OCR_TIMEOUT_MS = 15_000;
+const MAX_IMAGE_WIDTH = 1280;
+const DEFAULT_BUDGET_MS = 3000;
+const ROTATIONS: ReadonlyArray<0 | 90 | 180 | 270> = [0, 90, 180, 270] as const;
+
+export type Strategy =
+  | "raw"
+  | "contrast"
+  | "bin-80"
+  | "bin-128"
+  | "bin-180"
+  | "inverted";
+
+const STRATEGY_ORDER: ReadonlyArray<Strategy> = [
+  "raw",
+  "contrast",
+  "bin-128",
+  "bin-80",
+  "bin-180",
+  "inverted",
+] as const;
+
+export interface DecodeAttempt {
+  variant: string;
+  angle: number;
+  durationMs: number;
+}
+
+export interface AggressiveOptions {
+  budgetMs?: number;
+  onAttempt?: (info: DecodeAttempt) => void;
+}
 
 export async function loadImage(src: string | File): Promise<HTMLImageElement> {
   const url = typeof src === "string" ? src : URL.createObjectURL(src);
@@ -22,6 +49,130 @@ export async function loadImage(src: string | File): Promise<HTMLImageElement> {
   }
 }
 
+function getCtx(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas 2D context no disponible");
+  return ctx;
+}
+
+function drawImageToCanvas(source: HTMLImageElement | HTMLCanvasElement): HTMLCanvasElement {
+  const w = source instanceof HTMLImageElement
+    ? (source.naturalWidth || source.width)
+    : source.width;
+  const h = source instanceof HTMLImageElement
+    ? (source.naturalHeight || source.height)
+    : source.height;
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  getCtx(canvas).drawImage(source, 0, 0, w, h);
+  return canvas;
+}
+
+export function rotateCanvas(
+  source: HTMLCanvasElement,
+  angle: 90 | 180 | 270
+): HTMLCanvasElement {
+  const swap = angle === 90 || angle === 270;
+  const canvas = document.createElement("canvas");
+  canvas.width = swap ? source.height : source.width;
+  canvas.height = swap ? source.width : source.height;
+  const ctx = getCtx(canvas);
+  if (angle === 90) {
+    ctx.translate(canvas.width, 0);
+    ctx.rotate((Math.PI / 180) * 90);
+  } else if (angle === 180) {
+    ctx.translate(canvas.width, canvas.height);
+    ctx.rotate((Math.PI / 180) * 180);
+  } else {
+    ctx.translate(0, canvas.height);
+    ctx.rotate((Math.PI / 180) * 270);
+  }
+  ctx.drawImage(source, 0, 0);
+  return canvas;
+}
+
+const clamp = (v: number): number => Math.max(0, Math.min(255, v));
+
+function applyPixelTransform(
+  source: HTMLCanvasElement,
+  transform: (gray: number) => number
+): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  canvas.width = source.width;
+  canvas.height = source.height;
+  const ctx = getCtx(canvas);
+  ctx.drawImage(source, 0, 0);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  for (let i = 0; i < data.length; i += 4) {
+    const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+    const value = transform(gray);
+    data[i] = value;
+    data[i + 1] = value;
+    data[i + 2] = value;
+    data[i + 3] = 255;
+  }
+  ctx.putImageData(imageData, 0, 0);
+  return canvas;
+}
+
+function toGrayscaleContrast(canvas: HTMLCanvasElement): HTMLCanvasElement {
+  return applyPixelTransform(canvas, (g) => clamp(CONTRAST_FACTOR * (g - 128) + 128));
+}
+
+export function binarizeCanvas(
+  canvas: HTMLCanvasElement,
+  threshold: number
+): HTMLCanvasElement {
+  return applyPixelTransform(canvas, (g) => (g >= threshold ? 255 : 0));
+}
+
+export function invertCanvas(canvas: HTMLCanvasElement): HTMLCanvasElement {
+  return applyPixelTransform(canvas, (g) => 255 - g);
+}
+
+export function sharpenCanvas(canvas: HTMLCanvasElement): HTMLCanvasElement {
+  const w = canvas.width;
+  const h = canvas.height;
+  const ctx = getCtx(canvas);
+  const src = ctx.getImageData(0, 0, w, h).data;
+  const out = ctx.createImageData(w, h);
+  const o = out.data;
+  const k = [0, -1, 0, -1, 5, -1, 0, -1, 0];
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      let sum = 0;
+      for (let ky = -1; ky <= 1; ky++) {
+        for (let kx = -1; kx <= 1; kx++) {
+          const idx = ((y + ky) * w + (x + kx)) * 4;
+          sum += (0.299 * src[idx] + 0.587 * src[idx + 1] + 0.114 * src[idx + 2])
+            * k[(ky + 1) * 3 + (kx + 1)];
+        }
+      }
+      const v = clamp(sum);
+      const outIdx = (y * w + x) * 4;
+      o[outIdx] = v;
+      o[outIdx + 1] = v;
+      o[outIdx + 2] = v;
+      o[outIdx + 3] = 255;
+    }
+  }
+  ctx.putImageData(out, 0, 0);
+  return canvas;
+}
+
+function downscaleIfNeeded(image: HTMLImageElement, maxWidth: number): HTMLCanvasElement {
+  const w = image.naturalWidth || image.width;
+  const h = image.naturalHeight || image.height;
+  if (w <= maxWidth) return drawImageToCanvas(image);
+  const canvas = document.createElement("canvas");
+  canvas.width = maxWidth;
+  canvas.height = Math.round((h * maxWidth) / w);
+  getCtx(canvas).drawImage(image, 0, 0, canvas.width, canvas.height);
+  return canvas;
+}
+
 export async function preprocessImage(
   imageSource: string | File | HTMLImageElement
 ): Promise<HTMLCanvasElement> {
@@ -29,37 +180,7 @@ export async function preprocessImage(
     imageSource instanceof HTMLImageElement
       ? imageSource
       : await loadImage(imageSource);
-
-  const canvas = document.createElement("canvas");
-  canvas.width = image.naturalWidth || image.width;
-  canvas.height = image.naturalHeight || image.height;
-
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas 2D context no disponible");
-
-  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const data = imageData.data;
-
-  for (let i = 0; i < data.length; i += 4) {
-    const r = data[i];
-    const g = data[i + 1];
-    const b = data[i + 2];
-
-    const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-    const contrasted = CONTRAST_FACTOR * (lum - 128) + 128;
-    const clamped = Math.max(0, Math.min(255, contrasted));
-    const binary = clamped >= BINARIZE_THRESHOLD ? 255 : 0;
-
-    data[i] = binary;
-    data[i + 1] = binary;
-    data[i + 2] = binary;
-    data[i + 3] = 255;
-  }
-
-  ctx.putImageData(imageData, 0, 0);
-  return canvas;
+  return binarizeCanvas(toGrayscaleContrast(drawImageToCanvas(image)), 128);
 }
 
 export async function tryDecodeBarcode(
@@ -67,8 +188,7 @@ export async function tryDecodeBarcode(
   reader: BrowserMultiFormatReader
 ): Promise<string | null> {
   try {
-    const dataUrl = canvas.toDataURL("image/png");
-    const result = await reader.decodeFromImageUrl(dataUrl);
+    const result = await reader.decodeFromImageUrl(canvas.toDataURL("image/png"));
     const text = result.getText();
     return text.length > 0 ? text : null;
   } catch {
@@ -80,95 +200,69 @@ export async function tryRotateAndDecode(
   canvas: HTMLCanvasElement,
   reader: BrowserMultiFormatReader
 ): Promise<string | null> {
-  const rotations: Array<{ angle: 90 | 180 | 270 }> = [
-    { angle: 90 },
-    { angle: 180 },
-    { angle: 270 },
-  ];
-
-  for (const { angle } of rotations) {
-    const rotated = rotateCanvas(canvas, angle);
-    const decoded = await tryDecodeBarcode(rotated, reader);
+  for (const angle of [90, 180, 270] as const) {
+    const decoded = await tryDecodeBarcode(rotateCanvas(canvas, angle), reader);
     if (decoded) return decoded;
   }
   return null;
 }
 
-function rotateCanvas(
-  source: HTMLCanvasElement,
-  angle: 90 | 180 | 270
-): HTMLCanvasElement {
-  const swap = angle === 90 || angle === 270;
-  const canvas = document.createElement("canvas");
-  canvas.width = swap ? source.height : source.width;
-  canvas.height = swap ? source.width : source.height;
-
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas 2D context no disponible");
-
-  if (angle === 90) {
-    ctx.translate(canvas.width, 0);
-    ctx.rotate((Math.PI / 180) * 90);
-  } else if (angle === 180) {
-    ctx.translate(canvas.width, canvas.height);
-    ctx.rotate((Math.PI / 180) * 180);
-  } else {
-    ctx.translate(0, canvas.height);
-    ctx.rotate((Math.PI / 180) * 270);
-  }
-
-  ctx.drawImage(source, 0, 0);
-  return canvas;
-}
-
-function isPlausiblePlaca(text: string): boolean {
-  if (text.length < MIN_TEXT_LENGTH || text.length > MAX_TEXT_LENGTH) return false;
-  if (!/\d/.test(text)) return false;
-  return /^[A-Z0-9-]+$/i.test(text);
-}
-
-function cleanOcrText(raw: string): string {
-  return raw
-    .replace(/[^A-Z0-9-]/gi, "")
-    .toUpperCase();
-}
-
-export async function tryOcrText(
-  canvas: HTMLCanvasElement
+/**
+ * Tries up to 6 preprocessing strategies × 4 rotations = 24 attempts.
+ * Returns the first successful decode within the time budget.
+ *
+ * Strategy order (WHY this order):
+ *  1. raw — most common case. Clear photos decode in <100ms with no preprocessing.
+ *  2. contrast-1.3 — handles washed-out / low-contrast barcodes where bars and
+ *     spaces have similar luminance but no B&W quantization is needed.
+ *  3. bin-128 — binarization handles noisy backgrounds (text, logos, paper
+ *     texture). 128 is the universal default threshold.
+ *  4. bin-80 — for darker / underexposed photos. Lower threshold = a pixel must
+ *     be darker to count as "black", preserving the bar pattern when dim.
+ *  5. bin-180 — for brighter / overexposed photos. Higher threshold = a pixel
+ *     must be lighter to count as "white", preserving the bar pattern under glare.
+ *  6. inverted — handles white-on-black barcodes (industrial labels, photo
+ *     negatives). ZXing's ALSO_INVERTED hint also tries this internally per
+ *     attempt; explicit preprocessing is a safety net for the contrast stage.
+ *
+ * Preprocessing runs ONCE per strategy; the result is just rotated for each
+ * angle — much faster than re-binarizing per rotation. Yields to the UI
+ * between failed attempts so the spinner stays responsive.
+ */
+export async function tryDecodeAggressive(
+  img: HTMLImageElement,
+  reader: BrowserMultiFormatReader,
+  options: AggressiveOptions = {}
 ): Promise<string | null> {
-  const { createWorker } = await import("tesseract.js");
-  const worker = await createWorker("eng", undefined, {
-    logger: () => {},
-  });
+  const budgetMs = options.budgetMs ?? DEFAULT_BUDGET_MS;
+  const onAttempt = options.onAttempt;
+  const start = Date.now();
+  const base = downscaleIfNeeded(img, MAX_IMAGE_WIDTH);
 
-  try {
-    const timeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("OCR timeout")), OCR_TIMEOUT_MS)
-    );
+  for (const strategy of STRATEGY_ORDER) {
+    if (Date.now() - start > budgetMs) return null;
+    const prepared = prepareStrategy(base, strategy);
 
-    const recognize = (async () => {
-      const { data } = await worker.recognize(canvas);
-      return data.text;
-    })();
-
-    const text = await Promise.race([recognize, timeout]);
-
-    const candidates = text
-      .split(/\s+/)
-      .map(cleanOcrText)
-      .filter((token) => token.length > 0);
-
-    for (const token of candidates) {
-      if (isPlausiblePlaca(token)) return token;
+    for (const angle of ROTATIONS) {
+      if (Date.now() - start > budgetMs) return null;
+      const attemptStart = Date.now();
+      const candidate = angle === 0 ? prepared : rotateCanvas(prepared, angle);
+      const decoded = await tryDecodeBarcode(candidate, reader);
+      onAttempt?.({ variant: strategy, angle, durationMs: Date.now() - attemptStart });
+      if (decoded) return decoded;
+      await new Promise<void>((r) => setTimeout(r, 0));
     }
+  }
+  return null;
+}
 
-    const joined = cleanOcrText(text);
-    if (isPlausiblePlaca(joined)) return joined;
-
-    return null;
-  } catch {
-    return null;
-  } finally {
-    await worker.terminate();
+function prepareStrategy(base: HTMLCanvasElement, strategy: Strategy): HTMLCanvasElement {
+  switch (strategy) {
+    case "raw":       return base;
+    case "contrast":  return toGrayscaleContrast(base);
+    case "bin-80":    return binarizeCanvas(base, 80);
+    case "bin-128":   return binarizeCanvas(base, 128);
+    case "bin-180":   return binarizeCanvas(base, 180);
+    case "inverted":  return invertCanvas(binarizeCanvas(base, 128));
   }
 }

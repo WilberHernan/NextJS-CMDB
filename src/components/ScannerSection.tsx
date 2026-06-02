@@ -20,6 +20,7 @@ export function ScannerSection({ loading, onScan }: ScannerSectionProps) {
     scanFile,
     stage,
     pendingValue,
+    currentAttempt,
     confirmPending,
     cancelPending,
   } = useScanner(onScan);
@@ -44,6 +45,7 @@ export function ScannerSection({ loading, onScan }: ScannerSectionProps) {
       onFileScan={handleFileScan}
       stage={stage}
       pendingValue={pendingValue}
+      currentAttempt={currentAttempt}
       onConfirm={confirmPending}
       onCancel={cancelPending}
     />

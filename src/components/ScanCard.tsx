@@ -15,18 +15,18 @@ interface ScanCardProps {
   onFileScan: (file: File) => void;
   stage: ScanStage;
   pendingValue: string | null;
+  currentAttempt: string | null;
   onConfirm: (value: string) => void;
   onCancel: () => void;
 }
 
 const STAGE_COPY: Record<Exclude<ScanStage, "idle" | "done" | "error">, string> = {
   preprocessing: "Preparando imagen...",
-  decoding: "Analizando código de barras...",
-  ocr: "Buscando número en texto...",
+  decoding: "Leyendo código de barras...",
 };
 
 function isInProgress(stage: ScanStage): stage is Exclude<ScanStage, "idle" | "done" | "error"> {
-  return stage === "preprocessing" || stage === "decoding" || stage === "ocr";
+  return stage === "preprocessing" || stage === "decoding";
 }
 
 export function ScanCard({
@@ -37,6 +37,7 @@ export function ScanCard({
   onFileScan,
   stage,
   pendingValue,
+  currentAttempt,
   onConfirm,
   onCancel,
 }: ScanCardProps) {
@@ -293,8 +294,10 @@ export function ScanCard({
                     <p className="text-sm font-medium text-foreground mb-1">
                       {STAGE_COPY[stage]}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      Esto puede tardar unos segundos
+                    <p className="text-xs text-muted-foreground min-h-[1.25rem]">
+                      {stage === "decoding" && currentAttempt
+                        ? `Probando ${currentAttempt}…`
+                        : "Esto puede tardar unos segundos"}
                     </p>
                   </div>
                 </>
@@ -305,11 +308,11 @@ export function ScanCard({
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground mb-1">
-                      No se detectó código
+                      No se pudo leer el código
                     </p>
                     <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                      Intentá con más luz, la foto más de cerca o capturá el
-                      número impreso debajo del código.
+                      Asegúrate de que esté bien iluminado, enfocado y que el
+                      código de barras sea visible.
                     </p>
                   </div>
                   <GradientButton

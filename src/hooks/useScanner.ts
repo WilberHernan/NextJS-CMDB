@@ -4,10 +4,9 @@ import { useState, useRef, useEffect } from "react";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import { DecodeHintType, BarcodeFormat } from "@zxing/library";
 import {
-  preprocessImage,
-  tryDecodeBarcode,
-  tryRotateAndDecode,
-  tryOcrText,
+  loadImage,
+  tryDecodeAggressive,
+  type DecodeAttempt,
 } from "@/lib/imagePreprocess";
 
 const HINTS = new Map<DecodeHintType, unknown>([
@@ -20,7 +19,7 @@ const HINTS = new Map<DecodeHintType, unknown>([
   [DecodeHintType.TRY_HARDER, true],
 ]);
 
-export type ScanStage = "idle" | "preprocessing" | "decoding" | "ocr" | "done" | "error";
+export type ScanStage = "idle" | "preprocessing" | "decoding" | "done" | "error";
 
 export interface UseScannerReturn {
   scanMode: "scanner" | "camera";
@@ -32,6 +31,7 @@ export interface UseScannerReturn {
   setCameraStatus: (status: string) => void;
   stage: ScanStage;
   pendingValue: string | null;
+  currentAttempt: string | null;
   confirmPending: (override?: string) => string | null;
   cancelPending: () => void;
 }
@@ -42,6 +42,7 @@ export function useScanner(onScan: (placa: string) => void): UseScannerReturn {
   const [cameraReady, setCameraReady] = useState(false);
   const [stage, setStage] = useState<ScanStage>("idle");
   const [pendingValue, setPendingValue] = useState<string | null>(null);
+  const [currentAttempt, setCurrentAttempt] = useState<string | null>(null);
 
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
   const onScanRef = useRef(onScan);
@@ -62,22 +63,24 @@ export function useScanner(onScan: (placa: string) => void): UseScannerReturn {
     return limpia;
   };
 
+  const onAttempt = (info: DecodeAttempt): void => {
+    setCurrentAttempt(`${info.variant} a ${info.angle}°`);
+  };
+
   const scanFile = async (file: File): Promise<string | null> => {
     setCameraStatus("Analizando imagen...");
     setCameraReady(false);
+    setCurrentAttempt(null);
     setStage("preprocessing");
     try {
-      const canvas = await preprocessImage(file);
+      const img = await loadImage(file);
       const reader = getReader();
       setStage("decoding");
-      const direct = await tryDecodeBarcode(canvas, reader);
-      const rotated = direct ? null : await tryRotateAndDecode(canvas, reader);
-      let detected: string | null = direct ?? rotated;
-      if (!detected) {
-        setStage("ocr");
-        const ocr = await tryOcrText(canvas);
-        if (ocr) detected = ocr;
-      }
+      const detected = await tryDecodeAggressive(img, reader, {
+        budgetMs: 3000,
+        onAttempt,
+      });
+      setCurrentAttempt(null);
       if (detected) {
         setPendingValue(detected);
         setStage("done");
@@ -85,10 +88,11 @@ export function useScanner(onScan: (placa: string) => void): UseScannerReturn {
         return detected;
       }
       setStage("error");
-      setCameraStatus("No se detectó código. Intentá con más luz y la foto más de cerca.");
+      setCameraStatus("No se pudo leer el código. Asegúrate de que esté bien iluminado, enfocado y que el código de barras sea visible.");
       setPendingValue(null);
       return null;
     } catch {
+      setCurrentAttempt(null);
       setStage("error");
       setCameraStatus("Error al procesar la imagen. Intentá de nuevo.");
       setPendingValue(null);
@@ -115,6 +119,7 @@ export function useScanner(onScan: (placa: string) => void): UseScannerReturn {
 
   return {
     scanMode, cameraStatus, cameraReady, setScanMode, processScan,
-    scanFile, setCameraStatus, stage, pendingValue, confirmPending, cancelPending,
+    scanFile, setCameraStatus, stage, pendingValue, currentAttempt,
+    confirmPending, cancelPending,
   };
 }
