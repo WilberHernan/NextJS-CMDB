@@ -53,6 +53,9 @@
     --shadow-md: 0 8px 24px rgba(0,0,0,0.10);
     --shadow-lg: 0 16px 48px rgba(0,0,0,0.12);
     --shadow-glow: 0 0 40px rgba(22, 163, 74, 0.06);
+    --shadow-button: 0 4px 20px rgba(0,0,0,0.3);
+    --shadow-button-hover: 0 8px 40px rgba(22, 163, 74, 0.4);
+    --focus-ring: 0 0 0 3px rgba(22, 163, 74, 0.10);
 
     --glass-bg: rgba(255, 255, 255, 0.65);
     --glass-border: rgba(0, 0, 0, 0.06);
@@ -69,68 +72,95 @@
   }
 
   .dark {
-    --accent: #4ade80;
-    --accent-hover: #22c55e;
-    --accent-soft: rgba(74, 222, 128, 0.12);
-    --accent-25: rgba(74, 222, 128, 0.25);
-    --accent-35: rgba(74, 222, 128, 0.35);
-    --accent-45: rgba(74, 222, 128, 0.45);
-    --accent-30: rgba(74, 222, 128, 0.30);
-    --accent-muted: rgba(74, 222, 128, 0.06);
+    /* === ACCENT ===
+       Slightly desaturated green for less "hype" feel in dark.
+       Pure #4ade80 reads as a neon toy. #86efac is the "premium dark" green.
+       accent-soft/muted kept very low (0.06/0.03) so active states
+       don't add a "green tint" to the whole page. */
+    --accent: #86efac;
+    --accent-hover: #4ade80;
+    --accent-soft: rgba(134, 239, 172, 0.06);
+    --accent-25: rgba(134, 239, 172, 0.20);
+    --accent-35: rgba(134, 239, 172, 0.30);
+    --accent-45: rgba(134, 239, 172, 0.40);
+    --accent-30: rgba(134, 239, 172, 0.25);
+    --accent-muted: rgba(134, 239, 172, 0.03);
     --text-muted-60: rgba(156, 163, 175, 0.6);
 
     --danger: #f87171;
-    --danger-soft: rgba(248, 113, 113, 0.12);
-    --success: #4ade80;
-    --success-soft: rgba(74, 222, 128, 0.12);
-    --info: #60a5fa;
-    --info-soft: rgba(96, 165, 250, 0.12);
-    --warning: #fbbf24;
-    --warning-soft: rgba(251, 191, 36, 0.12);
+    --danger-soft: rgba(248, 113, 113, 0.10);
+    --success: #86efac;
+    --success-soft: rgba(134, 239, 172, 0.06);
+    --info: #93c5fd;
+    --info-soft: rgba(147, 197, 253, 0.10);
+    --warning: #fcd34d;
+    --warning-soft: rgba(252, 211, 77, 0.10);
 
-    --mode-blue: #60a5fa;
-    --mode-blue-soft: rgba(96, 165, 250, 0.15);
-    --mode-blue-glow: rgba(96, 165, 250, 0.3);
+    --mode-blue: #93c5fd;
+    --mode-blue-soft: rgba(147, 197, 253, 0.15);
+    --mode-blue-glow: rgba(147, 197, 253, 0.3);
 
-    --bg-base: #06070a;
-    --bg-surface: #0c0e14;
-    --bg-elevated: #11131a;
-    --bg-hover: #181b24;
-    --bg-active: #1e2230;
-    --bg-input: #0a0c12;
+    /* === BACKGROUND SCALE ===
+       Inspired by Linear/Vercel dark mode. Base is a warm-tinted near-black,
+       elevated surfaces go up in a perceptible ladder so cards actually float. */
+    --bg-base: #0a0a0d;
+    --bg-surface: #121217;
+    --bg-elevated: #1a1a22;
+    --bg-hover: #22222c;
+    --bg-active: #2a2a36;
+    --bg-input: #101015;
 
-    --border-subtle: rgba(255, 255, 255, 0.04);
-    --border-default: rgba(255, 255, 255, 0.07);
-    --border-hover: rgba(255, 255, 255, 0.14);
-    --border-accent: rgba(74, 222, 128, 0.25);
+    /* === BORDERS ===
+       Top-only light, bottom-only dark, achieved via shadows (next block).
+       Borders themselves stay transparent. */
+    --border-subtle: transparent;
+    --border-default: transparent;
+    --border-hover: rgba(255, 255, 255, 0.06);
+    --border-accent: rgba(134, 239, 172, 0.30);
 
-    --text-primary: #f0f1f5;
-    --text-secondary: #9ca3af;
-    --text-tertiary: #6b7280;
-    --text-disabled: #374151;
+    --text-primary: #ededee;
+    --text-secondary: #a1a1aa;
+    --text-tertiary: #71717a;
+    --text-disabled: #3f3f46;
 
-    --shadow-xs: 0 1px 2px rgba(0,0,0,0.5);
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.5);
-    --shadow-md: 0 8px 24px rgba(0,0,0,0.6);
-    --shadow-lg: 0 16px 48px rgba(0,0,0,0.7);
-    --shadow-glow: 0 0 40px rgba(74, 222, 128, 0.08);
+    /* === SHADOWS ===
+       Deeper dark shadows for elevation (cards need to "float up" off near-black).
+       No more green tint on shadows — pure black is correct in dark mode. */
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.55);
+    --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
+    --shadow-glow: 0 0 30px rgba(134, 239, 172, 0.08);
+    --shadow-button: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-button-hover: 0 6px 20px rgba(134, 239, 172, 0.20);
+    --focus-ring: 0 0 0 3px rgba(134, 239, 172, 0.18);
 
-    --glass-bg: rgba(12, 14, 20, 0.55);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-border-hover: rgba(255, 255, 255, 0.14);
-    --glass-highlight: rgba(255, 255, 255, 0.04);
+    /* SENA brand glow — used by "Registrar nuevo" button.
+       Reduced from 0.35 to 0.10 in dark so it doesn't dominate. */
+    --sena-green-glow: rgba(57, 169, 0, 0.10);
 
-    --neu-light: rgba(255, 255, 255, 0.03);
+    --glass-bg: rgba(18, 18, 23, 0.75);
+    --glass-border: transparent;
+    --glass-border-hover: transparent;
+    --glass-highlight: transparent;
+
+    /* === NEUMORPHISM (REVERSED FOR DARK) ===
+       In dark mode, "light from above" means a very subtle white on the TOP
+       edge of the surface, and a deeper shadow on the BOTTOM edge. This is
+       the "soft elevation" pattern used by Apple, Linear, Vercel.
+       Light side: ~3-4% white (subtle, not a glow).
+       Dark side: 50-60% black (visible, not crushed). */
+    --neu-light: rgba(255, 255, 255, 0.045);
     --neu-dark: rgba(0, 0, 0, 0.6);
     --neu-shadow-light: rgba(255, 255, 255, 0.04);
-    --neu-shadow-dark: rgba(0, 0, 0, 0.8);
+    --neu-shadow-dark: rgba(0, 0, 0, 0.65);
 
-    --grad-mesh: radial-gradient(ellipse at 20% 30%, rgba(57,169,0,0.08) 0%, transparent 50%),
-                 radial-gradient(ellipse at 80% 70%, rgba(96,165,250,0.06) 0%, transparent 50%),
-                 radial-gradient(ellipse at 50% 50%, rgba(74,222,128,0.03) 0%, transparent 70%);
+    /* === MESH ===
+       Subtle background atmosphere. Use blue + violet (NOT green) to avoid
+       "margen verde" perception — the green accent is reserved for actions. */
+    --grad-mesh: transparent;
 
     --grad-border: linear-gradient(90deg, transparent, var(--accent-soft), transparent);
-
   }
 
   *, *::before, *::after {
@@ -145,12 +175,19 @@
   }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     background: var(--bg-base);
     color: var(--text-primary);
     line-height: 1.5;
     min-height: 100vh;
     overflow-x: hidden;
+    font-feature-settings: "ss01", "cv11";
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display), var(--font-sans), -apple-system, sans-serif;
+    text-wrap: balance;
   }
 
   ::-webkit-scrollbar { width: 6px; }
@@ -178,12 +215,77 @@
       -6px -6px 12px var(--neu-shadow-light);
   }
 
+  /*
+   * === DARK MODE: SOFT ELEVATION ===
+   *
+   * The dark theme uses a "soft elevation" pattern instead of literal
+   * neumorphism. In light mode, cards have a bright top highlight + dark
+   * bottom shadow (light from above). In dark mode, the same effect is
+   * achieved with: subtle white inset on top (4% alpha), deeper dark
+   * shadow below (50-60% black), and a slightly elevated background
+   * color (--bg-elevated). No green/white halos.
+   *
+   * The trick: keep the LIGHT side of neu shadows, but at 4% alpha (very
+   * subtle, no glow). Keep the DARK side at 65% (visible, gives depth).
+   * The result: cards still feel tactile and raised, without white lines.
+   */
+  .dark .shadow-neu,
+  .dark .shadow-neu-flat {
+    box-shadow:
+      0 1px 0 0 var(--neu-shadow-light) inset,
+      4px 4px 16px var(--neu-shadow-dark);
+  }
+
+  .dark .shadow-neu-pressed {
+    /* Inset: dark on top (depression), very subtle light on bottom.
+       Opposite of light mode — but still tactile. */
+    box-shadow:
+      inset 0 1px 2px var(--neu-shadow-dark),
+      inset 0 -1px 0 var(--neu-shadow-light);
+  }
+
+  .dark .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid transparent;
+    /* Subtle top highlight + deep bottom shadow for elevation. */
+    box-shadow:
+      0 1px 0 0 var(--neu-shadow-light) inset,
+      0 8px 24px rgba(0, 0, 0, 0.45);
+  }
+
+  /* All borders stay transparent in dark. The neumorphic top highlight
+     on .glass + the elevated background color do the edge definition. */
+  .dark * {
+    border-color: transparent;
+  }
+  .dark *:hover {
+    border-color: var(--border-hover);
+  }
+  .dark *:focus,
+  .dark *:focus-within {
+    border-color: var(--accent);
+  }
+
+  /* Inline arbitrary-value shadows — same soft-elevation pattern. */
+  .dark .shadow-\[inset_3px_3px_6px_var\(--neu-shadow-dark\),inset_-3px_-3px_6px_var\(--neu-shadow-light\)\] {
+    box-shadow:
+      inset 0 1px 2px var(--neu-shadow-dark),
+      inset 0 -1px 0 var(--neu-shadow-light);
+  }
+  .dark .hover\:shadow-\[inset_2px_2px_4px_var\(--neu-shadow-dark\),inset_-2px_-2px_4px_var\(--neu-shadow-light\)\]:hover {
+    box-shadow:
+      inset 0 1px 1px var(--neu-shadow-dark),
+      inset 0 -1px 0 var(--neu-shadow-light);
+  }
+
   .glass {
     background: var(--glass-bg);
     backdrop-filter: blur(20px) saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
     border: 1px solid var(--glass-border);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 var(--glass-highlight);
+    box-shadow: var(--shadow-md), inset 0 1px 0 var(--glass-highlight);
   }
 
   .gradient-border {
@@ -231,363 +333,20 @@
     100% { background-position: 200% 0; }
   }
 
-  /* Camera button wrapper — gradient animated border */
-  .camera-btn-wrap {
-    display: inline-block;
-    padding: 3px;
-    border-radius: 20px;
-    background: linear-gradient(60deg, var(--accent), var(--sena-green-light), var(--accent));
-    background-size: 400% 400%;
-    animation: gradient-shift 6s ease infinite;
-    opacity: 0.85;
-    transition: opacity 200ms ease, box-shadow 300ms ease, transform 200ms ease;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 0 1px var(--border-subtle);
-    position: relative;
-    cursor: pointer;
-  }
-  .camera-btn-wrap::before {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    border-radius: 22px;
-    background: linear-gradient(60deg, var(--accent), var(--sena-green-light), var(--accent));
-    background-size: 400% 400%;
-    animation: gradient-shift 6s ease infinite;
-    opacity: 0;
-    filter: blur(8px);
-    z-index: -1;
-    transition: opacity 300ms ease;
-  }
-  .camera-btn-wrap:hover {
-    opacity: 1;
-    animation-duration: 3s;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 40px var(--sena-green-glow), 0 0 0 1px var(--border-accent);
-  }
-  .camera-btn-wrap:hover::before {
-    opacity: 0.5;
-  }
-  .camera-btn-wrap:active {
-    transform: translateY(0) scale(0.98);
-  }
-  .camera-btn-wrap::after {
-    content: '';
-    position: absolute;
-    bottom: 3px;
-    left: 15%;
-    right: 15%;
-    height: 2px;
-    border-radius: 1px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    opacity: 0;
-    transition: opacity 300ms ease;
-  }
-  .camera-btn-wrap:hover::after {
-    opacity: 0.6;
-    animation: scan-pulse 1.5s ease-in-out infinite;
-  }
-  .camera-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 16px 36px;
-    background: var(--bg-base);
-    color: var(--text-primary);
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    border: none;
-    border-radius: 17px;
-    cursor: pointer;
-    transition: all 200ms ease;
-    outline: none;
-    font-family: inherit;
-    box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
-  }
-  .camera-btn:hover {
-    background: var(--bg-surface);
+  /* Header bottom highlight bar — appears on success, fills L→R then fades.
+     Directional gradient, not a flat color, and it never loops. */
+  @keyframes success-bar-in {
+    0%   { transform: scaleX(0);   opacity: 0; }
+    35%  { transform: scaleX(1);   opacity: 0.75; }
+    75%  { transform: scaleX(1);   opacity: 0.75; }
+    100% { transform: scaleX(1);   opacity: 0; }
   }
 
-  /* Save button wrapper — gradient animated border */
-  .btn-save-wrap {
-    display: inline-block;
-    padding: 3px;
-    border-radius: 20px;
-    background: linear-gradient(60deg, var(--accent), var(--sena-green-light), var(--accent));
-    background-size: 400% 400%;
-    animation: gradient-shift 6s ease infinite;
-    opacity: 0.85;
-    transition: opacity 200ms ease, box-shadow 300ms ease, transform 200ms ease;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 0 1px var(--border-subtle);
-    cursor: pointer;
-    position: relative;
-  }
-  .btn-save-wrap::before {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    border-radius: 22px;
-    background: linear-gradient(60deg, var(--accent), var(--sena-green-light), var(--accent));
-    background-size: 400% 400%;
-    animation: gradient-shift 6s ease infinite;
-    opacity: 0;
-    filter: blur(8px);
-    z-index: -1;
-    transition: opacity 300ms ease;
-  }
-  .btn-save-wrap:hover {
-    opacity: 1;
-    animation-duration: 3s;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 40px var(--sena-green-glow), 0 0 0 1px var(--border-accent);
-  }
-  .btn-save-wrap:hover::before {
-    opacity: 0.5;
-  }
-  .btn-save-wrap:active {
-    transform: translateY(0) scale(0.98);
-  }
-  .btn-save-wrap::after {
-    content: '';
-    position: absolute;
-    bottom: 3px;
-    left: 15%;
-    right: 15%;
-    height: 2px;
-    border-radius: 1px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    opacity: 0;
-    transition: opacity 300ms ease;
-  }
-  .btn-save-wrap:hover::after {
-    opacity: 0.6;
-    animation: scan-pulse 1.5s ease-in-out infinite;
-  }
-  .btn-save-wrap.disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    animation: none;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 0 1px var(--border-subtle);
-  }
-  .btn-save-wrap.disabled::before,
-  .btn-save-wrap.disabled::after {
-    display: none;
-  }
-  .btn-save {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 16px 44px;
-    background: var(--bg-base);
-    color: var(--text-primary);
-    font-size: 0.9375rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    border: none;
-    border-radius: 17px;
-    cursor: pointer;
-    transition: all 200ms ease;
-    outline: none;
-    font-family: inherit;
-    box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
-  }
-  .btn-save:hover {
-    background: var(--bg-surface);
-  }
-  .btn-save:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  /* —— Empty State card (restored from original) —— */
-  .empty-state-card {
-    max-width: 520px;
-    margin: 32px auto;
-    padding: 48px 32px 40px;
-    text-align: center;
-    border-radius: 28px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(24px) saturate(150%);
-    -webkit-backdrop-filter: blur(24px) saturate(150%);
-    border: 1px solid var(--glass-border);
-    box-shadow:
-      0 24px 64px rgba(0,0,0,0.22),
-      0 0 0 1px var(--border-subtle),
-      inset 0 1px 0 var(--glass-highlight);
-    animation: empty-state-in 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    position: relative;
-    overflow: hidden;
-  }
-  .empty-state-card::before {
-    content: '';
-    position: absolute;
-    top: -40%;
-    left: -40%;
-    width: 180%;
-    height: 180%;
-    background: radial-gradient(circle at 50% 45%, var(--warning-soft) 0%, transparent 55%);
-    pointer-events: none;
-  }
-
-  .empty-state-visual {
-    margin-bottom: 28px;
-    display: flex;
-    justify-content: center;
-    animation: empty-state-float 4.5s ease-in-out infinite;
-    animation-delay: 0.3s;
-  }
-
-  .empty-state-icon-wrap {
-    width: 116px;
-    height: 116px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    background: linear-gradient(145deg, var(--bg-elevated), var(--bg-base));
-    box-shadow:
-      10px 10px 24px var(--neu-shadow-dark),
-      -10px -10px 24px var(--neu-shadow-light),
-      inset 2px 2px 4px var(--neu-shadow-light);
-  }
-  .empty-state-icon-inner {
-    width: 68px;
-    height: 68px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--warning-soft), transparent 70%);
-    color: var(--warning);
-    position: relative;
-  }
-
-  .empty-state-badge {
-    position: absolute;
-    bottom: 4px;
-    right: 4px;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--warning);
-    color: var(--bg-base);
-    box-shadow: 0 4px 14px var(--warning-soft);
-    border: 3px solid var(--bg-base);
-    animation: empty-state-badge-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    animation-delay: 0.5s;
-    opacity: 0;
-    transform: scale(0);
-  }
-
-  .empty-state-title {
-    font-size: 1.375rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 10px;
-    color: var(--text-primary);
-    animation: empty-state-child-in 0.5s ease-out forwards;
-    animation-delay: 0.15s;
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  .empty-state-desc {
-    font-size: 0.9375rem;
-    color: var(--text-secondary);
-    line-height: 1.65;
-    max-width: 360px;
-    margin: 0 auto 28px;
-    animation: empty-state-child-in 0.5s ease-out forwards;
-    animation-delay: 0.25s;
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  .empty-state-placa {
-    display: inline-block;
-    font-family: 'SF Mono', Monaco, monospace;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 8px;
-    background: var(--bg-elevated);
-    color: var(--text-primary);
-    border: 1px solid var(--border-default);
-    box-shadow: inset 2px 2px 4px var(--neu-shadow-dark), inset -2px -2px 4px var(--neu-shadow-light);
-    margin: 2px 2px;
-    vertical-align: middle;
-  }
-
-  .empty-state-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    justify-content: center;
-    align-items: center;
-    animation: empty-state-child-in 0.5s ease-out forwards;
-    animation-delay: 0.4s;
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  @media (min-width: 480px) {
-    .empty-state-actions {
-      flex-direction: row;
-      gap: 12px;
-    }
-  }
-
-  .empty-state-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px 24px;
-    border-radius: 14px;
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-subtle);
-    box-shadow:
-      5px 5px 12px var(--neu-shadow-dark),
-      -5px -5px 12px var(--neu-shadow-light);
-    cursor: pointer;
-    transition: all 200ms ease;
-    font-family: inherit;
-    outline: none;
-  }
-  .empty-state-btn:hover {
-    transform: translateY(-2px);
-    box-shadow:
-      7px 7px 16px var(--neu-shadow-dark),
-      -7px -7px 16px var(--neu-shadow-light);
-    color: var(--text-primary);
-  }
-  .empty-state-btn:active {
-    transform: translateY(0);
-    box-shadow:
-      inset 3px 3px 6px var(--neu-shadow-dark),
-      inset -3px -3px 6px var(--neu-shadow-light);
-  }
-  .empty-state-btn-primary {
-    background: linear-gradient(135deg, var(--sena-green), var(--accent-hover));
-    color: #fff;
-    border-color: transparent;
-    box-shadow: 0 4px 16px var(--sena-green-glow);
-  }
-  .empty-state-btn-primary:hover {
-    box-shadow: 0 6px 24px var(--sena-green-glow);
-    transform: translateY(-2px);
-    color: #fff;
-  }
-  .empty-state-btn-primary:active {
-    transform: translateY(0) scale(0.98);
-    box-shadow: 0 2px 8px var(--sena-green-glow);
+  /* Staggered mount: each section enters with a small rise. Used on
+     header → scanner → status → form in page.tsx. */
+  @keyframes stagger-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   .animate-pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
@@ -598,6 +357,15 @@
   .animate-empty-state-badge-in { animation: empty-state-badge-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
   .animate-empty-state-child-in { animation: empty-state-child-in 0.5s ease-out forwards; }
   .animate-shimmer { animation: shimmer 2s linear infinite; background-size: 200% 100%; }
+
+  /* Section stagger — page mount sequence. */
+  .animate-stagger-1 { animation: stagger-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 0ms; }
+  .animate-stagger-2 { animation: stagger-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 80ms; }
+  .animate-stagger-3 { animation: stagger-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 160ms; }
+  .animate-stagger-4 { animation: stagger-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 240ms; }
+
+  /* Success highlight bar — driven by .animate-success-bar on the inner span. */
+  .animate-success-bar { animation: success-bar-in 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; transform-origin: left; }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
