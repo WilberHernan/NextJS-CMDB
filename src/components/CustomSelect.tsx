@@ -20,6 +20,7 @@ export function CustomSelect({
   className,
 }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
+  const [openUp, setOpenUp] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,6 +35,17 @@ export function CustomSelect({
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
+
+  const toggleOpen = useCallback(() => {
+    if (wrapperRef.current) {
+      const rect = wrapperRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      // ~48px per option row + button (44px) + padding (16px) + gap (12px)
+      const estimatedHeight = Math.min(options.length * 48 + 72, 300);
+      setOpenUp(spaceBelow < estimatedHeight);
+    }
+    setOpen((prev) => !prev);
+  }, [options.length]);
 
   const handleSelect = useCallback(
     (opt: string) => {
@@ -50,7 +62,7 @@ export function CustomSelect({
     >
       <button
         type="button"
-        onClick={() => setOpen(!open)}
+        onClick={toggleOpen}
         className={cn(
           // Matches the scanner input's visual language: same radius, bg, shadow, focus ring.
           "flex w-full items-center justify-between gap-2 rounded-xl bg-surface-input px-4 py-3 text-sm text-left text-foreground relative",
@@ -75,10 +87,13 @@ export function CustomSelect({
       {open && (
         <div
           className={cn(
-            "absolute top-[calc(100%+12px)] left-0 right-0 z-50",
+            "absolute left-0 right-0 z-50",
+            openUp
+              ? "bottom-[calc(100%+8px)]"
+              : "top-[calc(100%+8px)]",
             "rounded-xl glass",
             "p-2 max-h-[300px] overflow-y-auto",
-            "animate-scale-in origin-top"
+            "overscroll-behavior-contain"
           )}
         >
           {options.map((opt) => (
