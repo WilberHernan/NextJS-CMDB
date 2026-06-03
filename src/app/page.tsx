@@ -21,13 +21,13 @@ export default function Home() {
 
   // Header bottom bar only fires on success — the user just found/registered
   // an equipment. Errors and info alerts don't trigger it.
-  const isSuccess = form.alertInfo?.type === "success";
+  const isSuccess = form.equipmentFound || form.alertInfo?.type === "success";
 
   return (
     <div className="relative min-h-screen bg-surface-base">
       <div className="relative z-10 max-w-[1200px] mx-auto px-4 sm:px-8 py-5 sm:py-7 flex flex-col gap-5">
-        {/* Stagger mount: header → scanner → status → form.
-            Each section fades+rises 80ms after the previous one. */}
+        {/* Stagger mount: header → scanner → form.
+            Status area (for save messages) mounts on demand after scanner. */}
         <div className="animate-stagger-1">
           <Header
             theme={theme}
@@ -37,15 +37,15 @@ export default function Home() {
         </div>
 
         <div className="animate-stagger-2">
-          <ScannerSection loading={form.loading} onScan={form.handleScan} />
+          <ScannerSection loading={form.loading} onScan={form.handleScan} equipmentFound={form.equipmentFound} />
         </div>
 
-        {/* Status area */}
-        <div className="min-h-[60px] flex items-center px-1 animate-stagger-3">
-          {form.alertInfo && (
-            <Alert type={form.alertInfo.type} message={form.alertInfo.message} />
-          )}
-        </div>
+        {/* Status area — solo para mensajes de guardar (el scan usa equipmentFound) */}
+        {form.alertInfo && (
+          <div className="flex items-center px-1 animate-stagger-3">
+            <Alert type={form.alertInfo.type} message={form.alertInfo.message} onDismiss={form.clearAlert} />
+          </div>
+        )}
 
         {/* Empty state */}
         {form.emptyStatePlaca && (

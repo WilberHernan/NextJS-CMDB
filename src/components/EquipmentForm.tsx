@@ -2,14 +2,10 @@
 
 import React from "react";
 import { FileText, Save, Sparkles } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { GradientButton } from "@/components/ui/gradient-button";
-import { DynamicField } from "@/components/DynamicField";
-import {
-  COLUMNAS,
-  SECCIONES,
-} from "@/types/equipment";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { DynamicField } from "@/components/DynamicField";
+import { COLUMNAS, SECCIONES } from "@/types/equipment";
 
 type BadgeVariant = "default" | "blue" | "secondary";
 
@@ -46,7 +42,7 @@ export function EquipmentForm({
     <div className="animate-fade-in-up">
       <div className="rounded-3xl glass border-border-default p-6 sm:p-8">
         <div className="flex items-center justify-between flex-wrap gap-3 mb-7 pb-5 border-b border-border-default">
-          <h3 className="font-display text-[1.25rem] sm:text-[1.375rem] font-semibold text-foreground flex items-center gap-2.5 tracking-display-tight">
+          <h3 className="font-sans text-[1.25rem] sm:text-[1.375rem] font-bold text-foreground flex items-center gap-2.5">
             <FileText className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
             Ficha del Equipo
           </h3>
@@ -101,21 +97,29 @@ export function EquipmentForm({
         </div>
 
         <div className="mt-8 pt-6 border-t border-border-default flex justify-center">
-          <GradientButton
-            variant="primary"
-            size="lg"
+          <button
+            type="button"
             onClick={onGuardar}
-            loading={saving}
-            icon={
-              esModoNuevo ? (
-                <Sparkles className="h-4 w-4" />
-              ) : (
-                <Save className="h-4 w-4" />
-              )
-            }
+            disabled={saving}
+            className={cn(
+              "flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold",
+              "transition-all duration-200 ease-cinematic outline-none",
+              "shadow-neu border border-border-default",
+              "bg-accent-soft text-accent border-border-accent shadow-neu-pressed",
+              "hover:-translate-y-0.5 hover:shadow-neu-flat",
+              "active:translate-y-0 active:shadow-neu-pressed",
+              saving && "opacity-60 pointer-events-none"
+            )}
           >
-            {esModoNuevo ? "Registrar Nuevo Equipo" : "Guardar Actualización"}
-          </GradientButton>
+            {saving ? (
+              <div className="h-4 w-4 rounded-full border-2 border-accent-soft border-t-accent animate-spin" />
+            ) : esModoNuevo ? (
+              <Sparkles className="h-4 w-4" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
+            {saving ? "Guardando…" : esModoNuevo ? "Registrar Nuevo Equipo" : "Guardar Actualización"}
+          </button>
         </div>
       </div>
     </div>

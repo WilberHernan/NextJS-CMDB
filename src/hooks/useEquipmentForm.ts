@@ -34,6 +34,9 @@ export interface UseEquipmentFormReturn {
   saving: boolean;
   emptyStatePlaca: string | null;
   alertInfo: AlertInfo | null;
+  /** True right after a successful scan — used to change the
+   *  "Listo para escanear" text instead of showing a separate alert card. */
+  equipmentFound: boolean;
 
   // Derived
   validacionesIndices: number[];
@@ -46,6 +49,7 @@ export interface UseEquipmentFormReturn {
   handleValorChange: (index: number, value: string) => void;
   handleGuardar: () => Promise<void>;
   handleRetry: () => void;
+  clearAlert: () => void;
 }
 
 /**
@@ -80,6 +84,7 @@ export function useEquipmentForm(): UseEquipmentFormReturn {
   const [saving, setSaving] = useState(false);
   const [emptyStatePlaca, setEmptyStatePlaca] = useState<string | null>(null);
   const [alertInfo, setAlertInfo] = useState<AlertInfo | null>(null);
+  const [equipmentFound, setEquipmentFound] = useState(false);
   const propietarioOriginalRef = useRef<string>("");
 
   // Initial data load
@@ -169,6 +174,7 @@ export function useEquipmentForm(): UseEquipmentFormReturn {
     async (placa: string) => {
       setAlertInfo(null);
       setEmptyStatePlaca(null);
+      setEquipmentFound(false);
 
       const data = await buscar(placa);
       if (!data) {
@@ -186,7 +192,7 @@ export function useEquipmentForm(): UseEquipmentFormReturn {
         .toUpperCase()
         .trim();
       setFormVisible(true);
-      setAlertInfo({ type: "success", message: "Equipo encontrado correctamente." });
+      setEquipmentFound(true);
     },
     [buscar]
   );
@@ -283,6 +289,9 @@ export function useEquipmentForm(): UseEquipmentFormReturn {
     setAlertInfo(null);
   }, []);
 
+  /** Clear current alert (used for auto-dismiss). */
+  const clearAlert = useCallback(() => setAlertInfo(null), []);
+
   return {
     loading,
     validaciones,
@@ -295,6 +304,7 @@ export function useEquipmentForm(): UseEquipmentFormReturn {
     saving,
     emptyStatePlaca,
     alertInfo,
+    equipmentFound,
     validacionesIndices,
     hojaBadgeText,
     hojaBadgeVariant,
@@ -303,5 +313,6 @@ export function useEquipmentForm(): UseEquipmentFormReturn {
     handleValorChange,
     handleGuardar,
     handleRetry,
+    clearAlert,
   };
 }

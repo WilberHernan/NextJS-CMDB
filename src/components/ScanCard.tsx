@@ -3,7 +3,6 @@
 import { useRef, useState, useEffect } from "react";
 import { Scan, Camera, Search, ImageIcon, CheckCircle2, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { GradientButton } from "@/components/ui/gradient-button";
 import { Loader } from "@/components/Loader";
 import type { ScanStage } from "@/hooks/useScanner";
 
@@ -18,6 +17,7 @@ interface ScanCardProps {
   currentAttempt: string | null;
   onConfirm: (value: string) => void;
   onCancel: () => void;
+  equipmentFound: boolean;
 }
 
 const STAGE_COPY: Record<Exclude<ScanStage, "idle" | "done" | "error">, string> = {
@@ -40,6 +40,7 @@ export function ScanCard({
   currentAttempt,
   onConfirm,
   onCancel,
+  equipmentFound,
 }: ScanCardProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const typingTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -196,11 +197,13 @@ export function ScanCard({
               className={cn(
                 "inline-block h-[5px] w-[5px] rounded-full bg-accent",
                 "transition-opacity duration-200",
-                "opacity-40 group-focus-within:opacity-100"
+                equipmentFound
+                  ? "opacity-100"
+                  : "opacity-40 group-focus-within:opacity-100"
               )}
               aria-hidden
             />
-            Listo para escanear
+            {equipmentFound ? "Equipo encontrado" : "Listo para escanear"}
           </div>
         </div>
       )}
@@ -260,15 +263,22 @@ export function ScanCard({
                 Verificá el valor y corregilo si es necesario.
               </p>
               <div className="mt-4 flex gap-3">
-                <GradientButton
-                  variant="primary"
-                  size="md"
+                <button
+                  type="button"
                   onClick={handleConfirm}
                   disabled={editedValue.trim().length === 0}
-                  className="flex-1"
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold",
+                    "transition-all duration-200 ease-cinematic outline-none",
+                    "shadow-neu border border-border-default",
+                    "bg-accent-soft text-accent border-border-accent shadow-neu-pressed",
+                    "hover:-translate-y-0.5 hover:shadow-neu-flat",
+                    "active:translate-y-0 active:shadow-neu-pressed",
+                    editedValue.trim().length === 0 && "opacity-60 pointer-events-none"
+                  )}
                 >
                   Confirmar
-                </GradientButton>
+                </button>
                 <button
                   type="button"
                   onClick={handleRescan}
@@ -292,7 +302,8 @@ export function ScanCard({
                 stage === "error"
                   ? "border-danger bg-danger-soft"
                   : "border-border-default bg-surface-elevated",
-                "min-h-[240px] flex flex-col items-center justify-center gap-4"
+                "min-h-[240px] flex flex-col items-center justify-center gap-4",
+                stage !== "error" && !isInProgress(stage) && "animate-drop-zone-pulse"
               )}
             >
               {isInProgress(stage) ? (
@@ -325,14 +336,21 @@ export function ScanCard({
                       código de barras sea visible.
                     </p>
                   </div>
-                  <GradientButton
-                    variant="primary"
-                    size="md"
+                  <button
+                    type="button"
                     onClick={triggerCamera}
-                    icon={<Camera className="h-5 w-5" />}
+                    className={cn(
+                      "inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold",
+                      "transition-all duration-200 ease-cinematic outline-none",
+                      "shadow-neu border border-border-default",
+                      "bg-accent-soft text-accent border-border-accent shadow-neu-pressed",
+                      "hover:-translate-y-0.5 hover:shadow-neu-flat",
+                      "active:translate-y-0 active:shadow-neu-pressed"
+                    )}
                   >
+                    <Camera className="h-5 w-5" />
                     Reintentar
-                  </GradientButton>
+                  </button>
                 </>
               ) : (
                 <>
@@ -347,14 +365,21 @@ export function ScanCard({
                       La foto se analizará automáticamente
                     </p>
                   </div>
-                  <GradientButton
-                    variant="primary"
-                    size="md"
+                  <button
+                    type="button"
                     onClick={triggerCamera}
-                    icon={<ImageIcon className="h-5 w-5" />}
+                    className={cn(
+                      "inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold",
+                      "transition-all duration-200 ease-cinematic outline-none",
+                      "shadow-neu border border-border-default",
+                      "bg-accent-soft text-accent border-border-accent shadow-neu-pressed",
+                      "hover:-translate-y-0.5 hover:shadow-neu-flat",
+                      "active:translate-y-0 active:shadow-neu-pressed"
+                    )}
                   >
+                    <ImageIcon className="h-5 w-5" />
                     Tomar foto
-                  </GradientButton>
+                  </button>
                 </>
               )}
             </div>

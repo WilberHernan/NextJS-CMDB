@@ -53,7 +53,7 @@ export function CustomSelect({
         onClick={() => setOpen(!open)}
         className={cn(
           // Matches the scanner input's visual language: same radius, bg, shadow, focus ring.
-          "flex w-full items-center justify-between gap-2 rounded-md bg-surface-input px-4 py-3 text-sm text-left text-foreground relative",
+          "flex w-full items-center justify-between gap-2 rounded-xl bg-surface-input px-4 py-3 text-sm text-left text-foreground relative",
           "border border-border-default shadow-neu-pressed",
           "transition-all duration-200 ease-cinematic outline-none font-sans",
           "hover:border-border-hover",
@@ -76,7 +76,7 @@ export function CustomSelect({
         <div
           className={cn(
             "absolute top-[calc(100%+12px)] left-0 right-0 z-50",
-            "rounded-md glass",
+            "rounded-xl glass",
             "p-2 max-h-[300px] overflow-y-auto",
             "animate-scale-in origin-top"
           )}
@@ -87,7 +87,7 @@ export function CustomSelect({
               type="button"
               onClick={() => handleSelect(opt)}
               className={cn(
-                "flex w-full items-center gap-2.5 rounded-md px-4 py-3 text-sm text-left",
+                "flex w-full items-center gap-2.5 rounded-xl px-4 py-3 text-sm text-left",
                 "transition-all duration-150",
                 "text-muted-foreground",
                 "hover:bg-surface-hover hover:text-foreground",

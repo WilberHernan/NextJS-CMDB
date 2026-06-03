@@ -7,13 +7,14 @@ import { ScanCard } from "@/components/ScanCard";
 interface ScannerSectionProps {
   loading: boolean;
   onScan: (text: string) => void;
+  equipmentFound: boolean;
 }
 
 /**
  * Client-only wrapper that isolates @zxing/* from the server bundle.
  * Must be loaded via next/dynamic({ ssr: false }) from any parent.
  */
-export function ScannerSection({ loading, onScan }: ScannerSectionProps) {
+export function ScannerSection({ loading, onScan, equipmentFound }: ScannerSectionProps) {
   const {
     scanMode,
     setScanMode,
@@ -48,6 +49,7 @@ export function ScannerSection({ loading, onScan }: ScannerSectionProps) {
       currentAttempt={currentAttempt}
       onConfirm={confirmPending}
       onCancel={cancelPending}
+      equipmentFound={equipmentFound}
     />
   );
 }

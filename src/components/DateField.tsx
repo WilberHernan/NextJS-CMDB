@@ -38,7 +38,7 @@ export function DateField({ value, onChange, className }: DateFieldProps) {
     // Single surface, same vocabulary as the scanner input and CustomSelect.
     <div
       onClick={handleWrapperClick}
-      className={`group relative flex items-center w-full cursor-pointer rounded-md bg-surface-input border border-border-default shadow-neu-pressed transition-all duration-200 ease-cinematic hover:border-border-hover focus-within:border-accent focus-within:shadow-[var(--focus-ring)] ${className ?? ""}`}
+      className={`group relative flex items-center w-full cursor-pointer rounded-xl bg-surface-input border border-border-default shadow-neu-pressed transition-all duration-200 ease-cinematic hover:border-border-hover focus-within:border-accent focus-within:shadow-[var(--focus-ring)] ${className ?? ""}`}
     >
       <input
         type="text"

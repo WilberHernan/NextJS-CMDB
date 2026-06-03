@@ -20,9 +20,7 @@ const gradientButtonVariants = cva(
     // Base wrapper styles
     "relative inline-block p-[3px] rounded-[20px]",
     "bg-[linear-gradient(60deg,var(--accent),var(--sena-green-light),var(--accent))]",
-    "dark:bg-[linear-gradient(60deg,var(--bg-elevated),var(--bg-hover),var(--bg-elevated))]",
     "bg-[length:400%_400%] animate-gradient-shift",
-    "dark:animate-none",
     "opacity-85",
     "transition-all duration-200",
     "shadow-[var(--shadow-button)]",
@@ -31,7 +29,6 @@ const gradientButtonVariants = cva(
     // Hover state
     "hover:opacity-100 hover:duration-300 hover:-translate-y-0.5",
     "hover:shadow-[var(--shadow-button-hover),0_0_0_1px_var(--border-accent)]",
-    "dark:hover:shadow-[var(--shadow-button-hover),0_0_0_1px_var(--border-default)]",
     // Active state
     "active:translate-y-0 active:scale-[0.98]",
   ].join(" "),

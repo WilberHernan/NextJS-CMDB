@@ -55,7 +55,7 @@
     --shadow-glow: 0 0 40px rgba(22, 163, 74, 0.06);
     --shadow-button: 0 4px 20px rgba(0,0,0,0.3);
     --shadow-button-hover: 0 8px 40px rgba(22, 163, 74, 0.4);
-    --focus-ring: 0 0 0 3px rgba(22, 163, 74, 0.10);
+    --focus-ring: inset 0 0 0 3px rgba(22, 163, 74, 0.10);
 
     --glass-bg: rgba(255, 255, 255, 0.65);
     --glass-border: rgba(0, 0, 0, 0.06);
@@ -101,21 +101,24 @@
     --mode-blue-glow: rgba(147, 197, 253, 0.3);
 
     /* === BACKGROUND SCALE ===
-       Inspired by Linear/Vercel dark mode. Base is a warm-tinted near-black,
-       elevated surfaces go up in a perceptible ladder so cards actually float. */
+       Slightly more separation than before: bg-elevated is lighter so
+       neumorphism has room to breathe. bg-input is a touch darker so
+       pressed surfaces (inputs) contrast with raised ones (cards). */
     --bg-base: #0a0a0d;
     --bg-surface: #121217;
-    --bg-elevated: #1a1a22;
-    --bg-hover: #22222c;
-    --bg-active: #2a2a36;
-    --bg-input: #101015;
+    --bg-elevated: #1e1e2a;
+    --bg-hover: #252533;
+    --bg-active: #2d2d3a;
+    --bg-input: #0d0d11;
 
     /* === BORDERS ===
-       Top-only light, bottom-only dark, achieved via shadows (next block).
-       Borders themselves stay transparent. */
+       Invisible in dark — the neumorphic shadows do ALL the edge
+       definition. Light mode uses visible black borders (4-8%),
+       dark mode relies on the top-left light shadow + bottom-right
+       dark shadow to pop cards off the background. */
     --border-subtle: transparent;
     --border-default: transparent;
-    --border-hover: rgba(255, 255, 255, 0.06);
+    --border-hover: rgba(255, 255, 255, 0.08);
     --border-accent: rgba(134, 239, 172, 0.30);
 
     --text-primary: #ededee;
@@ -133,32 +136,34 @@
     --shadow-glow: 0 0 30px rgba(134, 239, 172, 0.08);
     --shadow-button: 0 2px 8px rgba(0, 0, 0, 0.4);
     --shadow-button-hover: 0 6px 20px rgba(134, 239, 172, 0.20);
-    --focus-ring: 0 0 0 2px rgba(134, 239, 172, 0.12);
+    --focus-ring: inset 0 0 0 2px rgba(134, 239, 172, 0.15);
 
     /* SENA brand glow — used by "Registrar nuevo" button.
        Reduced from 0.35 to 0.04 in dark so it doesn't dominate. */
     --sena-green-glow: rgba(57, 169, 0, 0.04);
 
-    --glass-bg: rgba(18, 18, 23, 0.75);
+    --glass-bg: rgba(18, 18, 23, 0.85);
     --glass-border: transparent;
     --glass-border-hover: transparent;
-    --glass-highlight: transparent;
+    --glass-highlight: rgba(255, 255, 255, 0.04);
 
-    /* === NEUMORPHISM (REVERSED FOR DARK) ===
-       In dark mode, "light from above" means a very subtle white on the TOP
-       edge of the surface, and a deeper shadow on the BOTTOM edge. This is
-       the "soft elevation" pattern used by Apple, Linear, Vercel.
-       Light side: ~3-4% white (subtle, not a glow).
-       Dark side: 50-60% black (visible, not crushed). */
-    --neu-light: rgba(255, 255, 255, 0.045);
+    /* === NEUMORPHISM (DARK MODE) ===
+       True neumorphism needs BOTH outer shadows — light from top-left,
+       dark from bottom-right. The --neu-light value determines how much
+       the card "glows" against the dark background. At 8-10% white it's
+       visible as a subtle edge without looking like a glow stick.
+       The pressed state inverts both sides: dark inset on top-left,
+       light inset on bottom-right (surface sinks in). */
+    --neu-light: rgba(255, 255, 255, 0.08);
     --neu-dark: rgba(0, 0, 0, 0.6);
-    --neu-shadow-light: rgba(255, 255, 255, 0.04);
+    --neu-shadow-light: rgba(255, 255, 255, 0.07);
     --neu-shadow-dark: rgba(0, 0, 0, 0.65);
 
     /* === MESH ===
-       Subtle background atmosphere. Use blue + violet (NOT green) to avoid
-       "margen verde" perception — the green accent is reserved for actions. */
-    --grad-mesh: transparent;
+       Very subtle blue-ish radial atmosphere at the top of the viewport.
+       Gives depth to the flat near-black base without being decorative.
+       Blue tone (NOT green) so green remains reserved for actions. */
+    --grad-mesh: radial-gradient(ellipse 80% 40% at 50% -10%, rgba(147, 197, 253, 0.04) 0%, transparent 60%);
 
     --grad-border: linear-gradient(90deg, transparent, var(--accent-soft), transparent);
   }
@@ -177,6 +182,8 @@
   body {
     font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     background: var(--bg-base);
+    background-image: var(--grad-mesh);
+    background-attachment: fixed;
     color: var(--text-primary);
     line-height: 1.5;
     min-height: 100vh;
@@ -216,52 +223,55 @@
   }
 
   /*
-   * === DARK MODE: SOFT ELEVATION ===
+   * === DARK MODE: NEUMORPHISM ===
    *
-   * The dark theme uses a "soft elevation" pattern instead of literal
-   * neumorphism. In light mode, cards have a bright top highlight + dark
-   * bottom shadow (light from above). In dark mode, the same effect is
-   * achieved with: subtle white inset on top (4% alpha), deeper dark
-   * shadow below (50-60% black), and a slightly elevated background
-   * color (--bg-elevated). No green/white halos.
+   * True neumorphism: outer shadows on both top-left (light) and
+   * bottom-right (dark) for raised surfaces; inverted for pressed.
+   * The --bg-surface/#121217 sits between the light shadow edge
+   * (8% white glow) and the dark shadow (65% black depth), so
+   * cards physically look like they extrude from the background.
    *
-   * The trick: keep the LIGHT side of neu shadows, but at 4% alpha (very
-   * subtle, no glow). Keep the DARK side at 65% (visible, gives depth).
-   * The result: cards still feel tactile and raised, without white lines.
+   * Raised: light top-left, dark bottom-right.
+   * Pressed: dark top-left inset, light bottom-right inset.
+   *
+   * Key difference from the old "soft elevation" approach: both
+   * sides of the shadow are visible. Before, only the dark side
+   * was visible and the light was a 4% inset top line — too
+   * subtle to define the card edge.
    */
   .dark .shadow-neu,
   .dark .shadow-neu-flat {
     box-shadow:
-      0 1px 0 0 var(--neu-shadow-light) inset,
-      4px 4px 16px var(--neu-shadow-dark);
+      4px 4px 12px var(--neu-shadow-dark),
+      -4px -4px 12px var(--neu-shadow-light);
   }
 
   .dark .shadow-neu-pressed {
-    /* Inset: dark on top (depression), very subtle light on bottom.
-       Opposite of light mode — but still tactile. */
     box-shadow:
-      inset 0 1px 2px var(--neu-shadow-dark),
-      inset 0 -1px 0 var(--neu-shadow-light);
+      inset 2px 2px 6px var(--neu-shadow-dark),
+      inset -2px -2px 6px var(--neu-shadow-light);
   }
 
   .dark .glass {
     background: var(--glass-bg);
     backdrop-filter: blur(20px) saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid transparent;
-    /* Subtle top highlight + deep bottom shadow for elevation. */
+    border: 1px solid var(--glass-border);
     box-shadow:
-      0 1px 0 0 var(--neu-shadow-light) inset,
-      0 8px 24px rgba(0, 0, 0, 0.45);
+      4px 4px 16px var(--neu-shadow-dark),
+      -4px -4px 16px var(--neu-shadow-light),
+      0 1px 0 0 var(--glass-highlight) inset;
+  }
+  .dark .glass:hover {
+    border-color: var(--glass-border-hover);
   }
 
-  /* All borders stay transparent in dark. The neumorphic top highlight
-     on .glass + the elevated background color do the edge definition.
-     IMPORTANT: only :focus — NOT :focus-within. The :focus-within
-     pseudo-class would propagate up the DOM tree and turn the
-     border of the ENTIRE card green when any input inside is focused.
-     Individual components that need focus-within (DateField wrapper,
-     scanner wrapper) use their own .focus-within:border-accent utility. */
+  /* Dark mode borders are invisible — the neumorphic light-shadow
+     on top-left and dark-shadow on bottom-right define every edge.
+     This global override keeps stray borders from appearing.
+     IMPORTANT: only :focus — NOT :focus-within (would propagate
+     to parent cards). Components with focus-within use specific
+     .focus-within:border-accent utilities. */
   .dark * {
     border-color: transparent;
   }
@@ -271,17 +281,21 @@
   .dark *:focus {
     border-color: var(--accent);
   }
+  .dark *:focus-visible {
+    border-color: var(--accent);
+    outline: none;
+  }
 
-  /* Inline arbitrary-value shadows — same soft-elevation pattern. */
+  /* Inline arbitrary-value shadows — mapped to neumorphic pattern. */
   .dark .shadow-\[inset_3px_3px_6px_var\(--neu-shadow-dark\),inset_-3px_-3px_6px_var\(--neu-shadow-light\)\] {
     box-shadow:
-      inset 0 1px 2px var(--neu-shadow-dark),
-      inset 0 -1px 0 var(--neu-shadow-light);
+      inset 2px 2px 6px var(--neu-shadow-dark),
+      inset -2px -2px 6px var(--neu-shadow-light);
   }
   .dark .hover\:shadow-\[inset_2px_2px_4px_var\(--neu-shadow-dark\),inset_-2px_-2px_4px_var\(--neu-shadow-light\)\]:hover {
     box-shadow:
-      inset 0 1px 1px var(--neu-shadow-dark),
-      inset 0 -1px 0 var(--neu-shadow-light);
+      inset 1px 1px 3px var(--neu-shadow-dark),
+      inset -1px -1px 3px var(--neu-shadow-light);
   }
 
   .glass {
@@ -367,6 +381,34 @@
   .animate-stagger-2 { animation: stagger-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 80ms; }
   .animate-stagger-3 { animation: stagger-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 160ms; }
   .animate-stagger-4 { animation: stagger-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 240ms; }
+
+  /* Alert entrance — slides in from the right with a spring feel. */
+  @keyframes alert-in {
+    from { opacity: 0; transform: translateX(24px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .animate-alert-in {
+    animation: alert-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Alert exit — slides out to the right before unmount. */
+  @keyframes alert-out {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(24px); }
+  }
+  .animate-alert-out {
+    animation: alert-out 0.3s ease-in both;
+  }
+
+  /* Drop zone pulse — subtle opacity rhythm on the camera area
+     when idle, inviting the user to take a photo. */
+  @keyframes drop-zone-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.65; }
+  }
+  .animate-drop-zone-pulse {
+    animation: drop-zone-pulse 3s ease-in-out infinite;
+  }
 
   /* Success highlight bar — driven by .animate-success-bar on the inner span. */
   .animate-success-bar { animation: success-bar-in 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; transform-origin: left; }
