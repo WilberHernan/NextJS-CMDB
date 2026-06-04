@@ -171,7 +171,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                   className="text-center text-sm mb-7"
                   style={{ color: "var(--text-secondary)" }}
                 >
-                  Ingresá la contraseña para acceder al sistema
+                  Ingresá la contraseña para acceder
                 </p>
 
                 {/* ── Form ── */}
