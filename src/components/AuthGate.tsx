@@ -77,13 +77,13 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
           pointerEvents: fade ? "none" : "auto",
         }}
       >
-        {/* Blur backdrop */}
+        {/* Blur backdrop — sutil, deja ver la app */}
         <div
           className="absolute inset-0 transition-opacity duration-500 ease-out"
           style={{
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            backgroundColor: "rgba(0,0,0,0.3)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+            backgroundColor: "rgba(0,0,0,0.12)",
             opacity: fade ? 0 : 1,
           }}
         />
@@ -98,14 +98,14 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
         >
           {state === "locked" && (
             <div
-              className="w-full max-w-sm animate-in"
+              className="w-full max-w-sm"
               style={{
                 animation: "gate-card-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both",
               }}
             >
-              {/* ── Glass card ── */}
+              {/* ── Premium frosted-glass card ── */}
               <div
-                className="relative rounded-[1.25rem] p-7 sm:p-8"
+                className="relative rounded-[1.25rem] p-7 sm:p-8 overflow-hidden"
                 style={{
                   background: "var(--glass-bg)",
                   backdropFilter: "blur(32px) saturate(160%)",
@@ -114,10 +114,30 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                   boxShadow: `
                     4px 4px 16px var(--neu-shadow-dark),
                     -4px -4px 16px var(--neu-shadow-light),
-                    0 1px 0 0 var(--glass-highlight) inset
+                    0 1px 0 0 var(--glass-highlight) inset,
+                    0 0 0 1px rgba(255,255,255,0.03) inset
                   `,
                 }}
               >
+                {/* ── Grain texture (esmerilizado) ── */}
+                <div
+                  className="absolute inset-0 pointer-events-none rounded-[inherit]"
+                  style={{
+                    opacity: 0.035,
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+                    backgroundRepeat: "repeat",
+                    backgroundSize: "180px 180px",
+                    mixBlendMode: "overlay" as any,
+                  }}
+                />
+
+                {/* ── Subtle top edge glow ── */}
+                <div
+                  className="absolute top-0 left-[15%] right-[15%] h-[1px] pointer-events-none rounded-full"
+                  style={{
+                    background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)",
+                  }}
+                />
                 {/* ── Lock icon ── */}
                 <div
                   className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-xl"
