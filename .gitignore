@@ -37,6 +37,9 @@ next-env.d.ts
 # AI artifacts
 .atl/
 
+# AI tooling cache
+.codedev-mcp/
+
 # service account / secrets
 gen-lang-client-*.json
 service-account-key.json
