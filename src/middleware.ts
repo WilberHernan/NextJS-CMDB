@@ -67,7 +67,6 @@ export function middleware(request: NextRequest) {
       httpOnly: true,
       secure: true,
       sameSite: "lax",
-      maxAge: 60 * 60 * 8,
       path: "/",
     });
     return response;

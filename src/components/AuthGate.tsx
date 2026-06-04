@@ -15,15 +15,22 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     fetch("/api/auth/check")
       .then((r) => {
         if (r.ok) {
-          // Already authed → fade out overlay (smooth reveal)
           setFade(true);
         } else {
-          // Not authed → show password card
           setShowCard(true);
           setTimeout(() => inputRef.current?.focus(), 100);
         }
       })
       .catch(() => setShowCard(true));
+  }, []);
+
+  // Clear auth cookie when tab closes (pagehide fires on close/reload)
+  useEffect(() => {
+    const handlePageHide = () => {
+      navigator.sendBeacon("/api/auth/logout");
+    };
+    window.addEventListener("pagehide", handlePageHide);
+    return () => window.removeEventListener("pagehide", handlePageHide);
   }, []);
 
   const handleSubmit = useCallback(
