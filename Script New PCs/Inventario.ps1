@@ -25,11 +25,25 @@
 # ============================================
 $script:CMDB_URL = "https://next-js-cmdb.vercel.app"
 
+# Clave de acceso a la página (protege contra acceso no autorizado)
+# Reemplazar XXXXXXXX con la clave definida en Vercel como PAGE_KEY
+$script:CMDB_KEY = "XXXXXXXX"
+
 if ($CMDB_URL -match "XXXXXXXX") {
     Write-Host ""
     Write-Host "ERROR: Debes configurar la URL del CMDB." -ForegroundColor Red
     Write-Host "Abre este archivo en un editor de texto y reemplaza la variable `$CMDB_URL" -ForegroundColor Yellow
     Write-Host "con la URL del deployment de Next.js (Vercel o servidor propio)." -ForegroundColor Yellow
+    Write-Host ""
+    pause
+    exit 1
+}
+
+if ($CMDB_KEY -match "XXXXXXXX") {
+    Write-Host ""
+    Write-Host "ERROR: Debes configurar la clave de acceso." -ForegroundColor Red
+    Write-Host "Abre este archivo en un editor de texto y reemplaza la variable `$CMDB_KEY" -ForegroundColor Yellow
+    Write-Host "con la clave que definiste en Vercel como PAGE_KEY." -ForegroundColor Yellow
     Write-Host ""
     pause
     exit 1
@@ -774,6 +788,7 @@ foreach ($kv in $params.GetEnumerator()) {
     $encoded = Url-Encode -Value $kv.Value
     $qsParts += "$($kv.Key)=$encoded"
 }
+$qsParts += "key=$(Url-Encode -Value $CMDB_KEY)"
 $finalUrl = "$CMDB_URL`?$($qsParts -join '&')"
 
 Write-Host "Abriendo CMDB..." -ForegroundColor Green
