@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const [showCard, setShowCard] = useState(false);
-  const [fade, setFade] = useState(true); // starts invisible (faded out)
+  const [fade, setFade] = useState(false); // overlay visible by default
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -14,22 +14,16 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     fetch("/api/auth/check")
       .then((r) => {
-        if (!r.ok) {
-          // Not authed → show overlay, then animate card in
-          setFade(false);
-          setTimeout(() => {
-            setShowCard(true);
-            setTimeout(() => inputRef.current?.focus(), 100);
-          }, 50);
-        } else {
-          // Already authed → overlay stays faded out, show app
+        if (r.ok) {
+          // Already authed → fade out overlay (smooth reveal)
           setFade(true);
+        } else {
+          // Not authed → show password card
+          setShowCard(true);
+          setTimeout(() => inputRef.current?.focus(), 100);
         }
       })
-      .catch(() => {
-        setFade(false);
-        setShowCard(true);
-      });
+      .catch(() => setShowCard(true));
   }, []);
 
   const handleSubmit = useCallback(
