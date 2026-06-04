@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<"loading" | "locked" | "unlocked">("loading");
-  const [fade, setFade] = useState(false);
+  const [showCard, setShowCard] = useState(false);
+  const [fade, setFade] = useState(true); // starts invisible (faded out)
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -14,18 +14,21 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     fetch("/api/auth/check")
       .then((r) => {
-        if (r.ok) {
-          setFade(true);
-          setTimeout(() => setState("unlocked"), 500);
+        if (!r.ok) {
+          // Not authed → show overlay, then animate card in
+          setFade(false);
+          setTimeout(() => {
+            setShowCard(true);
+            setTimeout(() => inputRef.current?.focus(), 100);
+          }, 50);
         } else {
-          setState("locked");
-          // Focus input after mount animation
-          setTimeout(() => inputRef.current?.focus(), 600);
+          // Already authed → overlay stays faded out, show app
+          setFade(true);
         }
       })
       .catch(() => {
-        setState("locked");
-        setTimeout(() => inputRef.current?.focus(), 600);
+        setFade(false);
+        setShowCard(true);
       });
   }, []);
 
@@ -45,8 +48,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
           body: JSON.stringify({ password }),
         });
         if (r.ok) {
-          setFade(true);
-          setTimeout(() => setState("unlocked"), 500);
+          setShowCard(false);
+          setFade(true); // overlay fades out — children stay mounted
         } else {
           const d = await r.json();
           setError(d.error || "Contraseña incorrecta");
@@ -62,41 +65,31 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     [password]
   );
 
-  // ── Unlocked: only render children ──────────────────────────
-  if (state === "unlocked") return <>{children}</>;
-
   return (
     <>
-      {/* App renders behind at all times so blur has content */}
-      <div className="min-h-screen">{children}</div>
+      {children}
 
-      {/* Lock screen — fixed overlay */}
+      {/* ── Lock screen — ALWAYS mounted, never changes DOM structure ── */}
       <div
-        className="fixed inset-0 z-[9999]"
+        className="fixed inset-0 z-[9999] transition-opacity duration-500 ease-out"
         style={{
+          opacity: fade ? 0 : 1,
           pointerEvents: fade ? "none" : "auto",
         }}
       >
-        {/* Blur backdrop — sutil, deja ver la app */}
+        {/* Blur backdrop */}
         <div
-          className="absolute inset-0 transition-opacity duration-500 ease-out"
+          className="absolute inset-0"
           style={{
             backdropFilter: "blur(8px)",
             WebkitBackdropFilter: "blur(8px)",
             backgroundColor: "rgba(0,0,0,0.12)",
-            opacity: fade ? 0 : 1,
           }}
         />
 
         {/* Card container */}
-        <div
-          className="relative z-10 flex items-center justify-center min-h-screen p-4 transition-all duration-500 ease-out"
-          style={{
-            opacity: fade ? 0 : 1,
-            transform: fade ? "translateY(12px)" : "translateY(0)",
-          }}
-        >
-          {state === "locked" && (
+        <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
+          {showCard && (
             <div
               className="w-full max-w-sm"
               style={{
@@ -131,13 +124,14 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                   }}
                 />
 
-                {/* ── Subtle top edge glow ── */}
+                {/* ── Top edge glow ── */}
                 <div
                   className="absolute top-0 left-[15%] right-[15%] h-[1px] pointer-events-none rounded-full"
                   style={{
                     background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)",
                   }}
                 />
+
                 {/* ── Lock icon ── */}
                 <div
                   className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-xl"
