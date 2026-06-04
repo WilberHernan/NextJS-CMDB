@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 
 export function useTheme() {
-  const [theme, setThemeState] = useState<"dark" | "light">("dark");
+  const [theme, setThemeState] = useState<"dark" | "light">("light");
 
   useEffect(() => {
     const saved = localStorage.getItem("cmdb-theme") as "dark" | "light" | null;
@@ -11,7 +11,7 @@ export function useTheme() {
       setThemeState(saved);
       document.documentElement.classList.toggle("dark", saved === "dark");
     } else {
-      document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("dark");
     }
   }, []);
 
