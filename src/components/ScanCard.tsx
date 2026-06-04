@@ -52,7 +52,7 @@ export function ScanCard({
   const [hasInputValue, setHasInputValue] = useState(false);
   const CYCLE_MSGS = [
     "Esperando lectura del escáner…",
-    "Escribí la placa manualmente",
+    "Escribe la placa manualmente",
   ];
   const [cycleIndex, setCycleIndex] = useState(0);
   const cycleTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
