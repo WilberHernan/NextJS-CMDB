@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk, IBM_Plex_Mono, Sora } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { AuthGate } from "@/components/AuthGate";
 import "./globals.css";
 
 const inter = Inter({
@@ -47,7 +48,9 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn(inter.variable, display.variable, mono.variable, displayAlt.variable)}
     >
-      <body className="antialiased font-sans">{children}</body>
+      <body className="antialiased font-sans">
+        <AuthGate>{children}</AuthGate>
+      </body>
     </html>
   );
 }
