@@ -115,6 +115,7 @@ export function useEquipmentForm(): UseEquipmentFormReturn {
       disco2_tipo: 19, disco2_tam: 20, tipo_memoria: 21, ram: 22,
       video: 23, mac_cableada: 31, mac_wifi: 32, so: 33, version_so: 34,
       fecha_mantenimiento: 47, fecha_impacto: 48,
+      propietario: 2, ciudad: 9,
     };
 
     const nuevos = Array(COLUMNAS.length).fill("");

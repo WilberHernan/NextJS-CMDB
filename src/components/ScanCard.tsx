@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { Scan, Camera, Search, ImageIcon, CheckCircle2, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/Loader";
+import { TypewriterText } from "@/components/TypewriterText";
 import type { ScanStage } from "@/hooks/useScanner";
 
 interface ScanCardProps {
@@ -47,6 +48,27 @@ export function ScanCard({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editedValue, setEditedValue] = useState("");
 
+  // ── Cycling placeholder ──────────────────────────────────────────
+  const [hasInputValue, setHasInputValue] = useState(false);
+  const CYCLE_MSGS = [
+    "Esperando lectura del escáner…",
+    "Escribí la placa manualmente",
+  ];
+  const [cycleIndex, setCycleIndex] = useState(0);
+  const cycleTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const handleCycleDone = useCallback(() => {
+    cycleTimeoutRef.current = setTimeout(() => {
+      setCycleIndex((i) => (i + 1) % 2);
+    }, 2500);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (cycleTimeoutRef.current) clearTimeout(cycleTimeoutRef.current);
+    };
+  }, []);
+
   useEffect(() => {
     if (pendingValue !== null) setEditedValue(pendingValue);
   }, [pendingValue]);
@@ -57,6 +79,7 @@ export function ScanCard({
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     clearTimeout(typingTimerRef.current);
     const val = e.target.value;
+    setHasInputValue(val.length > 0);
     if (val.length > 0) {
       typingTimerRef.current = setTimeout(() => onScan(val), 400);
     }
@@ -166,19 +189,32 @@ export function ScanCard({
                 "group-focus-within:text-accent"
               )}
             />
+
+            {/* Animated cycling placeholder — shown only when empty */}
+            {!hasInputValue && (
+              <div className="absolute left-14 right-5 top-0 bottom-0 flex items-center pointer-events-none overflow-hidden">
+                <TypewriterText
+                  text={CYCLE_MSGS[cycleIndex]}
+                  className="text-base font-normal font-sans text-muted-foreground-60 truncate"
+                  speed={30}
+                  jitter={18}
+                  cursor={true}
+                  onComplete={handleCycleDone}
+                />
+              </div>
+            )}
+
             <input
               ref={inputRef}
               type="text"
-              placeholder="Esperando lectura del escáner…"
               onChange={handleInput}
               onKeyDown={handleKeyDown}
               autoFocus
               autoComplete="off"
               spellCheck={false}
               className={cn(
-                "w-full bg-transparent py-[18px] pl-14 pr-5",
+                "w-full bg-transparent py-[18px] pl-14 pr-5 relative z-10",
                 "text-base font-semibold text-foreground",
-                "placeholder:text-muted-foreground-60 placeholder:font-normal placeholder:font-sans",
                 "outline-none"
               )}
             />
