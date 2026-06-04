@@ -31,7 +31,10 @@ export function EmptyState({ placa, onRetry, onRegisterNew }: EmptyStateProps) {
       </div>
 
       {/* Title */}
-      <h2 className="font-display text-[1.5rem] sm:text-[1.625rem] font-semibold tracking-display-tight mb-2.5 text-foreground text-balance animate-empty-state-child-in [animation-delay:0.15s] opacity-0 translate-y-2">
+      <h2
+        className="uppercase text-[clamp(0.75rem,1.5vw,0.95rem)] font-medium tracking-[0.28em] text-muted-foreground mb-2.5 animate-empty-state-child-in [animation-delay:0.15s] opacity-0 translate-y-2"
+        style={{ fontFamily: "var(--font-display-alt)" }}
+      >
         Equipo no encontrado
       </h2>
 
@@ -59,7 +62,7 @@ export function EmptyState({ placa, onRetry, onRegisterNew }: EmptyStateProps) {
         <button
           type="button"
           onClick={onRegisterNew}
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[0.9375rem] font-semibold text-white bg-[linear-gradient(135deg,var(--sena-green),var(--accent-hover))] border border-transparent shadow-[0_4px_16px_var(--sena-green-glow)] hover:-translate-y-0.5 hover:shadow-[0_6px_24px_var(--sena-green-glow)] active:translate-y-0 active:scale-[0.98] active:shadow-[0_2px_8px_var(--sena-green-glow)] transition-all duration-200 ease-cinematic outline-none font-sans"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[0.9375rem] font-semibold transition-all duration-200 ease-cinematic outline-none font-sans bg-accent-soft text-accent border border-border-accent shadow-neu-pressed hover:-translate-y-0.5 hover:shadow-neu-flat active:translate-y-0 active:shadow-neu-pressed"
         >
           <Plus className="h-[18px] w-[18px]" strokeWidth={2} />
           Registrar nuevo

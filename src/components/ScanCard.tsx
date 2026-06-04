@@ -125,12 +125,15 @@ export function ScanCard({
         className="mb-7 relative z-10"
         style={{ animation: "title-mount 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both" }}
       >
-        <h2 className="font-display uppercase leading-[0.95] text-foreground">
-          <span className="block text-[1.875rem] sm:text-[2.25rem] font-bold tracking-[-0.03em]">
-            Escanea la placa
+        <h2
+          className="uppercase leading-[1.0] text-foreground"
+          style={{ fontFamily: "var(--font-display-alt)" }}
+        >
+          <span className="block text-[clamp(2.25rem,5.5vw,3.75rem)] font-bold tracking-[-0.03em]">
+            Escaneá
           </span>
-          <span className="block text-base sm:text-lg font-medium tracking-[0.2em] text-muted-foreground mt-3">
-            del equipo
+          <span className="block text-[clamp(0.75rem,1.5vw,0.95rem)] font-medium tracking-[0.28em] text-muted-foreground mt-2.5">
+            la placa del equipo
           </span>
         </h2>
       </div>
@@ -220,27 +223,6 @@ export function ScanCard({
             />
           </div>
 
-          <div
-            className={cn(
-              "mt-3 flex items-center justify-center gap-2",
-              "text-[0.6875rem] font-medium uppercase tracking-display-loose",
-              "text-muted-foreground-60",
-              "transition-colors duration-200",
-              "group-focus-within:text-accent"
-            )}
-          >
-            <span
-              className={cn(
-                "inline-block h-[5px] w-[5px] rounded-full bg-accent",
-                "transition-opacity duration-200",
-                equipmentFound
-                  ? "opacity-100"
-                  : "opacity-40 group-focus-within:opacity-100"
-              )}
-              aria-hidden
-            />
-            {equipmentFound ? "Equipo encontrado" : "Listo para escanear"}
-          </div>
         </div>
       )}
 

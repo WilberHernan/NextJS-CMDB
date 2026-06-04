@@ -42,8 +42,11 @@ export function EquipmentForm({
     <div className="animate-fade-in-up">
       <div className="rounded-3xl glass border-border-default p-6 sm:p-8">
         <div className="flex items-center justify-between flex-wrap gap-3 mb-7 pb-5 border-b border-border-default">
-          <h3 className="font-sans text-[1.25rem] sm:text-[1.375rem] font-bold text-foreground flex items-center gap-2.5">
-            <FileText className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
+          <h3
+            className="uppercase text-[clamp(0.75rem,1.5vw,0.95rem)] font-medium tracking-[0.28em] text-muted-foreground flex items-center gap-2"
+            style={{ fontFamily: "var(--font-display-alt)" }}
+          >
+            <FileText className="h-[14px] w-[14px] text-muted-foreground/60" strokeWidth={1.75} />
             Ficha del Equipo
           </h3>
           <Badge variant={hojaBadgeVariant}>

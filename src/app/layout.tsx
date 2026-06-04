@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
+import { Inter, Space_Grotesk, IBM_Plex_Mono, Sora } from "next/font/google";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 
@@ -23,6 +23,13 @@ const mono = IBM_Plex_Mono({
   display: "swap",
 });
 
+const displayAlt = Sora({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-display-alt",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "CMDB — SENA CCYS",
   description:
@@ -38,7 +45,7 @@ export default function RootLayout({
     <html
       lang="es"
       suppressHydrationWarning
-      className={cn(inter.variable, display.variable, mono.variable)}
+      className={cn(inter.variable, display.variable, mono.variable, displayAlt.variable)}
     >
       <body className="antialiased font-sans">{children}</body>
     </html>

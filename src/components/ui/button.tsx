@@ -9,7 +9,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-gradient-to-br from-sena-green to-accent-hover text-white shadow-lg shadow-sena-glow hover:shadow-xl hover:shadow-sena-glow hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]",
+          "bg-accent-soft text-accent border border-border-accent shadow-neu-pressed hover:-translate-y-0.5 hover:shadow-neu-flat active:translate-y-0 active:shadow-neu-pressed",
         secondary:
           "bg-surface-elevated text-foreground border border-border-default shadow-neu hover:border-border-hover hover:-translate-y-0.5 active:translate-y-0",
         ghost:

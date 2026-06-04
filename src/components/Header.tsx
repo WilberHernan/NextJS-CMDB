@@ -68,7 +68,10 @@ export function Header({
             className="w-9 h-9 object-contain block shrink-0"
           />
           <div>
-            <div className="font-display text-[1.05rem] font-semibold tracking-display-tight leading-tight text-foreground">
+            <div
+              className="text-[1.05rem] font-bold tracking-[-0.02em] leading-tight text-foreground"
+              style={{ fontFamily: "var(--font-display-alt)" }}
+            >
               SENA CCYS
             </div>
             <div className="text-[0.6875rem] font-medium uppercase tracking-display-loose text-muted-foreground">

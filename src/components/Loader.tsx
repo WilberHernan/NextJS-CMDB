@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { LoaderIcon } from "lucide-react";
 
 interface LoaderProps {
   message?: string;
@@ -19,7 +18,14 @@ export function Loader({
         className
       )}
     >
-      <LoaderIcon className="h-5 w-5 animate-spin text-accent" />
+      <span className="relative block w-6 h-6 shrink-0">
+        {/* Neumorphic base ring */}
+        <span className="absolute inset-0 rounded-full shadow-neu-flat bg-surface-elevated border border-border-default" />
+        {/* Orbiting accent dot */}
+        <span className="absolute inset-0 animate-[neu-spin_1s_linear_infinite]">
+          <span className="block w-[3px] h-[3px] rounded-full bg-accent mx-auto" />
+        </span>
+      </span>
       <span>{message}</span>
     </div>
   );
