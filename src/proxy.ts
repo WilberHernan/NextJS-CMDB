@@ -33,7 +33,7 @@ function originGuard(request: NextRequest): NextResponse | null {
  * Page routes pass through so the React app loads behind a blur overlay.
  * The ?key= param (PS1 script) still sets the cookie and redirects clean.
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ── Always let static assets through ───────────────────────
