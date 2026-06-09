@@ -207,7 +207,7 @@ function PasswordCard({
   const [exiting, setExiting] = useState<string | null>(null);
   const bubbleTriggerRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  const [bubbleOrigin, setBubbleOrigin] = useState({ x: 0, y: 0, cardRight: 0 });
+  const [bubblePos, setBubblePos] = useState({ cardRight: 0, cardCenterY: 0 });
 
   const BUBBLE_ITEMS: { value: Sede; label: string }[] = [
     { value: "CCYS", label: "CCYS" },
@@ -216,14 +216,9 @@ function PasswordCard({
   ];
 
   const openBubbles = useCallback(() => {
-    if (bubbleTriggerRef.current && cardRef.current) {
-      const tr = bubbleTriggerRef.current.getBoundingClientRect();
+    if (cardRef.current) {
       const cr = cardRef.current.getBoundingClientRect();
-      setBubbleOrigin({
-        x: tr.left + tr.width / 2,
-        y: tr.top + tr.height / 2,
-        cardRight: cr.right,
-      });
+      setBubblePos({ cardRight: cr.right, cardCenterY: cr.top + cr.height / 2 });
     }
     setBubblesOpen(true);
   }, []);
@@ -387,7 +382,7 @@ function PasswordCard({
           </div>
 
           {/* ── Floating bubbles (portal a document.body) ── */}
-          {bubblesOpen && bubbleOrigin.cardRight > 0 &&
+          {bubblesOpen && bubblePos.cardRight > 0 &&
             createPortal(
               <div
                 className="fixed inset-0 pointer-events-none"
@@ -396,8 +391,8 @@ function PasswordCard({
                 <div
                   style={{
                     position: "absolute",
-                    top: bubbleOrigin.y - 20,
-                    left: bubbleOrigin.cardRight + 12,
+                    top: bubblePos.cardCenterY - 72,
+                    left: bubblePos.cardRight + 12,
                     display: "flex",
                     flexDirection: "column",
                     gap: 8,
