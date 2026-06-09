@@ -393,7 +393,6 @@ function PasswordCard({
                     top: bubbleOrigin.y + b.dy,
                     left: bubbleOrigin.x + b.dx,
                     animationDelay: isExiting ? "0ms" : `${i * 80}ms`,
-                    animationFillMode: "backwards",
                   }}
                   className={cn(
                     "select-none cursor-pointer",
