@@ -207,7 +207,14 @@ function PasswordCard({
   const [exiting, setExiting] = useState<string | null>(null);
   const bubbleTriggerRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  const [bubblePos, setBubblePos] = useState({ cardRight: 0, cardCenterY: 0 });
+  const [bubblePos, setBubblePos] = useState({
+    cardRight: 0,
+    cardCenterY: 0,
+    triggerLeft: 0,
+    triggerTop: 0,
+    triggerWidth: 0,
+    triggerHeight: 0,
+  });
 
   const BUBBLE_ITEMS: { value: Sede; label: string }[] = [
     { value: "CCYS", label: "CCYS" },
@@ -216,9 +223,17 @@ function PasswordCard({
   ];
 
   const openBubbles = useCallback(() => {
-    if (cardRef.current) {
+    if (cardRef.current && bubbleTriggerRef.current) {
       const cr = cardRef.current.getBoundingClientRect();
-      setBubblePos({ cardRight: cr.right, cardCenterY: cr.top + cr.height / 2 });
+      const tr = bubbleTriggerRef.current.getBoundingClientRect();
+      setBubblePos({
+        cardRight: cr.right,
+        cardCenterY: cr.top + cr.height / 2,
+        triggerLeft: tr.left,
+        triggerTop: tr.top,
+        triggerWidth: tr.width,
+        triggerHeight: tr.height,
+      });
     }
     setBubblesOpen(true);
   }, []);
@@ -388,49 +403,62 @@ function PasswordCard({
                 className="fixed inset-0 pointer-events-none"
                 style={{ zIndex: 100000 }}
               >
-                <div
-                  style={{
-                    position: "absolute",
-                    top: bubblePos.cardCenterY - 72,
-                    left: bubblePos.cardRight + 12,
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 8,
-                  }}
-                >
-                  {BUBBLE_ITEMS.map((b, i) => {
-                    const isExiting = exiting === b.value || exiting === "__all__";
-                    return (
-                      <div
-                        key={b.value}
-                        data-bubble
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (!isExiting) selectBubble(b.value);
-                        }}
-                        style={{
-                          animationDelay: isExiting ? "0ms" : `${i * 60}ms`,
-                        }}
-                        className={cn(
-                          "pointer-events-auto select-none cursor-pointer",
-                          "rounded-xl px-4 py-2.5",
-                          "bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(28,28,30,0.95)]",
-                          "border border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)]",
-                          "shadow-[0_8px_32px_rgba(0,0,0,0.18),0_2px_8px_rgba(0,0,0,0.06)]",
-                          "transition-all duration-150",
-                          "hover:scale-[1.03] hover:shadow-[0_12px_40px_rgba(0,0,0,0.22)]",
-                          isExiting
-                            ? "animate-bubble-out"
-                            : "animate-bubble-in",
-                        )}
-                      >
-                        <span className="font-sans text-sm font-semibold tracking-tight whitespace-nowrap text-gray-900 dark:text-gray-100">
-                          {b.label}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
+                {(() => {
+                  const isMobile = window.innerWidth < 640;
+                  return (
+                    <div
+                      style={{
+                        position: "absolute",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 8,
+                        ...(isMobile
+                          ? {
+                              top: bubblePos.triggerTop + bubblePos.triggerHeight + 8,
+                              left: bubblePos.triggerLeft,
+                              minWidth: bubblePos.triggerWidth,
+                            }
+                          : {
+                              top: bubblePos.cardCenterY - 72,
+                              left: bubblePos.cardRight + 12,
+                            }),
+                      }}
+                    >
+                      {BUBBLE_ITEMS.map((b, i) => {
+                        const isExiting = exiting === b.value || exiting === "__all__";
+                        return (
+                          <div
+                            key={b.value}
+                            data-bubble
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!isExiting) selectBubble(b.value);
+                            }}
+                            style={{
+                              animationDelay: isExiting ? "0ms" : `${i * 60}ms`,
+                            }}
+                            className={cn(
+                              "pointer-events-auto select-none cursor-pointer",
+                              "rounded-xl px-4 py-2.5",
+                              "bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(28,28,30,0.95)]",
+                              "border border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)]",
+                              "shadow-[0_8px_32px_rgba(0,0,0,0.18),0_2px_8px_rgba(0,0,0,0.06)]",
+                              "transition-all duration-150",
+                              "hover:scale-[1.03] hover:shadow-[0_12px_40px_rgba(0,0,0,0.22)]",
+                              isExiting
+                                ? "animate-bubble-out"
+                                : "animate-bubble-in",
+                            )}
+                          >
+                            <span className="font-sans text-sm font-semibold tracking-tight whitespace-nowrap text-gray-900 dark:text-gray-100">
+                              {b.label}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
               </div>,
               document.body
             )}
