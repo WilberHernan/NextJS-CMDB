@@ -33,7 +33,7 @@ export function EmptyState({ placa, onRetry, onRegisterNew }: EmptyStateProps) {
       {/* Title */}
       <h2
         className="uppercase text-[clamp(0.75rem,1.5vw,0.95rem)] font-medium tracking-[0.28em] text-muted-foreground mb-2.5 animate-empty-state-child-in [animation-delay:0.15s] opacity-0 translate-y-2"
-        style={{ fontFamily: "var(--font-display-alt)" }}
+        style={{ fontFamily: "var(--font-display)" }}
       >
         Equipo no encontrado
       </h2>

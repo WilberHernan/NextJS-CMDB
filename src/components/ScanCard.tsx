@@ -127,7 +127,7 @@ export function ScanCard({
       >
         <h2
           className="uppercase leading-[1.0] text-foreground"
-          style={{ fontFamily: "var(--font-display-alt)" }}
+          style={{ fontFamily: "var(--font-display)" }}
         >
           <span className="block text-[clamp(2.25rem,5.5vw,3.75rem)] font-bold tracking-[-0.03em]">
             Escaneá

@@ -170,7 +170,15 @@
 
   *, *::before, *::after {
     box-sizing: border-box;
-    transition: background-color 300ms ease, border-color 300ms ease, color 200ms ease, box-shadow 300ms ease;
+  }
+
+  /*
+   * Theme transitions — ONLY when the user actively toggles themes.
+   * The `theme-transitioning` class is added/removed by useTheme
+   * so page loads have ZERO transition jank.
+   */
+  html.theme-transitioning *, html.theme-transitioning *::before, html.theme-transitioning *::after {
+    transition: background-color 300ms ease, border-color 300ms ease, color 200ms ease, box-shadow 300ms ease !important;
   }
 
   html {

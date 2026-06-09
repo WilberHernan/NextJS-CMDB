@@ -12,7 +12,18 @@ import { EmptyState } from "@/components/EmptyState";
 // with ssr: false keeps it out of the server bundle.
 const ScannerSection = dynamic(
   () => import("@/components/ScannerSection").then((m) => m.ScannerSection),
-  { ssr: false, loading: () => null }
+  {
+    ssr: false,
+    loading: () => (
+      <div className="rounded-3xl glass border-border-default p-8 sm:p-9">
+        <div className="animate-pulse space-y-6">
+          <div className="h-10 w-48 mx-auto rounded-xl bg-border-default" />
+          <div className="h-4 w-64 mx-auto rounded-lg bg-border-default/60" />
+          <div className="h-12 w-80 mx-auto rounded-xl bg-border-default/40" />
+        </div>
+      </div>
+    ),
+  }
 );
 
 export default function Home() {

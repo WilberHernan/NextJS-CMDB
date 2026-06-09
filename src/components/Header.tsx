@@ -70,7 +70,7 @@ export function Header({
           <div>
             <div
               className="text-[1.05rem] font-bold tracking-[-0.02em] leading-tight text-foreground"
-              style={{ fontFamily: "var(--font-display-alt)" }}
+              style={{ fontFamily: "var(--font-display)" }}
             >
               SENA CCYS
             </div>

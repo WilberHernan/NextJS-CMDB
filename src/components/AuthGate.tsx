@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const [showCard, setShowCard] = useState(false);
   const [fade, setFade] = useState(false); // overlay visible by default
+  const [mounted, setMounted] = useState(true);   // unmount overlay after fade-out
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -17,6 +18,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       .then((r) => {
         if (r.ok) {
           setFade(true);
+          setTimeout(() => setMounted(false), 550);
         } else {
           setShowCard(true);
           setTimeout(() => inputRef.current?.focus(), 100);
@@ -51,7 +53,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
         });
         if (r.ok) {
           setShowCard(false);
-          setFade(true); // overlay fades out — children stay mounted
+          setFade(true);
+          setTimeout(() => setMounted(false), 550);
         } else {
           const d = await r.json();
           setError(d.error || "Contraseña incorrecta");
@@ -71,8 +74,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     <>
       {children}
 
-      {/* ── Lock screen — ALWAYS mounted, never changes DOM structure ── */}
-      <div
+      {/* ── Lock screen — unmounts after fade to reduce DOM weight ── */}
+      {mounted && <div
         className="fixed inset-0 z-[9999] transition-opacity duration-500 ease-out"
         style={{
           opacity: fade ? 0 : 1,
@@ -163,7 +166,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                 {/* ── Heading ── */}
                 <h1
                   className="text-center text-[1.15rem] font-bold tracking-[-0.02em] mb-1"
-                  style={{ fontFamily: "var(--font-display-alt), var(--font-sans), sans-serif" }}
+                  style={{ fontFamily: "var(--font-display), sans-serif" }}
                 >
                   Acceso restringido
                 </h1>
@@ -330,7 +333,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
             </div>
           )}
         </div>
-      </div>
+      </div>}
     </>
   );
 }
