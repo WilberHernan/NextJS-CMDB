@@ -248,7 +248,7 @@ export function useEquipmentForm(): UseEquipmentFormReturn {
     setAlertInfo(null);
 
     const valoresLimpios: EquipmentValue[] = valores.map((v) =>
-      typeof v === "string" ? v.replace(/'/g, "-").toUpperCase() : v
+      v.replace(/'/g, "-").toUpperCase()
     );
 
     let respuesta: ApiResult | null = null;

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { AuthGate } from "@/components/AuthGate";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import "./globals.css";
 
 /* ── Inline script to prevent dark-mode flash ────────────────
@@ -33,9 +34,20 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CMDB — SENA CCYS",
+  title: {
+    template: "%s — CMDB SENA CCYS",
+    default: "CMDB — SENA CCYS",
+  },
   description:
     "Gestión de Configuración CMDB — SENA Centro de Comercio y Servicios",
+  robots: { index: false, follow: false },
+  openGraph: {
+    title: "CMDB — SENA CCYS",
+    description:
+      "Gestión de Configuración CMDB — SENA Centro de Comercio y Servicios",
+    locale: "es_CO",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -53,7 +65,9 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="antialiased font-sans">
-        <AuthGate>{children}</AuthGate>
+        <ErrorBoundary>
+          <AuthGate>{children}</AuthGate>
+        </ErrorBoundary>
       </body>
     </html>
   );

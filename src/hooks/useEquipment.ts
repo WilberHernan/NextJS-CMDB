@@ -114,7 +114,7 @@ export function useEquipment(): UseEquipmentReturn {
       const json = await res.json();
       if (json.ok) setValidaciones(json.data);
     } catch {
-      // Silently fail, defaults will be used
+      console.warn("useEquipment: fallback usando defaults sin validaciones");
     }
   }, []);
 
@@ -124,7 +124,7 @@ export function useEquipment(): UseEquipmentReturn {
       const json = await res.json();
       if (json.ok) setMapeoSedeId(json.data);
     } catch {
-      // Silently fail
+      console.warn("useEquipment: fallback sin mapeo de sedes");
     }
   }, []);
 
