@@ -25,21 +25,27 @@ export async function buscarEquipo(
     const data = await getSheetData(hoja, sede);
     if (!data || data.length < 2) continue;
 
+    const nombreSedeEsperado = sede === "CIUDAD_JARDIN" ? "CIUDAD JARDIN" : sede;
+
     for (let i = 1; i < data.length; i++) {
       const placaEnHoja = data[i][6]
         ? sanitizarPlaca(data[i][6])
         : "";
 
-      if (placaEnHoja === placaBuscada) {
-        return {
-          hoja,
-          fila: i + 1,
-          valores: data[i],
-          validaciones: validacionesGlobales,
-          validacionesIndices: Object.keys(validacionesGlobales).map(Number),
-          mapeoSedeId,
-        };
-      }
+      if (placaEnHoja !== placaBuscada) continue;
+
+      // Filtro por sede: la columna 8 (NOMBRE DE LA SEDE) debe coincidir
+      const sedeEnFila = data[i][8]?.toString().trim().toUpperCase() ?? "";
+      if (sedeEnFila !== nombreSedeEsperado) continue;
+
+      return {
+        hoja,
+        fila: i + 1,
+        valores: data[i],
+        validaciones: validacionesGlobales,
+        validacionesIndices: Object.keys(validacionesGlobales).map(Number),
+        mapeoSedeId,
+      };
     }
   }
   return null;
