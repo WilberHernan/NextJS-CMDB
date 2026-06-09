@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useSede } from "@/contexts/sede-context";
 import { isSede, type Sede } from "@/lib/sedes";
 import { cn } from "@/lib/utils";
@@ -378,41 +379,49 @@ function PasswordCard({
             </button>
           </div>
 
-          {/* ── Floating bubbles ── */}
-          {bubblesOpen &&
-            BUBBLE_ITEMS.map((b, i) => {
-              const isExiting = exiting === b.value || exiting === "__all__";
-              return (
-                <div
-                  key={b.value}
-                  data-bubble
-                  onClick={() => !isExiting && selectBubble(b.value)}
-                  style={{
-                    position: "fixed",
-                    zIndex: 100000,
-                    top: bubbleOrigin.y + b.dy,
-                    left: bubbleOrigin.x + b.dx,
-                    animationDelay: isExiting ? "0ms" : `${i * 80}ms`,
-                  }}
-                  className={cn(
-                    "select-none cursor-pointer",
-                    "rounded-2xl px-5 py-3",
-                    "bg-[rgba(255,255,255,0.88)] dark:bg-[rgba(28,28,30,0.88)]",
-                    "backdrop-blur-2xl",
-                    "border border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]",
-                    "shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.04)]",
-                    isExiting
-                      ? "animate-bubble-out"
-                      : "animate-bubble-in",
-                    !isExiting && "animate-float-cinematic"
-                  )}
-                >
-                  <span className="font-sans text-sm font-medium tracking-tight whitespace-nowrap text-[var(--text-primary)]">
-                    {b.label}
-                  </span>
-                </div>
-              );
-            })}
+          {/* ── Floating bubbles (portal a document.body) ── */}
+          {bubblesOpen && bubbleOrigin.x > 0 &&
+            createPortal(
+              <div
+                className="fixed inset-0 pointer-events-none"
+                style={{ zIndex: 100000 }}
+              >
+                {BUBBLE_ITEMS.map((b, i) => {
+                  const isExiting = exiting === b.value || exiting === "__all__";
+                  return (
+                    <div
+                      key={b.value}
+                      data-bubble
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!isExiting) selectBubble(b.value);
+                      }}
+                      style={{
+                        position: "absolute",
+                        top: bubbleOrigin.y + b.dy,
+                        left: bubbleOrigin.x + b.dx,
+                        animationDelay: isExiting ? "0ms" : `${i * 80}ms`,
+                      }}
+                      className={cn(
+                        "pointer-events-auto select-none cursor-pointer",
+                        "rounded-2xl px-5 py-3",
+                        "bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(28,28,30,0.95)]",
+                        "border border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)]",
+                        "shadow-[0_8px_32px_rgba(0,0,0,0.18),0_2px_8px_rgba(0,0,0,0.06)]",
+                        isExiting
+                          ? "animate-bubble-out"
+                          : "animate-bubble-in",
+                      )}
+                    >
+                      <span className="font-sans text-sm font-semibold tracking-tight whitespace-nowrap text-gray-900 dark:text-gray-100">
+                        {b.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>,
+              document.body
+            )}
 
           {/* ── Password ── */}
           <label
