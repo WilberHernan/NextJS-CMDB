@@ -65,7 +65,7 @@ export function useEquipment(): UseEquipmentReturn {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentSede]);
 
   const actualizar = useCallback(
     async (fila: string, hoja: string, valores: EquipmentValue[]) => {
@@ -88,7 +88,7 @@ export function useEquipment(): UseEquipmentReturn {
         setLoading(false);
       }
     },
-    []
+    [currentSede]
   );
 
   const crear = useCallback(async (hoja: string, valores: EquipmentValue[]) => {
@@ -110,7 +110,7 @@ export function useEquipment(): UseEquipmentReturn {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentSede]);
 
   const cargarValidaciones = useCallback(async () => {
     try {
@@ -120,7 +120,7 @@ export function useEquipment(): UseEquipmentReturn {
     } catch {
       console.warn("useEquipment: fallback usando defaults sin validaciones");
     }
-  }, []);
+  }, [currentSede]);
 
   const cargarMapeoSede = useCallback(async () => {
     try {
@@ -130,7 +130,7 @@ export function useEquipment(): UseEquipmentReturn {
     } catch {
       console.warn("useEquipment: fallback sin mapeo de sedes");
     }
-  }, []);
+  }, [currentSede]);
 
   return {
     loading,
