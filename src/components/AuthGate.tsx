@@ -3,15 +3,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSede } from "@/contexts/sede-context";
 import { isSede, type Sede } from "@/lib/sedes";
-import { CustomSelect } from "./CustomSelect";
+import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
 
 type Stage = "loading" | "password" | "done";
-
-const SEDE_OPTIONS: { id: Sede; label: string }[] = [
-  { id: "CCYS", label: "CCYS — Centro de Comercio" },
-  { id: "REGIONAL", label: "REGIONAL — Sede Regional Cauca" },
-  { id: "CIUDAD_JARDIN", label: "CIUDAD JARDIN — Sede Ciudad Jardín" },
-];
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const [stage, setStage] = useState<Stage>("loading");
@@ -206,6 +201,60 @@ function PasswordCard({
   onSubmit: (e: React.FormEvent) => void;
   inputRef: React.RefObject<HTMLInputElement | null>;
 }) {
+  /* ── Cinematic bubble selector ── */
+  const [bubblesOpen, setBubblesOpen] = useState(false);
+  const [bubblesEntered, setBubblesEntered] = useState(false);
+  const bubbleTriggerRef = useRef<HTMLDivElement>(null);
+  const [bubbleOrigin, setBubbleOrigin] = useState({ x: 0, y: 0 });
+
+  const BUBBLE_ITEMS: { value: Sede; label: string; dx: number; dy: number }[] = [
+    { value: "CCYS", label: "CCYS", dx: 210, dy: -60 },
+    { value: "REGIONAL", label: "REGIONAL", dx: 20, dy: 80 },
+    { value: "CIUDAD_JARDIN", label: "CIUDAD JARDIN", dx: 210, dy: 220 },
+  ];
+
+  const openBubbles = useCallback(() => {
+    if (bubbleTriggerRef.current) {
+      const r = bubbleTriggerRef.current.getBoundingClientRect();
+      setBubbleOrigin({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+    }
+    setBubblesOpen(true);
+    // Double rAF to trigger the CSS transition after the DOM paints the initial position
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setBubblesEntered(true));
+    });
+  }, []);
+
+  const selectBubble = useCallback(
+    (sede: Sede) => {
+      setSelectedSede(sede);
+      setBubblesEntered(false);
+      setTimeout(() => setBubblesOpen(false), 500);
+    },
+    [setSelectedSede]
+  );
+
+  // Click-outside: close bubbles when clicking anywhere that isn't a bubble or the trigger
+  useEffect(() => {
+    if (!bubblesOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (
+        bubbleTriggerRef.current &&
+        !bubbleTriggerRef.current.contains(e.target as Node) &&
+        !(e.target as HTMLElement).closest("[data-bubble]")
+      ) {
+        setBubblesEntered(false);
+        setTimeout(() => setBubblesOpen(false), 500);
+      }
+    };
+    // Delay attaching so the opening click doesn't immediately close
+    const timer = setTimeout(() => document.addEventListener("click", handleClick), 100);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("click", handleClick);
+    };
+  }, [bubblesOpen]);
+
   return (
     <div
       className="w-full max-w-sm"
@@ -291,23 +340,96 @@ function PasswordCard({
         </p>
 
         <form onSubmit={onSubmit} noValidate>
-          {/* ── Sede selector — neumorphic dropdown ── */}
+          {/* ── Sede selector — cinematic floating bubbles ── */}
           <label
             className="block text-[0.65rem] font-semibold uppercase tracking-[0.13em] mb-2"
             style={{ color: "var(--text-tertiary)" }}
           >
             Sede
           </label>
-          <CustomSelect
-            className="mb-5"
-            options={SEDE_OPTIONS.map((opt) => ({
-              value: opt.id,
-              label: opt.label,
-            }))}
-            value={selectedSede}
-            onChange={(v) => setSelectedSede(v as Sede)}
-            placeholder="Seleccione sede"
-          />
+          <div ref={bubbleTriggerRef} className="mb-5">
+            <button
+              type="button"
+              onClick={openBubbles}
+              className={cn(
+                "flex w-full items-center justify-between gap-2 rounded-xl bg-surface-input px-4 py-3 text-sm text-left text-foreground",
+                "border border-border-default shadow-neu-pressed",
+                "transition-all duration-200 ease-cinematic outline-none font-sans",
+                "hover:border-border-hover",
+                "focus-visible:border-accent focus-visible:shadow-[var(--focus-ring)]",
+                bubblesOpen && "border-accent shadow-[var(--focus-ring)]"
+              )}
+            >
+              <span
+                className={cn(
+                  "truncate",
+                  !selectedSede && "text-muted-foreground"
+                )}
+              >
+                {selectedSede || "Seleccione sede"}
+              </span>
+              <ChevronDown
+                className={cn(
+                  "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
+                  bubblesOpen && "rotate-180 text-accent"
+                )}
+              />
+            </button>
+          </div>
+
+          {/* ── Floating bubbles ── */}
+          {bubblesOpen && (
+            <>
+              {/* Bubbles */}
+              {BUBBLE_ITEMS.map((b, i) => {
+                const entered = bubblesEntered;
+                const exit = !entered && bubblesOpen;
+                return (
+                  <div
+                    key={b.value}
+                    data-bubble
+                    onClick={() => !exit && selectBubble(b.value)}
+                    style={{
+                      position: "fixed",
+                      zIndex: 100000,
+                      top: bubbleOrigin.y,
+                      left: bubbleOrigin.x,
+                      transform: entered
+                        ? `translate(${b.dx}px, ${b.dy}px) scale(1)`
+                        : "translate(0, 0) scale(0.6)",
+                      opacity: entered ? 1 : 0,
+                      transition: `
+                        transform 0.55s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.08}s,
+                        opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.08}s
+                      `,
+                      pointerEvents: entered ? "auto" : "none",
+                    }}
+                    className={cn(
+                      "select-none cursor-pointer",
+                      "rounded-2xl px-5 py-3",
+                      "bg-[rgba(255,255,255,0.88)] dark:bg-[rgba(28,28,30,0.88)]",
+                      "backdrop-blur-2xl",
+                      "border border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]",
+                      "shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.04)]",
+                      entered && "animate-float-cinematic"
+                    )}
+                  >
+                    <span
+                      className="font-sans text-sm font-medium tracking-tight whitespace-nowrap"
+                      style={{
+                        color:
+                          b.value === selectedSede && !bubblesEntered
+                            ? "var(--accent)"
+                            : "var(--text-primary)",
+                      }}
+                    >
+                      {b.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </>
+          )}
 
           {/* ── Password ── */}
           <label

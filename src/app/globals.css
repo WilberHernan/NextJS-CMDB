@@ -456,6 +456,14 @@
     to { transform: rotate(360deg); }
   }
 
+  @keyframes float-cinematic {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-5px); }
+  }
+  .animate-float-cinematic {
+    animation: float-cinematic 5s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;

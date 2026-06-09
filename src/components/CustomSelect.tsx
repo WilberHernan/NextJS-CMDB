@@ -12,6 +12,8 @@ interface CustomSelectProps {
   placeholder?: string;
   onChange: (value: string) => void;
   className?: string;
+  /** Apple-style floating panel to the right of the trigger */
+  floating?: boolean;
 }
 
 function normalizeOptions(options: SelectOption[]): { value: string; label: string }[] {
@@ -26,11 +28,14 @@ export function CustomSelect({
   placeholder = "Seleccione...",
   onChange,
   className,
+  floating,
 }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
   const [openUp, setOpenUp] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const items = useMemo(() => normalizeOptions(options), [options]);
+  const [panelPos, setPanelPos] = useState<{ top: number; left: number } | null>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -45,16 +50,38 @@ export function CustomSelect({
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
+  // Recalculate floating position on scroll / resize when open
+  useEffect(() => {
+    if (!floating || !open) return;
+    const updatePos = () => {
+      if (!buttonRef.current) return;
+      const r = buttonRef.current.getBoundingClientRect();
+      const panelWidth = 200;
+      const gap = 8;
+      const spaceRight = window.innerWidth - r.right;
+      const left = spaceRight >= panelWidth + gap
+        ? r.right + gap
+        : Math.max(8, r.left - panelWidth - gap);
+      setPanelPos({ top: r.top, left });
+    };
+    updatePos();
+    window.addEventListener("scroll", updatePos, true);
+    window.addEventListener("resize", updatePos);
+    return () => {
+      window.removeEventListener("scroll", updatePos, true);
+      window.removeEventListener("resize", updatePos);
+    };
+  }, [floating, open]);
+
   const toggleOpen = useCallback(() => {
-    if (wrapperRef.current) {
+    if (!floating && wrapperRef.current) {
       const rect = wrapperRef.current.getBoundingClientRect();
       const spaceBelow = window.innerHeight - rect.bottom;
-      // ~48px per option row + button (44px) + padding (16px) + gap (12px)
       const estimatedHeight = Math.min(items.length * 48 + 72, 300);
       setOpenUp(spaceBelow < estimatedHeight);
     }
     setOpen((prev) => !prev);
-  }, [items.length]);
+  }, [items.length, floating]);
 
   const handleSelect = useCallback(
     (optValue: string) => {
@@ -76,10 +103,10 @@ export function CustomSelect({
       className={cn("group relative w-full", className)}
     >
       <button
+        ref={buttonRef}
         type="button"
         onClick={toggleOpen}
         className={cn(
-          // Matches the scanner input's visual language: same radius, bg, shadow, focus ring.
           "flex w-full items-center justify-between gap-2 rounded-xl bg-surface-input px-4 py-3 text-sm text-left text-foreground relative",
           "border border-border-default shadow-neu-pressed",
           "transition-all duration-200 ease-cinematic outline-none font-sans",
@@ -99,7 +126,7 @@ export function CustomSelect({
         />
       </button>
 
-      {open && (
+      {open && !floating && (
         <div
           className={cn(
             "absolute left-0 right-0 z-50",
@@ -134,6 +161,47 @@ export function CustomSelect({
                 )}
               />
               <span>{item.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {open && floating && panelPos && (
+        <div
+          style={{
+            position: "fixed",
+            top: panelPos.top,
+            left: panelPos.left,
+            zIndex: 100000,
+          }}
+          className={cn(
+            "min-w-[180px] rounded-2xl p-1.5",
+            "bg-[rgba(255,255,255,0.92)] dark:bg-[rgba(28,28,30,0.92)]",
+            "backdrop-blur-2xl",
+            "shadow-[0_12px_48px_rgba(0,0,0,0.18),0_4px_12px_rgba(0,0,0,0.06)]",
+            "border border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]",
+            "animate-scale-in origin-top-left",
+            "overflow-y-auto max-h-[280px] overscroll-behavior-contain"
+          )}
+        >
+          {items.map((item) => (
+            <button
+              key={item.value}
+              type="button"
+              onClick={() => handleSelect(item.value)}
+              className={cn(
+                "flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-sm text-left",
+                "transition-all duration-100 font-sans tracking-tight",
+                "text-[var(--text-secondary)]",
+                "hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.07)]",
+                item.value === value &&
+                  "text-[var(--text-primary)] dark:text-white font-medium"
+              )}
+            >
+              <span>{item.label}</span>
+              {item.value === value && (
+                <span className="text-[10px] opacity-40 dark:opacity-50 ml-3">✓</span>
+              )}
             </button>
           ))}
         </div>
