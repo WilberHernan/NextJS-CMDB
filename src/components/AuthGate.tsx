@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSede } from "@/contexts/sede-context";
 import { isSede, type Sede } from "@/lib/sedes";
+import { CustomSelect } from "./CustomSelect";
 
 type Stage = "loading" | "password" | "done";
 
@@ -294,54 +295,19 @@ function PasswordCard({
           <label
             className="block text-[0.65rem] font-semibold uppercase tracking-[0.13em] mb-2"
             style={{ color: "var(--text-tertiary)" }}
-            htmlFor="gate-sede"
           >
             Sede
           </label>
-          <div
-            className="relative rounded-xl overflow-hidden mb-5"
-            style={{
-              boxShadow:
-                "inset 2px 2px 6px var(--neu-shadow-dark), inset -2px -2px 6px var(--neu-shadow-light)",
-            }}
-          >
-            <select
-              id="gate-sede"
-              value={selectedSede}
-              onChange={(e) => setSelectedSede(e.target.value as Sede)}
-              disabled={submitting}
-              className="w-full appearance-none px-4 py-[0.7rem] pr-10 text-sm bg-transparent border-none outline-none text-[var(--text-primary)] disabled:opacity-50 cursor-pointer"
-              style={{
-                fontFamily: "var(--font-sans), sans-serif",
-                color: "var(--text-primary)",
-              }}
-            >
-              {SEDE_OPTIONS.map((opt) => (
-                <option key={opt.id} value={opt.id}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-
-            {/* Chevron */}
-            <div
-              className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-              style={{ color: "var(--text-tertiary)" }}
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </div>
-          </div>
+          <CustomSelect
+            className="mb-5"
+            options={SEDE_OPTIONS.map((opt) => ({
+              value: opt.id,
+              label: opt.label,
+            }))}
+            value={selectedSede}
+            onChange={(v) => setSelectedSede(v as Sede)}
+            placeholder="Seleccione sede"
+          />
 
           {/* ── Password ── */}
           <label

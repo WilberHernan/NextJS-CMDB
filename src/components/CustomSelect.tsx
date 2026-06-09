@@ -1,15 +1,23 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronDown, Check } from "lucide-react";
 
+type SelectOption = string | { value: string; label: string };
+
 interface CustomSelectProps {
-  options: string[];
+  options: SelectOption[];
   value?: string;
   placeholder?: string;
   onChange: (value: string) => void;
   className?: string;
+}
+
+function normalizeOptions(options: SelectOption[]): { value: string; label: string }[] {
+  return options.map((opt) =>
+    typeof opt === "string" ? { value: opt, label: opt } : opt
+  );
 }
 
 export function CustomSelect({
@@ -22,6 +30,7 @@ export function CustomSelect({
   const [open, setOpen] = useState(false);
   const [openUp, setOpenUp] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const items = useMemo(() => normalizeOptions(options), [options]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -41,19 +50,25 @@ export function CustomSelect({
       const rect = wrapperRef.current.getBoundingClientRect();
       const spaceBelow = window.innerHeight - rect.bottom;
       // ~48px per option row + button (44px) + padding (16px) + gap (12px)
-      const estimatedHeight = Math.min(options.length * 48 + 72, 300);
+      const estimatedHeight = Math.min(items.length * 48 + 72, 300);
       setOpenUp(spaceBelow < estimatedHeight);
     }
     setOpen((prev) => !prev);
-  }, [options.length]);
+  }, [items.length]);
 
   const handleSelect = useCallback(
-    (opt: string) => {
-      onChange(opt);
+    (optValue: string) => {
+      onChange(optValue);
       setOpen(false);
     },
     [onChange]
   );
+
+  const displayLabel = useMemo(() => {
+    if (!value) return null;
+    const match = items.find((i) => i.value === value);
+    return match ? match.label : value;
+  }, [value, items]);
 
   return (
     <div
@@ -74,7 +89,7 @@ export function CustomSelect({
         )}
       >
         <span className={cn("truncate", !value && "text-muted-foreground")}>
-          {value || placeholder}
+          {displayLabel || placeholder}
         </span>
         <ChevronDown
           className={cn(
@@ -96,11 +111,11 @@ export function CustomSelect({
             "overscroll-behavior-contain"
           )}
         >
-          {options.map((opt) => (
+          {items.map((item) => (
             <button
-              key={opt}
+              key={item.value}
               type="button"
-              onClick={() => handleSelect(opt)}
+              onClick={() => handleSelect(item.value)}
               className={cn(
                 "flex w-full items-center gap-2.5 rounded-xl px-4 py-3 text-sm text-left",
                 "transition-all duration-150",
@@ -108,17 +123,17 @@ export function CustomSelect({
                 "hover:bg-surface-hover hover:text-foreground",
                 "hover:shadow-[inset_2px_2px_4px_var(--neu-shadow-dark),inset_-2px_-2px_4px_var(--neu-shadow-light)]",
                 "mb-0.5 last:mb-0",
-                opt === value &&
+                item.value === value &&
                   "bg-accent-soft text-accent font-semibold border border-border-accent"
               )}
             >
               <Check
                 className={cn(
                   "h-4 w-4 shrink-0 transition-opacity",
-                  opt === value ? "opacity-100" : "opacity-0"
+                  item.value === value ? "opacity-100" : "opacity-0"
                 )}
               />
-              <span>{opt}</span>
+              <span>{item.label}</span>
             </button>
           ))}
         </div>
