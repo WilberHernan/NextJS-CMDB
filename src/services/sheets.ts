@@ -61,7 +61,7 @@ export async function getSheetsClient() {
 }
 
 const SPREADSHEET_IDS: Record<Sede, string> = {
-  CCYS: process.env.SPREADSHEET_ID_CCYS || process.env.SPREADSHEET_ID!,
+  CCYS: process.env.SPREADSHEET_ID_CCYS!,
   REGIONAL: process.env.SPREADSHEET_ID_REGIONAL!,
   CIUDAD_JARDIN: process.env.SPREADSHEET_ID_CIUDAD_JARDIN!,
 };
