@@ -1,9 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { obtenerValidacionesManuales } from "@/repositories/equipment.repository";
+import { isSede } from "@/lib/sedes";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const validaciones = await obtenerValidacionesManuales();
+    const { searchParams } = new URL(request.url);
+    const sedeRaw = searchParams.get("sede");
+    const sede = isSede(sedeRaw) ? sedeRaw : "CCYS";
+
+    const validaciones = await obtenerValidacionesManuales(sede);
     return NextResponse.json({ ok: true, data: validaciones });
   } catch (error) {
     console.error("Error en validaciones:", error);

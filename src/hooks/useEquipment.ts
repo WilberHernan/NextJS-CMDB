@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useSede } from "@/contexts/sede-context";
+import { type Sede } from "@/lib/sedes";
 import type {
   EquipoResponse,
   EquipmentValue,
@@ -29,6 +31,8 @@ interface UseEquipmentReturn {
 }
 
 export function useEquipment(): UseEquipmentReturn {
+  const { sede } = useSede();
+  const currentSede: Sede = sede ?? "CCYS";
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<EquipoResponse | null>(null);
@@ -44,7 +48,7 @@ export function useEquipment(): UseEquipmentReturn {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/equipos/buscar?placa=${encodeURIComponent(placa)}`);
+      const res = await fetch(`/api/equipos/buscar?placa=${encodeURIComponent(placa)}&sede=${currentSede}`);
       const json = await res.json();
       if (!json.ok) throw new Error(json.error);
       const data = json.data as EquipoResponse | null;
@@ -71,7 +75,7 @@ export function useEquipment(): UseEquipmentReturn {
         const res = await fetch("/api/equipos/actualizar", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fila, hoja, valores }),
+          body: JSON.stringify({ fila, hoja, valores, sede: currentSede }),
         });
         const json = await res.json();
         if (!json.ok) throw new Error(json.error);
@@ -94,7 +98,7 @@ export function useEquipment(): UseEquipmentReturn {
       const res = await fetch("/api/equipos/crear", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hoja, valores }),
+        body: JSON.stringify({ hoja, valores, sede: currentSede }),
       });
       const json = await res.json();
       if (!json.ok) throw new Error(json.error);
@@ -110,7 +114,7 @@ export function useEquipment(): UseEquipmentReturn {
 
   const cargarValidaciones = useCallback(async () => {
     try {
-      const res = await fetch("/api/validaciones");
+      const res = await fetch(`/api/validaciones?sede=${currentSede}`);
       const json = await res.json();
       if (json.ok) setValidaciones(json.data);
     } catch {
@@ -120,7 +124,7 @@ export function useEquipment(): UseEquipmentReturn {
 
   const cargarMapeoSede = useCallback(async () => {
     try {
-      const res = await fetch("/api/mapeo-sede");
+      const res = await fetch(`/api/mapeo-sede?sede=${currentSede}`);
       const json = await res.json();
       if (json.ok) setMapeoSedeId(json.data);
     } catch {

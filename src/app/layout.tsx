@@ -3,6 +3,7 @@ import { Inter, Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { AuthGate } from "@/components/AuthGate";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { SedeProvider } from "@/contexts/sede-context";
 import "./globals.css";
 
 /* ── Inline script to prevent dark-mode flash ────────────────
@@ -75,7 +76,9 @@ export default function RootLayout({
       </head>
       <body className="antialiased font-sans">
         <ErrorBoundary>
-          <AuthGate>{children}</AuthGate>
+          <SedeProvider>
+            <AuthGate>{children}</AuthGate>
+          </SedeProvider>
         </ErrorBoundary>
       </body>
     </html>

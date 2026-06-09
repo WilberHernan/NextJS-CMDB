@@ -6,21 +6,23 @@ import {
   formatSheetRow,
 } from "@/services/sheets";
 import type { EquipoResponse, EquipmentValue, ApiResult } from "@/types/equipment";
+import type { Sede } from "@/lib/sedes";
 import { sanitizarPlaca } from "@/lib/utils";
 
 const HOJAS_EQUIPOS = ["EquiposSena", "EquiposTelefonica"];
 
 export async function buscarEquipo(
-  placa: string
+  placa: string,
+  sede: Sede = "CCYS"
 ): Promise<EquipoResponse | null> {
   const placaBuscada = sanitizarPlaca(placa);
   if (!placaBuscada) return null;
 
-  const validacionesGlobales = await obtenerValidacionesManuales();
-  const mapeoSedeId = await obtenerMapeoSedeId();
+  const validacionesGlobales = await obtenerValidacionesManuales(sede);
+  const mapeoSedeId = await obtenerMapeoSedeId(sede);
 
   for (const hoja of HOJAS_EQUIPOS) {
-    const data = await getSheetData(hoja);
+    const data = await getSheetData(hoja, sede);
     if (!data || data.length < 2) continue;
 
     for (let i = 1; i < data.length; i++) {
@@ -47,9 +49,10 @@ export async function actualizarEquipo(datos: {
   fila: string;
   hoja: string;
   valores: EquipmentValue[];
+  sede: Sede;
 }): Promise<ApiResult> {
   try {
-    const { fila, hoja, valores } = datos;
+    const { fila, hoja, valores, sede } = datos;
     const rowNum = parseInt(fila);
     const valoresLimpios = sanitizarValores(valores);
     const cantidadDatos = valoresLimpios.length;
@@ -62,7 +65,7 @@ export async function actualizarEquipo(datos: {
         ? "EquiposTelefonica"
         : "EquiposSena";
 
-    const dataActual = await getSheetData(hoja);
+    const dataActual = await getSheetData(hoja, sede);
     if (!dataActual || !dataActual[rowNum - 1]) {
       return { exito: false, mensaje: "Fila no encontrada en la hoja origen" };
     }
@@ -71,7 +74,7 @@ export async function actualizarEquipo(datos: {
     ).toString().toUpperCase().trim();
 
     if (hojaDestino !== hoja && propietarioActual !== propietarioNuevo) {
-      const destData = await getSheetData(hojaDestino);
+      const destData = await getSheetData(hojaDestino, sede);
       if (destData) {
         const placa = valoresLimpios[6]
           ? sanitizarPlaca(valoresLimpios[6])
@@ -91,14 +94,23 @@ export async function actualizarEquipo(datos: {
         }
       }
 
-      const appendResult = await appendSheetRow(hojaDestino, valoresLimpios);
-      await deleteSheetRow(hoja, rowNum);
+      const appendResult = await appendSheetRow(
+        hojaDestino,
+        valoresLimpios,
+        sede
+      );
+      await deleteSheetRow(hoja, rowNum, sede);
 
       // Pintar la fila movida de azul (como equipo nuevo en la hoja destino)
       if (appendResult?.updates?.updatedRange) {
         const rowMatch = appendResult.updates.updatedRange.match(/[A-Z]+(\d+):/);
         if (rowMatch) {
-          await formatSheetRow(hojaDestino, parseInt(rowMatch[1]), "#dbeafe");
+          await formatSheetRow(
+            hojaDestino,
+            parseInt(rowMatch[1]),
+            "#dbeafe",
+            sede
+          );
         }
       }
 
@@ -108,8 +120,8 @@ export async function actualizarEquipo(datos: {
       };
     }
 
-    await updateSheetRow(hoja, rowNum, valoresLimpios);
-    await formatSheetRow(hoja, rowNum, "#dcfce7");
+    await updateSheetRow(hoja, rowNum, valoresLimpios, sede);
+    await formatSheetRow(hoja, rowNum, "#dcfce7", sede);
     return { exito: true, mensaje: "¡CMDB Actualizada con éxito!" };
   } catch (e) {
     return {
@@ -122,9 +134,10 @@ export async function actualizarEquipo(datos: {
 export async function crearEquipo(datos: {
   hoja: string;
   valores: EquipmentValue[];
+  sede: Sede;
 }): Promise<ApiResult> {
   try {
-    const { hoja, valores } = datos;
+    const { hoja, valores, sede } = datos;
     const valoresLimpios = sanitizarValores(valores);
 
     const placaNueva = valoresLimpios[6]
@@ -132,7 +145,7 @@ export async function crearEquipo(datos: {
       : "";
 
     if (placaNueva) {
-      const data = await getSheetData(hoja);
+      const data = await getSheetData(hoja, sede);
       if (data) {
         for (let i = 1; i < data.length; i++) {
           const placaExistente = data[i][6]
@@ -148,13 +161,13 @@ export async function crearEquipo(datos: {
       }
     }
 
-    const result = await appendSheetRow(hoja, valoresLimpios);
+    const result = await appendSheetRow(hoja, valoresLimpios, sede);
 
     // Pintar la fila nueva de azul (#dbeafe) como en el original
     if (result?.updates?.updatedRange) {
       const rowMatch = result.updates.updatedRange.match(/[A-Z]+(\d+):/);
       if (rowMatch) {
-        await formatSheetRow(hoja, parseInt(rowMatch[1]), "#dbeafe");
+        await formatSheetRow(hoja, parseInt(rowMatch[1]), "#dbeafe", sede);
       }
     }
 
@@ -170,8 +183,8 @@ export async function crearEquipo(datos: {
   }
 }
 
-export async function obtenerMapeoSedeId() {
-  const data = await getSheetData("Hoja3");
+export async function obtenerMapeoSedeId(sede: Sede = "CCYS") {
+  const data = await getSheetData("Hoja3", sede);
   const sedeAId: Record<string, string> = {};
   const idASede: Record<string, string> = {};
 
@@ -353,11 +366,11 @@ function matchHeaderConFormField(hoja3Header: string): string | null {
   return null;
 }
 
-export async function obtenerValidacionesManuales(): Promise<
-  Record<number, string[]>
-> {
+export async function obtenerValidacionesManuales(
+  sede: Sede = "CCYS"
+): Promise<Record<number, string[]>> {
   const resultado: Record<number, string[]> = {};
-  const data = await getSheetData("Hoja3");
+  const data = await getSheetData("Hoja3", sede);
 
   if (!data || data.length < 2) {
     return { ...VALIDACIONES_POR_DEFECTO };

@@ -1,4 +1,5 @@
 import { sheets } from "@googleapis/sheets";
+import type { Sede } from "@/lib/sedes";
 
 let sheetsClient: ReturnType<typeof sheets> | null = null;
 
@@ -59,25 +60,36 @@ export async function getSheetsClient() {
   return sheetsClient;
 }
 
-function getSpreadsheetId(): string {
-  const id = process.env.SPREADSHEET_ID;
-  if (!id) throw new Error("SPREADSHEET_ID must be set");
+const SPREADSHEET_IDS: Record<Sede, string> = {
+  CCYS: process.env.SPREADSHEET_ID_CCYS!,
+  REGIONAL: process.env.SPREADSHEET_ID_REGIONAL!,
+  CIUDAD_JARDIN: process.env.SPREADSHEET_ID_CIUDAD_JARDIN!,
+};
+
+/** Retorna el Spreadsheet ID según la sede. Default: CCYS. */
+function getSpreadsheetId(sede: Sede = "CCYS"): string {
+  const id = SPREADSHEET_IDS[sede];
+  if (!id) throw new Error(`SPREADSHEET_ID no configurado para la sede: ${sede}`);
   return id;
 }
 
-export async function getSheetData(sheetName: string) {
+export async function getSheetData(sheetName: string, sede: Sede = "CCYS") {
   const client = await getSheetsClient();
   const res = await client.spreadsheets.values.get({
-    spreadsheetId: getSpreadsheetId(),
+    spreadsheetId: getSpreadsheetId(sede),
     range: sheetName,
   });
   return (res.data.values as string[][]) ?? null;
 }
 
-export async function appendSheetRow(sheetName: string, values: string[]) {
+export async function appendSheetRow(
+  sheetName: string,
+  values: string[],
+  sede: Sede = "CCYS"
+) {
   const client = await getSheetsClient();
   const res = await client.spreadsheets.values.append({
-    spreadsheetId: getSpreadsheetId(),
+    spreadsheetId: getSpreadsheetId(sede),
     range: sheetName,
     valueInputOption: "USER_ENTERED",
     insertDataOption: "INSERT_ROWS",
@@ -89,11 +101,12 @@ export async function appendSheetRow(sheetName: string, values: string[]) {
 export async function updateSheetRow(
   sheetName: string,
   row: number,
-  values: string[]
+  values: string[],
+  sede: Sede = "CCYS"
 ) {
   const client = await getSheetsClient();
   const res = await client.spreadsheets.values.update({
-    spreadsheetId: getSpreadsheetId(),
+    spreadsheetId: getSpreadsheetId(sede),
     range: `${sheetName}!A${row}`,
     valueInputOption: "USER_ENTERED",
     requestBody: { values: [values] },
@@ -101,9 +114,12 @@ export async function updateSheetRow(
   return res.data;
 }
 
-export async function getSheetId(sheetName: string): Promise<number> {
+export async function getSheetId(
+  sheetName: string,
+  sede: Sede = "CCYS"
+): Promise<number> {
   const client = await getSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
+  const spreadsheetId = getSpreadsheetId(sede);
 
   const sheetMeta = await client.spreadsheets.get({
     spreadsheetId,
@@ -115,7 +131,7 @@ export async function getSheetId(sheetName: string): Promise<number> {
   );
   const sheetId = sheet?.properties?.sheetId;
   if (sheetId === undefined || sheetId === null) {
-    throw new Error(`Sheet "${sheetName}" not found`);
+    throw new Error(`Sheet "${sheetName}" not found in ${sede}`);
   }
   return sheetId;
 }
@@ -123,11 +139,12 @@ export async function getSheetId(sheetName: string): Promise<number> {
 export async function formatSheetRow(
   sheetName: string,
   row: number,
-  hexColor: string
+  hexColor: string,
+  sede: Sede = "CCYS"
 ) {
   const client = await getSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
-  const id = await getSheetId(sheetName);
+  const spreadsheetId = getSpreadsheetId(sede);
+  const id = await getSheetId(sheetName, sede);
 
   const r = parseInt(hexColor.slice(1, 3), 16) / 255;
   const g = parseInt(hexColor.slice(3, 5), 16) / 255;
@@ -158,10 +175,14 @@ export async function formatSheetRow(
   });
 }
 
-export async function deleteSheetRow(sheetName: string, row: number) {
+export async function deleteSheetRow(
+  sheetName: string,
+  row: number,
+  sede: Sede = "CCYS"
+) {
   const client = await getSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
-  const sheetId = await getSheetId(sheetName);
+  const spreadsheetId = getSpreadsheetId(sede);
+  const sheetId = await getSheetId(sheetName, sede);
 
   await client.spreadsheets.batchUpdate({
     spreadsheetId,

@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { actualizarEquipo } from "@/repositories/equipment.repository";
+import { isSede } from "@/lib/sedes";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { fila, hoja, valores } = body;
+    const { fila, hoja, valores, sede: sedeRaw } = body;
+    const sede = isSede(sedeRaw) ? sedeRaw : "CCYS";
 
     if (!fila || !hoja || !valores) {
       return NextResponse.json(
@@ -13,7 +15,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const resultado = await actualizarEquipo({ fila, hoja, valores });
+    const resultado = await actualizarEquipo({ fila, hoja, valores, sede });
 
     return NextResponse.json({ ok: true, data: resultado });
   } catch (error) {
