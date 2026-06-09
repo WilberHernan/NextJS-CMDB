@@ -6,10 +6,10 @@ import { isSede, type Sede } from "@/lib/sedes";
 
 type Stage = "loading" | "password" | "done";
 
-const SEDE_OPTIONS: { id: Sede; label: string; desc: string }[] = [
-  { id: "CCYS", label: "CCYS", desc: "Centro de Comercio" },
-  { id: "REGIONAL", label: "REGIONAL", desc: "Sede Regional Cauca" },
-  { id: "CIUDAD_JARDIN", label: "CIUDAD JARDIN", desc: "Sede Ciudad Jardín" },
+const SEDE_OPTIONS: { id: Sede; label: string }[] = [
+  { id: "CCYS", label: "CCYS — Centro de Comercio" },
+  { id: "REGIONAL", label: "REGIONAL — Sede Regional Cauca" },
+  { id: "CIUDAD_JARDIN", label: "CIUDAD JARDIN — Sede Ciudad Jardín" },
 ];
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
@@ -286,10 +286,63 @@ function PasswordCard({
           className="text-center text-sm mb-6"
           style={{ color: "var(--text-secondary)" }}
         >
-          Ingresá contraseña y seleccioná la sede
+          Elegí la sede e ingresá la contraseña
         </p>
 
         <form onSubmit={onSubmit} noValidate>
+          {/* ── Sede selector — neumorphic dropdown ── */}
+          <label
+            className="block text-[0.65rem] font-semibold uppercase tracking-[0.13em] mb-2"
+            style={{ color: "var(--text-tertiary)" }}
+            htmlFor="gate-sede"
+          >
+            Sede
+          </label>
+          <div
+            className="relative rounded-xl overflow-hidden mb-5"
+            style={{
+              boxShadow:
+                "inset 2px 2px 6px var(--neu-shadow-dark), inset -2px -2px 6px var(--neu-shadow-light)",
+            }}
+          >
+            <select
+              id="gate-sede"
+              value={selectedSede}
+              onChange={(e) => setSelectedSede(e.target.value as Sede)}
+              disabled={submitting}
+              className="w-full appearance-none px-4 py-[0.7rem] pr-10 text-sm bg-transparent border-none outline-none text-[var(--text-primary)] disabled:opacity-50 cursor-pointer"
+              style={{
+                fontFamily: "var(--font-sans), sans-serif",
+                color: "var(--text-primary)",
+              }}
+            >
+              {SEDE_OPTIONS.map((opt) => (
+                <option key={opt.id} value={opt.id}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+
+            {/* Chevron */}
+            <div
+              className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+              style={{ color: "var(--text-tertiary)" }}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+          </div>
+
           {/* ── Password ── */}
           <label
             className="block text-[0.65rem] font-semibold uppercase tracking-[0.13em] mb-2"
@@ -352,57 +405,6 @@ function PasswordCard({
             </button>
           </div>
 
-          {/* ── Sede selector — segmented pills ── */}
-          <label
-            className="block text-[0.65rem] font-semibold uppercase tracking-[0.13em] mb-2"
-            style={{ color: "var(--text-tertiary)" }}
-          >
-            Sede
-          </label>
-          <div className="flex gap-2 mb-5">
-            {SEDE_OPTIONS.map((opt) => {
-              const isActive = selectedSede === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  disabled={submitting}
-                  onClick={() => setSelectedSede(opt.id)}
-                  className="flex-1 rounded-xl px-2 py-2.5 text-center transition-all duration-200 disabled:opacity-30"
-                  style={{
-                    background: isActive
-                      ? "var(--accent)"
-                      : "var(--accent-muted)",
-                    color: isActive
-                      ? "var(--text-on-accent, #fff)"
-                      : "var(--text-secondary)",
-                    border: isActive
-                      ? "1px solid var(--accent)"
-                      : "1px solid var(--border-accent)",
-                    boxShadow: isActive
-                      ? "inset 1px 1px 3px rgba(0,0,0,0.15), inset -1px -1px 3px rgba(255,255,255,0.05)"
-                      : "1px 1px 3px var(--neu-shadow-dark), -1px -1px 3px var(--neu-shadow-light)",
-                  }}
-                >
-                  <div className="text-[0.725rem] font-semibold leading-tight">
-                    {opt.label === "CIUDAD JARDIN" ? "CDAD. JARDÍN" : opt.label}
-                  </div>
-                  <div
-                    className="text-[0.55rem] font-medium mt-0.5 leading-tight"
-                    style={{
-                      color: isActive
-                        ? "inherit"
-                        : "var(--text-tertiary)",
-                      opacity: isActive ? 0.8 : 1,
-                    }}
-                  >
-                    {opt.desc}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
           {/* ── Error ── */}
           <div
             className="text-xs font-medium min-h-[1.25rem] transition-opacity"
@@ -418,7 +420,7 @@ function PasswordCard({
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-xl px-5 py-[0.7rem] text-sm font-semibold transition-all duration-200 disabled:opacity-50"
+            className="w-full mt-1 rounded-xl px-5 py-[0.7rem] text-sm font-semibold transition-all duration-200 disabled:opacity-50"
             style={{
               background: "var(--accent-muted)",
               color: "var(--accent)",
