@@ -464,6 +464,24 @@
     animation: float-cinematic 5s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   }
 
+  /* Bubble entrance: scale + fade, positioned at final offset via inline top/left */
+  @keyframes bubble-in {
+    from { opacity: 0; transform: scale(0.65); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  .animate-bubble-in {
+    animation: bubble-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Bubble exit: reverse the entrance */
+  @keyframes bubble-out {
+    from { opacity: 1; transform: scale(1); }
+    to   { opacity: 0; transform: scale(0.65); }
+  }
+  .animate-bubble-out {
+    animation: bubble-out 0.35s ease-in both;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;

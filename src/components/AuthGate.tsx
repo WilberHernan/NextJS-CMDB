@@ -203,14 +203,14 @@ function PasswordCard({
 }) {
   /* ── Cinematic bubble selector ── */
   const [bubblesOpen, setBubblesOpen] = useState(false);
-  const [bubblesEntered, setBubblesEntered] = useState(false);
+  const [exiting, setExiting] = useState<string | null>(null);
   const bubbleTriggerRef = useRef<HTMLDivElement>(null);
   const [bubbleOrigin, setBubbleOrigin] = useState({ x: 0, y: 0 });
 
   const BUBBLE_ITEMS: { value: Sede; label: string; dx: number; dy: number }[] = [
     { value: "CCYS", label: "CCYS", dx: 210, dy: -60 },
     { value: "REGIONAL", label: "REGIONAL", dx: 20, dy: 80 },
-    { value: "CIUDAD_JARDIN", label: "CIUDAD JARDIN", dx: 210, dy: 220 },
+    { value: "CIUDAD_JARDIN", label: "CIUDAD_JARDIN", dx: 210, dy: 220 },
   ];
 
   const openBubbles = useCallback(() => {
@@ -219,17 +219,16 @@ function PasswordCard({
       setBubbleOrigin({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
     }
     setBubblesOpen(true);
-    // Double rAF to trigger the CSS transition after the DOM paints the initial position
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => setBubblesEntered(true));
-    });
   }, []);
 
   const selectBubble = useCallback(
     (sede: Sede) => {
-      setSelectedSede(sede);
-      setBubblesEntered(false);
-      setTimeout(() => setBubblesOpen(false), 500);
+      setExiting(sede);
+      setTimeout(() => {
+        setSelectedSede(sede);
+        setExiting(null);
+        setBubblesOpen(false);
+      }, 450);
     },
     [setSelectedSede]
   );
@@ -243,11 +242,13 @@ function PasswordCard({
         !bubbleTriggerRef.current.contains(e.target as Node) &&
         !(e.target as HTMLElement).closest("[data-bubble]")
       ) {
-        setBubblesEntered(false);
-        setTimeout(() => setBubblesOpen(false), 500);
+        setExiting("__all__");
+        setTimeout(() => {
+          setExiting(null);
+          setBubblesOpen(false);
+        }, 450);
       }
     };
-    // Delay attaching so the opening click doesn't immediately close
     const timer = setTimeout(() => document.addEventListener("click", handleClick), 100);
     return () => {
       clearTimeout(timer);
@@ -378,58 +379,41 @@ function PasswordCard({
           </div>
 
           {/* ── Floating bubbles ── */}
-          {bubblesOpen && (
-            <>
-              {/* Bubbles */}
-              {BUBBLE_ITEMS.map((b, i) => {
-                const entered = bubblesEntered;
-                const exit = !entered && bubblesOpen;
-                return (
-                  <div
-                    key={b.value}
-                    data-bubble
-                    onClick={() => !exit && selectBubble(b.value)}
-                    style={{
-                      position: "fixed",
-                      zIndex: 100000,
-                      top: bubbleOrigin.y,
-                      left: bubbleOrigin.x,
-                      transform: entered
-                        ? `translate(${b.dx}px, ${b.dy}px) scale(1)`
-                        : "translate(0, 0) scale(0.6)",
-                      opacity: entered ? 1 : 0,
-                      transition: `
-                        transform 0.55s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.08}s,
-                        opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.08}s
-                      `,
-                      pointerEvents: entered ? "auto" : "none",
-                    }}
-                    className={cn(
-                      "select-none cursor-pointer",
-                      "rounded-2xl px-5 py-3",
-                      "bg-[rgba(255,255,255,0.88)] dark:bg-[rgba(28,28,30,0.88)]",
-                      "backdrop-blur-2xl",
-                      "border border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]",
-                      "shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.04)]",
-                      entered && "animate-float-cinematic"
-                    )}
-                  >
-                    <span
-                      className="font-sans text-sm font-medium tracking-tight whitespace-nowrap"
-                      style={{
-                        color:
-                          b.value === selectedSede && !bubblesEntered
-                            ? "var(--accent)"
-                            : "var(--text-primary)",
-                      }}
-                    >
-                      {b.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </>
-          )}
+          {bubblesOpen &&
+            BUBBLE_ITEMS.map((b, i) => {
+              const isExiting = exiting === b.value || exiting === "__all__";
+              return (
+                <div
+                  key={b.value}
+                  data-bubble
+                  onClick={() => !isExiting && selectBubble(b.value)}
+                  style={{
+                    position: "fixed",
+                    zIndex: 100000,
+                    top: bubbleOrigin.y + b.dy,
+                    left: bubbleOrigin.x + b.dx,
+                    animationDelay: isExiting ? "0ms" : `${i * 80}ms`,
+                    animationFillMode: "backwards",
+                  }}
+                  className={cn(
+                    "select-none cursor-pointer",
+                    "rounded-2xl px-5 py-3",
+                    "bg-[rgba(255,255,255,0.88)] dark:bg-[rgba(28,28,30,0.88)]",
+                    "backdrop-blur-2xl",
+                    "border border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]",
+                    "shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.04)]",
+                    isExiting
+                      ? "animate-bubble-out"
+                      : "animate-bubble-in",
+                    !isExiting && "animate-float-cinematic"
+                  )}
+                >
+                  <span className="font-sans text-sm font-medium tracking-tight whitespace-nowrap text-[var(--text-primary)]">
+                    {b.label}
+                  </span>
+                </div>
+              );
+            })}
 
           {/* ── Password ── */}
           <label
