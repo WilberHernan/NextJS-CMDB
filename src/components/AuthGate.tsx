@@ -206,18 +206,24 @@ function PasswordCard({
   const [bubblesOpen, setBubblesOpen] = useState(false);
   const [exiting, setExiting] = useState<string | null>(null);
   const bubbleTriggerRef = useRef<HTMLDivElement>(null);
-  const [bubbleOrigin, setBubbleOrigin] = useState({ x: 0, y: 0 });
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [bubbleOrigin, setBubbleOrigin] = useState({ x: 0, y: 0, cardRight: 0 });
 
-  const BUBBLE_ITEMS: { value: Sede; label: string; dx: number; dy: number }[] = [
-    { value: "CCYS", label: "CCYS", dx: 210, dy: -60 },
-    { value: "REGIONAL", label: "REGIONAL", dx: 20, dy: 80 },
-    { value: "CIUDAD_JARDIN", label: "CIUDAD_JARDIN", dx: 210, dy: 220 },
+  const BUBBLE_ITEMS: { value: Sede; label: string }[] = [
+    { value: "CCYS", label: "CCYS" },
+    { value: "REGIONAL", label: "REGIONAL" },
+    { value: "CIUDAD_JARDIN", label: "CIUDAD_JARDIN" },
   ];
 
   const openBubbles = useCallback(() => {
-    if (bubbleTriggerRef.current) {
-      const r = bubbleTriggerRef.current.getBoundingClientRect();
-      setBubbleOrigin({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+    if (bubbleTriggerRef.current && cardRef.current) {
+      const tr = bubbleTriggerRef.current.getBoundingClientRect();
+      const cr = cardRef.current.getBoundingClientRect();
+      setBubbleOrigin({
+        x: tr.left + tr.width / 2,
+        y: tr.top + tr.height / 2,
+        cardRight: cr.right,
+      });
     }
     setBubblesOpen(true);
   }, []);
@@ -259,6 +265,7 @@ function PasswordCard({
 
   return (
     <div
+      ref={cardRef}
       className="w-full max-w-sm"
       style={{
         animation:
@@ -380,45 +387,55 @@ function PasswordCard({
           </div>
 
           {/* ── Floating bubbles (portal a document.body) ── */}
-          {bubblesOpen && bubbleOrigin.x > 0 &&
+          {bubblesOpen && bubbleOrigin.cardRight > 0 &&
             createPortal(
               <div
                 className="fixed inset-0 pointer-events-none"
                 style={{ zIndex: 100000 }}
               >
-                {BUBBLE_ITEMS.map((b, i) => {
-                  const isExiting = exiting === b.value || exiting === "__all__";
-                  return (
-                    <div
-                      key={b.value}
-                      data-bubble
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (!isExiting) selectBubble(b.value);
-                      }}
-                      style={{
-                        position: "absolute",
-                        top: bubbleOrigin.y + b.dy,
-                        left: bubbleOrigin.x + b.dx,
-                        animationDelay: isExiting ? "0ms" : `${i * 80}ms`,
-                      }}
-                      className={cn(
-                        "pointer-events-auto select-none cursor-pointer",
-                        "rounded-2xl px-5 py-3",
-                        "bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(28,28,30,0.95)]",
-                        "border border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)]",
-                        "shadow-[0_8px_32px_rgba(0,0,0,0.18),0_2px_8px_rgba(0,0,0,0.06)]",
-                        isExiting
-                          ? "animate-bubble-out"
-                          : "animate-bubble-in",
-                      )}
-                    >
-                      <span className="font-sans text-sm font-semibold tracking-tight whitespace-nowrap text-gray-900 dark:text-gray-100">
-                        {b.label}
-                      </span>
-                    </div>
-                  );
-                })}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: bubbleOrigin.y - 20,
+                    left: bubbleOrigin.cardRight + 12,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 8,
+                  }}
+                >
+                  {BUBBLE_ITEMS.map((b, i) => {
+                    const isExiting = exiting === b.value || exiting === "__all__";
+                    return (
+                      <div
+                        key={b.value}
+                        data-bubble
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!isExiting) selectBubble(b.value);
+                        }}
+                        style={{
+                          animationDelay: isExiting ? "0ms" : `${i * 60}ms`,
+                        }}
+                        className={cn(
+                          "pointer-events-auto select-none cursor-pointer",
+                          "rounded-xl px-4 py-2.5",
+                          "bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(28,28,30,0.95)]",
+                          "border border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)]",
+                          "shadow-[0_8px_32px_rgba(0,0,0,0.18),0_2px_8px_rgba(0,0,0,0.06)]",
+                          "transition-all duration-150",
+                          "hover:scale-[1.03] hover:shadow-[0_12px_40px_rgba(0,0,0,0.22)]",
+                          isExiting
+                            ? "animate-bubble-out"
+                            : "animate-bubble-in",
+                        )}
+                      >
+                        <span className="font-sans text-sm font-semibold tracking-tight whitespace-nowrap text-gray-900 dark:text-gray-100">
+                          {b.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>,
               document.body
             )}
