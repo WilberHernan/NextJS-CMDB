@@ -25,6 +25,7 @@ export function Header({
   highlightSuccess = false,
 }: HeaderProps) {
   const [stuck, setStuck] = useState(false);
+  const [connStatus, setConnStatus] = useState<"loading" | "connected" | "error">("loading");
   const sentinelRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const { sede } = useSede();
@@ -46,6 +47,18 @@ export function Header({
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/health")
+      .then((r) => {
+        if (!cancelled) setConnStatus(r.ok ? "connected" : "error");
+      })
+      .catch(() => {
+        if (!cancelled) setConnStatus("error");
+      });
+    return () => { cancelled = true; };
   }, []);
 
   const handleLogout = async () => {
@@ -99,10 +112,30 @@ export function Header({
         </div>
 
         <div className="flex items-center gap-2.5">
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-elevated border border-border-default">
-            <span className="w-[6px] h-[6px] rounded-full bg-accent dark:animate-none animate-pulse-glow" />
+          <div
+            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-elevated border border-border-default transition-all duration-300"
+            title={
+              connStatus === "connected"
+                ? "Conectado con Google Sheets"
+                : connStatus === "error"
+                  ? "Error de conexión"
+                  : "Verificando conexión..."
+            }
+          >
+            <span
+              className={cn(
+                "w-[6px] h-[6px] rounded-full transition-all duration-500",
+                connStatus === "loading" && "bg-muted-foreground",
+                connStatus === "connected" && "bg-accent animate-pulse-glow",
+                connStatus === "error" && "bg-danger"
+              )}
+            />
             <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground font-mono">
-              Activa
+              {connStatus === "loading"
+                ? "Verificando"
+                : connStatus === "connected"
+                  ? "Activa"
+                  : "Inactiva"}
             </span>
           </div>
 
