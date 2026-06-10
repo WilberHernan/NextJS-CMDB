@@ -102,7 +102,7 @@ export function SedeSelector({ onSelect }: SedeSelectorProps) {
           className="mt-6 text-center text-[0.6rem] uppercase tracking-[0.15em]"
           style={{ color: "var(--text-disabled)" }}
         >
-          SENA CCYS — Gestión CMDB
+          SENA — Gestión CMDB
         </div>
       </div>
     </div>

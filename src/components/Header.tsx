@@ -4,6 +4,8 @@ import { useRef, useEffect, useState } from "react";
 import { Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useSede } from "@/contexts/sede-context";
+import { SEDE_LABELS } from "@/lib/sedes";
 import senaLogo from "@/app/icon.png";
 
 interface HeaderProps {
@@ -25,6 +27,13 @@ export function Header({
   const [stuck, setStuck] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
+  const { sede } = useSede();
+
+  useEffect(() => {
+    document.title = sede
+      ? `CMDB SENA ${SEDE_LABELS[sede]} — Cauca 2026`
+      : "CMDB — SENA CCYS";
+  }, [sede]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -72,7 +81,7 @@ export function Header({
               className="text-[1.05rem] font-bold tracking-[-0.02em] leading-tight text-foreground"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              SENA CCYS
+              SENA {sede ? SEDE_LABELS[sede] : "CCYS"}
             </div>
             <div className="text-[0.6875rem] font-medium uppercase tracking-display-loose text-muted-foreground">
               Gestión CMDB

@@ -3,6 +3,8 @@
 import dynamic from "next/dynamic";
 import { useTheme } from "@/hooks/useTheme";
 import { useEquipmentForm } from "@/hooks/useEquipmentForm";
+import { useSede } from "@/contexts/sede-context";
+import { SEDE_LABELS } from "@/lib/sedes";
 import { Header } from "@/components/Header";
 import { EquipmentForm } from "@/components/EquipmentForm";
 import { Alert } from "@/components/Alert";
@@ -28,6 +30,7 @@ const ScannerSection = dynamic(
 
 export default function Home() {
   const { theme, toggleTheme } = useTheme();
+  const { sede } = useSede();
   const form = useEquipmentForm();
 
   // Header bottom bar only fires on success — the user just found/registered
@@ -88,7 +91,7 @@ export default function Home() {
         )}
 
         <footer className="text-center pt-6 pb-2 text-[10px] tracking-display-loose uppercase text-muted-foreground-60">
-          CMDB SENA CCYS — Cauca 2026
+          CMDB SENA {sede ? SEDE_LABELS[sede] : "CCYS"} — Cauca 2026
         </footer>
       </div>
     </div>
