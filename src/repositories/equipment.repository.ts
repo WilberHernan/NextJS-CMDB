@@ -34,11 +34,12 @@ export async function buscarEquipo(
 
       if (placaEnHoja !== placaBuscada) continue;
 
-      // Filtro por sede: la columna 8 (NOMBRE DE LA SEDE) debe coincidir
-      // Solo filtra si la celda tiene contenido — si está vacía asumimos que
+      // Filtro por sede: la columna 8 (NOMBRE DE LA SEDE) debe contener el
+      // nombre esperado. Usamos includes() porque los datos reales pueden tener
+      // variaciones (ej: "CCYS.", "SENA CCYS"). Si está vacía asumimos que
       // pertenece a esta sede porque ya estamos leyendo el spreadsheet correcto.
       const sedeEnFila = data[i][8]?.toString().trim().toUpperCase() ?? "";
-      if (sedeEnFila && sedeEnFila !== nombreSedeEsperado) continue;
+      if (sedeEnFila && !sedeEnFila.includes(nombreSedeEsperado)) continue;
 
       return {
         hoja,
