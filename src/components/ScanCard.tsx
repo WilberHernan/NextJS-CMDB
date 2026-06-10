@@ -326,9 +326,14 @@ export function ScanCard({
             >
               {isInProgress(stage) ? (
                 <>
-                  <div className="rounded-full bg-accent-soft p-4">
-                    <div className="h-12 w-12 rounded-full border-4 border-accent-soft border-t-accent animate-spin-slow" />
-                  </div>
+                  <span className="relative block w-14 h-14 shrink-0 mx-auto mb-2">
+                    {/* Neumorphic base ring */}
+                    <span className="absolute inset-0 rounded-full shadow-neu-flat bg-surface-elevated border border-border-default" />
+                    {/* Orbiting accent dot */}
+                    <span className="absolute inset-0 animate-[neu-spin_1s_linear_infinite]">
+                      <span className="block w-[5px] h-[5px] rounded-full bg-accent mx-auto" />
+                    </span>
+                  </span>
                   <div>
                     <p className="text-sm font-medium text-foreground mb-1">
                       {STAGE_COPY[stage]}
