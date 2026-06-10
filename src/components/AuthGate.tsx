@@ -208,8 +208,6 @@ function PasswordCard({
   const bubbleTriggerRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [bubblePos, setBubblePos] = useState({
-    cardRight: 0,
-    cardCenterY: 0,
     triggerLeft: 0,
     triggerTop: 0,
     triggerWidth: 0,
@@ -223,12 +221,9 @@ function PasswordCard({
   ];
 
   const openBubbles = useCallback(() => {
-    if (cardRef.current && bubbleTriggerRef.current) {
-      const cr = cardRef.current.getBoundingClientRect();
-      const tr = bubbleTriggerRef.current.getBoundingClientRect();
+    const tr = bubbleTriggerRef.current?.getBoundingClientRect();
+    if (tr) {
       setBubblePos({
-        cardRight: cr.right,
-        cardCenterY: cr.top + cr.height / 2,
         triggerLeft: tr.left,
         triggerTop: tr.top,
         triggerWidth: tr.width,
@@ -396,72 +391,83 @@ function PasswordCard({
             </button>
           </div>
 
-          {/* ── Floating bubbles (portal a document.body) ── */}
-          {bubblesOpen && bubblePos.cardRight > 0 &&
-            createPortal(
+          {/* ── Sede dropdown (portal a document.body) ── */}
+          {bubblesOpen && createPortal(
+            <div
+              className="fixed inset-0 pointer-events-none"
+              style={{ zIndex: 100000 }}
+            >
               <div
-                className="fixed inset-0 pointer-events-none"
-                style={{ zIndex: 100000 }}
+                data-bubble
+                style={{
+                  position: "absolute",
+                  top: bubblePos.triggerTop + bubblePos.triggerHeight + 6,
+                  left: bubblePos.triggerLeft,
+                  width: bubblePos.triggerWidth,
+                }}
+                className={cn(
+                  "pointer-events-auto",
+                  exiting === "__all__" ? "animate-bubble-out" : "animate-bubble-in"
+                )}
               >
-                {(() => {
-                  const isMobile = window.innerWidth < 640;
-                  return (
-                    <div
-                      style={{
-                        position: "absolute",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 8,
-                        ...(isMobile
-                          ? {
-                              top: bubblePos.triggerTop + bubblePos.triggerHeight + 8,
-                              left: bubblePos.triggerLeft,
-                              minWidth: bubblePos.triggerWidth,
-                            }
-                          : {
-                              top: bubblePos.cardCenterY - 72,
-                              left: bubblePos.cardRight + 12,
-                            }),
-                      }}
-                    >
-                      {BUBBLE_ITEMS.map((b, i) => {
-                        const isExiting = exiting === b.value || exiting === "__all__";
-                        return (
+                <div
+                  className="rounded-xl overflow-hidden"
+                  style={{
+                    background: "var(--glass-bg)",
+                    backdropFilter: "blur(32px) saturate(160%)",
+                    WebkitBackdropFilter: "blur(32px) saturate(160%)",
+                    border: "1px solid var(--glass-border)",
+                    boxShadow: `
+                      4px 4px 16px var(--neu-shadow-dark),
+                      -4px -4px 16px var(--neu-shadow-light),
+                      0 1px 0 0 var(--glass-highlight) inset
+                    `,
+                  }}
+                >
+                  {BUBBLE_ITEMS.map((b) => {
+                    const isSelected = selectedSede === b.value;
+                    return (
+                      <button
+                        key={b.value}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          selectBubble(b.value);
+                        }}
+                        className={cn(
+                          "w-full text-left px-4 py-3 text-sm font-medium transition-all duration-150",
+                          "hover:bg-[rgba(255,255,255,0.06)] dark:hover:bg-[rgba(255,255,255,0.04)]",
+                          isSelected && "bg-[rgba(255,255,255,0.08)] dark:bg-[rgba(255,255,255,0.06)]"
+                        )}
+                        style={{
+                          color: isSelected ? "var(--accent)" : "var(--text-primary)",
+                          fontFamily: "var(--font-sans), sans-serif",
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
                           <div
-                            key={b.value}
-                            data-bubble
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (!isExiting) selectBubble(b.value);
-                            }}
+                            className="h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0"
                             style={{
-                              animationDelay: isExiting ? "0ms" : `${i * 60}ms`,
+                              borderColor: isSelected ? "var(--accent)" : "var(--border-default)",
                             }}
-                            className={cn(
-                              "pointer-events-auto select-none cursor-pointer",
-                              "rounded-xl px-4 py-2.5",
-                              "bg-[rgba(255,255,255,0.95)] dark:bg-[rgba(28,28,30,0.95)]",
-                              "border border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.08)]",
-                              "shadow-[0_8px_32px_rgba(0,0,0,0.18),0_2px_8px_rgba(0,0,0,0.06)]",
-                              "transition-all duration-150",
-                              "hover:scale-[1.03] hover:shadow-[0_12px_40px_rgba(0,0,0,0.22)]",
-                              isExiting
-                                ? "animate-bubble-out"
-                                : "animate-bubble-in",
-                            )}
                           >
-                            <span className="font-sans text-sm font-semibold tracking-tight whitespace-nowrap text-gray-900 dark:text-gray-100">
-                              {b.label}
-                            </span>
+                            {isSelected && (
+                              <div
+                                className="h-2.5 w-2.5 rounded-full"
+                                style={{ background: "var(--accent)" }}
+                              />
+                            )}
                           </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })()}
-              </div>,
-              document.body
-            )}
+                          <span>{b.label}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>,
+            document.body
+          )}
 
           {/* ── Password ── */}
           <label
