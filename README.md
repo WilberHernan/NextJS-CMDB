@@ -1,129 +1,201 @@
-# CMDB SENA CCYS
+# CMDB SENA
 
-Sistema de Gestión de Configuración (CMDB) para el inventario de equipos TI del SENA Centro de Comercio y Servicios — Cauca.
+Sistema de Gestión de Configuración para el inventario de equipos TI del
+**SENA Centro de Comercio y Servicios — Cauca**.
 
-Migrado desde Google Apps Script a Next.js moderno.
+Aplicación web moderna, multi-sede, con escaneo por código de barras,
+tema oscuro/claro y una capa de datos que permite migrar a base de
+datos sin reescribir la UI.
+
+---
 
 ## Stack
 
-- **Frontend**: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS
-- **UI**: shadcn/ui, Lucide Icons, Radix UI
-- **Backend**: Next.js Route Handlers
-- **Persistencia**: Google Sheets API (con capa de abstracción para migración futura a SQL)
-- **Validación**: validación server-side + dropdowns dinámicos desde hoja de validaciones
+| Capa | Tecnología |
+|------|-----------|
+| Framework | Next.js 16 (App Router) |
+| UI | React 19 + Tailwind CSS + diseño neumórfico |
+| Tipado | TypeScript 5.8 (strict) |
+| Fuentes | Space Grotesk / Inter / IBM Plex Mono |
+| Iconos | Lucide React |
+| Escaneo | `@zxing/browser` + `@zxing/library` (cámara y lector USB) |
+| Persistencia | Google Sheets API v4 (`@googleapis/sheets`) |
+| Acceso | Password gate via `PAGE_KEY` |
 
-## Requisitos
+---
 
-- Node.js >= 18
-- Cuenta de Google Cloud con Sheets API habilitada
-- Service Account con acceso a la Spreadsheet
+## Arquitectura
 
-## Configuración
+El sistema se organiza en capas que aíslan responsabilidades:
 
-1. Clonar el repositorio
-2. Copiar `.env.example` a `.env`:
-
-```bash
-cp .env.example .env
+```
+AuthGate (password + selección de sede)
+    │
+SedeProvider (Context + localStorage)
+    │
+Layout → Header + Main + Footer
+    │
+API Routes (/api/equipos/*, /api/validaciones, /api/mapeo-sede)
+    │
+equipment.repository.ts     ← capa de datos (única que cambia al migrar a SQL)
+    │
+sheets.ts → Google Sheets API v4
+    │
+    ├── CCYS / EquiposSena + EquiposTelefonica
+    ├── REGIONAL / EquiposSena + EquiposTelefonica
+    └── CIUDAD_JARDIN / EquiposSena + EquiposTelefonica
 ```
 
-3. Configurar variables de entorno:
+Cada sede tiene su propio spreadsheet. Dentro de cada spreadsheet hay dos
+hojas: **EquiposSena** y **EquiposTelefonica**. El sistema cruza ambas y
+filtra por sede usando la columna 8.
 
-| Variable | Descripción |
-|---|---|
-| `GOOGLE_SERVICE_ACCOUNT_KEY_PATH` | Ruta al archivo JSON de la service account |
-| `GOOGLE_SERVICE_ACCOUNT_KEY_JSON` | O bien, el JSON directo escapado |
-| `SPREADSHEET_ID` | ID del Google Sheet (de la URL) |
-| `SHEET_EQUIPOS_SENA` | Nombre de la hoja SENA (default: EquiposSena) |
-| `SHEET_EQUIPOS_TELEFONICA` | Nombre de la hoja TELEFONICA (default: EquiposTelefonica) |
-| `SHEET_VALIDACIONES` | Hoja de validaciones (default: Hoja3) |
+---
 
-4. Compartir el Google Sheet con el email de la service account (Editor).
+## Funcionalidades
 
-5. Instalar dependencias:
+- **Multi-sede**: CCYS, REGIONAL, CIUDAD JARDIN — cada una con su propio spreadsheet y validaciones independientes.
+- **Escaneo por lector USB**: captura automática desde escáner de código de barras en formato placa.
+- **Escaneo por cámara**: decodificación QR/códigos usando `@zxing/browser` para fotos o cámara en vivo.
+- **Búsqueda por placa**: recorre EquiposSena → EquiposTelefonica de la sede activa y filtra por columna 8.
+- **Formulario completo**: 53 campos en 12 secciones, con validaciones y dropdowns dinámicos.
+- **Creación y actualización**: alta de nuevos equipos con validación de placa duplicada; edición directa sobre la fila.
+- **Movimiento entre hojas**: al cambiar el propietario (SENA ↔ TELEFONICA), el equipo se mueve automáticamente entre hojas.
+- **Dropdowns dinámicos**: opciones cargadas desde una hoja de validaciones + defaults por tipo de campo.
+- **Tema oscuro/claro**: con persistencia en localStorage y script inline anti-flash.
+- **Auth por página**: password gate simple vía `PAGE_KEY`.
+- **Persistencia de sede**: la sede seleccionada se guarda en localStorage y se refleja en Header, Footer y `document.title`.
 
-```bash
-npm install
-```
-
-6. Iniciar desarrollo:
-
-```bash
-npm run dev
-```
+---
 
 ## Estructura del Proyecto
 
 ```
 src/
 ├── app/
-│   ├── api/               # Route Handlers (backend)
+│   ├── api/                          # Route Handlers
 │   │   ├── equipos/
-│   │   │   ├── buscar/    # GET /api/equipos/buscar?placa=XXX
-│   │   │   ├── actualizar/# POST /api/equipos/actualizar
-│   │   │   └── crear/     # POST /api/equipos/crear
-│   │   ├── validaciones/  # GET /api/validaciones
-│   │   └── mapeo-sede/    # GET /api/mapeo-sede
-│   ├── globals.css        # Estilos globales + design tokens
-│   ├── layout.tsx         # Layout raíz
-│   └── page.tsx           # Página principal
+│   │   │   ├── buscar/route.ts       # GET  ?placa=X&sede=CCYS
+│   │   │   ├── actualizar/route.ts   # POST { placa, data, sede }
+│   │   │   └── crear/route.ts        # POST { placa, data, sede }
+│   │   ├── validaciones/route.ts     # GET  ?sede=CCYS
+│   │   └── mapeo-sede/route.ts       # GET  ?sede=CCYS
+│   ├── globals.css                   # Design tokens + utilidades neumórficas
+│   ├── layout.tsx                    # Providers, fuentes, theme-script
+│   └── page.tsx                      # Página principal
 ├── components/
-│   ├── ui/                # Componentes base (shadcn-style)
-│   │   ├── gradient-button.tsx
-│   │   └── skeleton.tsx
-│   ├── Alert.tsx
-│   ├── CustomSelect.tsx
-│   ├── DateField.tsx
-│   ├── DynamicField.tsx
-│   ├── EmptyState.tsx
-│   ├── EquipmentForm.tsx
-│   ├── Header.tsx
-│   ├── Loader.tsx
-│   └── ScanCard.tsx
+│   ├── AuthGate.tsx                  # Password + selector de sede (burbujas neumórficas via portal)
+│   ├── Header.tsx                    # Nav + título dinámico + theme toggle
+│   ├── ScanCard.tsx                  # Escaneo por lector + cámara
+│   ├── EquipmentForm.tsx             # Formulario de 53 campos
+│   ├── DynamicField.tsx              # Campo con dropdown dinámico
+│   ├── DateField.tsx                 # Campo de fecha
+│   ├── CustomSelect.tsx              # Select nativo estilizado
+│   ├── SedeSelector.tsx              # Selector de sede en footer
+│   ├── Alert.tsx / EmptyState.tsx / Loader.tsx
+│   ├── ErrorBoundary.tsx
+│   └── ui/
+│       ├── gradient-button.tsx
+│       └── skeleton.tsx
+├── contexts/
+│   └── sede-context.tsx              # SedeProvider + hook useSede()
 ├── hooks/
-│   ├── useEquipment.ts        # Lógica de negocio (CRUD)
-│   ├── useEquipmentForm.ts    # Lógica de UI del formulario
-│   ├── useScanner.ts          # Lógica de escaneo
-│   └── useTheme.ts            # Tema dark/light
+│   ├── useEquipment.ts               # Lógica CRUD
+│   ├── useEquipmentForm.ts           # Lógica del formulario
+│   ├── useScanner.ts                 # Lógica de escaneo
+│   └── useTheme.ts                   # Toggle dark/light
 ├── lib/
-│   └── utils.ts               # Utilidades (cn, sanitize, date format)
+│   ├── sedes.ts                      # SEDES, SEDE_LABELS, Sede, isSede()
+│   └── utils.ts                      # cn(), sanitize(), formatDate()
 ├── repositories/
-│   └── equipment.repository.ts  # Acceso a datos (Google Sheets)
+│   └── equipment.repository.ts       # Acceso a datos (única capa que cambia al migrar a SQL)
 ├── services/
-│   └── sheets.ts              # Cliente Google Sheets API
+│   └── sheets.ts                     # Cliente Google Sheets API v4
 └── types/
-    └── equipment.ts           # Tipos: columnas, secciones, equipos
+    └── equipment.ts                  # Tipos: Columnas, Secciones, Equipo
 ```
 
-## Funcionalidades
+---
 
-- **Escaneo por lector**: Captura automática desde escáner de código de barras
-- **Escaneo por cámara**: Usa html5-qrcode para decodificar códigos desde foto
-- **Búsqueda por placa**: Busca en todas las hojas (SENA y TELEFONICA)
-- **Formulario completo**: 53 campos organizados en 12 secciones
-- **Actualización**: Guarda cambios en la fila correspondiente
-- **Movimiento entre hojas**: Si cambia el propietario (SENA ↔ TELEFONICA), mueve el equipo automáticamente
-- **Creación**: Registro de nuevos equipos con validación de placa duplicada
-- **Sincronización Sede-ID**: Mapeo bidireccional entre ID de sede y nombre
-- **Validaciones**: Dropdowns dinámicos desde Hoja3 + defaults
-- **Tema oscuro/claro**: Persistencia en localStorage
+## Multi-Sede: Flujo de Datos
 
-## Deploy
+### Selección de sede
 
-```bash
-npm run build
-npm start
-```
+1. `AuthGate` muestra un selector de burbujas neumórficas con las 3 sedes.
+2. Al seleccionar, `SedeProvider` guarda en `localStorage` (`cmdb-sede`).
+3. `SEDE_LABELS["CIUDAD_JARDIN"]` → `"CIUDAD JARDIN"` para display.
+4. El Header muestra `"SENA {sede}"`, el Footer `"CMDB SENA {sede} — Cauca 2026"`, y `document.title` se actualiza via `useEffect`.
 
-Para producción, se recomienda deploy en Vercel, Railway o similar,
-configurando las variables de entorno en el panel del proveedor.
+### Filtro por sede en búsqueda (columna 8)
 
-## Migración desde Apps Script
+Cuando `buscarEquipo()` recorre EquiposSena y EquiposTelefonica, cada fila se filtra por columna 8:
 
-La arquitectura actual permite migrar de Google Sheets a una base de datos
-real (PostgreSQL, Supabase, Prisma) modificando únicamente la capa de
-`repositories/`, sin tocar componentes, hooks ni API routes.
+- Si la celda **está vacía** → pasa (datos legacy, anteriores a la segmentación).
+- Si contiene un **nombre de sede conocido** y **no coincide** con la sede esperada → se filtra (evita cruces).
+- Si contiene **otro valor** (ej: `"TELEFONICA"`) → pasa (sigue perteneciendo a la sede correcta).
+
+Esto permite que una misma placa exista en sedes diferentes sin contaminar resultados.
+
+---
+
+## Variables de Entorno
+
+### Autenticación Google Sheets (usar una)
+
+| Variable | Descripción |
+|----------|-------------|
+| `GOOGLE_SERVICE_ACCOUNT_KEY_PATH` | Ruta al archivo JSON de la service account |
+| `GOOGLE_SERVICE_ACCOUNT_KEY_JSON` | JSON completo escapado en una línea |
+
+### Spreadsheet IDs por sede
+
+| Variable | Descripción |
+|----------|-------------|
+| `SPREADSHEET_ID_CCYS` | ID del spreadsheet — Sede CCYS |
+| `SPREADSHEET_ID_REGIONAL` | ID del spreadsheet — Sede REGIONAL |
+| `SPREADSHEET_ID_CIUDAD_JARDIN` | ID del spreadsheet — Sede CIUDAD JARDIN |
+
+### Seguridad
+
+| Variable | Descripción |
+|----------|-------------|
+| `PAGE_KEY` | Clave para acceder a la aplicación (AuthGate) |
+
+### Nombres de hojas (opcional — tienen defaults)
+
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `SHEET_EQUIPOS_SENA` | `EquiposSena` | Nombre de la hoja SENA |
+| `SHEET_EQUIPOS_TELEFONICA` | `EquiposTelefonica` | Nombre de la hoja TELEFÓNICA |
+| `SHEET_VALIDACIONES` | `Hoja3` | Hoja de validaciones/dropdowns |
+
+---
+
+## API
+
+| Método | Ruta | Parámetros | Descripción |
+|--------|------|-----------|-------------|
+| `GET` | `/api/equipos/buscar` | `placa`, `sede` | Busca equipo en la sede |
+| `POST` | `/api/equipos/actualizar` | `{ placa, data, sede }` | Actualiza fila |
+| `POST` | `/api/equipos/crear` | `{ placa, data, sede }` | Crea equipo nuevo |
+| `GET` | `/api/validaciones` | `sede` | Valores para dropdowns |
+| `GET` | `/api/mapeo-sede` | `sede` | Mapeo ID ↔ nombre de sedes |
+
+
+
+---
+
+## Mantenimiento
+
+- Cada sede tiene su propio spreadsheet — si una sede necesita cambios estructurales (columnas, validaciones), no afecta a las demás.
+- La columna 8 debe mantener el formato de nombre de sede para que el filtro funcione correctamente.
+- Si se agrega una sede nueva:
+  1. Agregar a `SEDES` y `SEDE_LABELS` en `src/lib/sedes.ts`.
+  2. Agregar `SPREADSHEET_ID_<SEDE>` en `src/services/sheets.ts`.
+  3. Agregar variable de entorno correspondiente.
+
+---
 
 ## Licencia
 
-SENA — Centro de Comercio y Servicios, Cauca
+SENA — Centro de Comercio y Servicios, Cauca.
