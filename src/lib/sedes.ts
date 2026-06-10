@@ -3,8 +3,8 @@ export type Sede = (typeof SEDES)[number];
 
 export const SEDE_LABELS: Record<Sede, string> = {
   CCYS: "CCYS",
-  REGIONAL: "Regional",
-  CIUDAD_JARDIN: "Ciudad Jardín",
+  REGIONAL: "REGIONAL",
+  CIUDAD_JARDIN: "CIUDAD JARDIN",
 };
 
 export function isSede(value: string | null | undefined): value is Sede {
