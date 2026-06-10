@@ -217,7 +217,7 @@ function PasswordCard({
   const BUBBLE_ITEMS: { value: Sede; label: string }[] = [
     { value: "CCYS", label: "CCYS" },
     { value: "REGIONAL", label: "REGIONAL" },
-    { value: "CIUDAD_JARDIN", label: "CIUDAD_JARDIN" },
+    { value: "CIUDAD_JARDIN", label: "CIUDAD JARDIN" },
   ];
 
   const openBubbles = useCallback(() => {
