@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useSede } from "@/contexts/sede-context";
@@ -47,6 +47,15 @@ export function Header({
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // Si falla el fetch, igual recargamos — la cookie se borrará al recargar
+    }
+    window.location.reload();
+  };
 
   return (
     <>
@@ -109,6 +118,16 @@ export function Header({
             ) : (
               <Sun className="h-[18px] w-[18px]" />
             )}
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleLogout}
+            className="rounded-xl"
+            title="Salir"
+          >
+            <LogOut className="h-[18px] w-[18px] text-muted-foreground hover:text-danger transition-colors duration-200" />
           </Button>
         </div>
 
