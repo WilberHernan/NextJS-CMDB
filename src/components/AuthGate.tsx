@@ -401,7 +401,7 @@ function PasswordCard({
                 data-bubble
                 style={{
                   position: "absolute",
-                  top: bubblePos.triggerTop + bubblePos.triggerHeight + 8,
+                  top: bubblePos.triggerTop + bubblePos.triggerHeight + 6,
                   left: bubblePos.triggerLeft,
                   width: bubblePos.triggerWidth,
                 }}
@@ -410,7 +410,16 @@ function PasswordCard({
                   exiting === "__all__" ? "animate-bubble-out" : "animate-bubble-in"
                 )}
               >
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div
+                  className="rounded-xl overflow-hidden bg-white dark:bg-neutral-900"
+                  style={{
+                    border: "1px solid var(--border-default)",
+                    boxShadow: `
+                      0 8px 32px rgba(0,0,0,0.12),
+                      0 2px 8px rgba(0,0,0,0.06)
+                    `,
+                  }}
+                >
                   {BUBBLE_ITEMS.map((b) => {
                     const isSelected = selectedSede === b.value;
                     return (
@@ -421,48 +430,33 @@ function PasswordCard({
                           e.stopPropagation();
                           selectBubble(b.value);
                         }}
-                        className="w-full text-left rounded-xl px-4 py-3 text-sm transition-all duration-100"
+                        className={cn(
+                          "w-full text-left px-4 py-3 text-sm transition-colors duration-100",
+                          isSelected
+                            ? "font-semibold"
+                            : "font-medium hover:bg-[var(--bg-hover)]"
+                        )}
                         style={{
-                          background: isSelected
-                            ? "var(--accent-muted)"
-                            : "var(--bg-surface)",
-                          color: isSelected
-                            ? "var(--accent)"
-                            : "var(--text-primary)",
+                          color: isSelected ? "var(--accent)" : "var(--text-primary)",
                           fontFamily: "var(--font-sans), sans-serif",
-                          fontWeight: isSelected ? 600 : 500,
-                          boxShadow: isSelected
-                            ? `
-                                inset 2px 2px 4px var(--neu-shadow-dark),
-                                inset -2px -2px 4px var(--neu-shadow-light)
-                              `
-                            : `
-                                2px 2px 6px var(--neu-shadow-dark),
-                                -2px -2px 6px var(--neu-shadow-light)
-                              `,
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!isSelected) {
-                            e.currentTarget.style.background = "var(--accent-muted)";
-                            e.currentTarget.style.color = "var(--accent)";
-                            e.currentTarget.style.boxShadow = `
-                              inset 2px 2px 4px var(--neu-shadow-dark),
-                              inset -2px -2px 4px var(--neu-shadow-light)
-                            `;
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isSelected) {
-                            e.currentTarget.style.background = "var(--bg-surface)";
-                            e.currentTarget.style.color = "var(--text-primary)";
-                            e.currentTarget.style.boxShadow = `
-                              2px 2px 6px var(--neu-shadow-dark),
-                              -2px -2px 6px var(--neu-shadow-light)
-                            `;
-                          }
                         }}
                       >
-                        {b.label}
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="h-[18px] w-[18px] rounded border-2 flex items-center justify-center shrink-0 transition-colors duration-100"
+                            style={{
+                              borderColor: isSelected ? "var(--accent)" : "var(--border-default)",
+                            }}
+                          >
+                            {isSelected && (
+                              <div
+                                className="h-[10px] w-[10px] rounded-sm"
+                                style={{ background: "var(--accent)" }}
+                              />
+                            )}
+                          </div>
+                          <span>{b.label}</span>
+                        </div>
                       </button>
                     );
                   })}
