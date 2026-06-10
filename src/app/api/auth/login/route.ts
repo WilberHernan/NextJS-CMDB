@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
       secure: true,
       sameSite: "lax",
       path: "/",
+      maxAge: 28800, // 8 horas — dura el día laboral
     });
 
     return response;

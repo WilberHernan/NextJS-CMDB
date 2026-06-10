@@ -68,6 +68,7 @@ export function proxy(request: NextRequest) {
       secure: true,
       sameSite: "lax",
       path: "/",
+      maxAge: 28800,
     });
     return response;
   }

@@ -119,15 +119,6 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     [password, selectedSede, setSede]
   );
 
-  // ── Logout on tab close ──
-  useEffect(() => {
-    const handlePageHide = () => {
-      navigator.sendBeacon("/api/auth/logout");
-    };
-    window.addEventListener("pagehide", handlePageHide);
-    return () => window.removeEventListener("pagehide", handlePageHide);
-  }, []);
-
   return (
     <>
       {children}
