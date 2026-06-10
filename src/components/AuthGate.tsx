@@ -411,9 +411,8 @@ function PasswordCard({
                 )}
               >
                 <div
-                  className="rounded-xl overflow-hidden"
+                  className="rounded-xl overflow-hidden bg-white dark:bg-neutral-900"
                   style={{
-                    background: "var(--bg-surface)",
                     border: "1px solid var(--border-default)",
                     boxShadow: `
                       0 8px 32px rgba(0,0,0,0.12),
