@@ -6,7 +6,7 @@ import {
   formatSheetRow,
 } from "@/services/sheets";
 import type { EquipoResponse, EquipmentValue, ApiResult } from "@/types/equipment";
-import type { Sede } from "@/lib/sedes";
+import { SEDES, type Sede } from "@/lib/sedes";
 import { sanitizarPlaca } from "@/lib/utils";
 
 const HOJAS_EQUIPOS = ["EquiposSena", "EquiposTelefonica"];
@@ -34,12 +34,16 @@ export async function buscarEquipo(
 
       if (placaEnHoja !== placaBuscada) continue;
 
-      // Filtro por sede: la columna 8 (NOMBRE DE LA SEDE) debe contener el
-      // nombre esperado. Usamos includes() porque los datos reales pueden tener
-      // variaciones (ej: "CCYS.", "SENA CCYS"). Si está vacía asumimos que
-      // pertenece a esta sede porque ya estamos leyendo el spreadsheet correcto.
+      // Filtro por sede: solo bloquea filas cuyo valor en columna 8 sea un
+      // nombre de sede CONOCIDO y DIFERENTE al esperado. Si contiene algo que
+      // no es una sede (ej: nombre de contratista, área), la fila pasa libre.
+      // Si está vacía también pasa porque ya leemos el spreadsheet correcto.
       const sedeEnFila = data[i][8]?.toString().trim().toUpperCase() ?? "";
-      if (sedeEnFila && !sedeEnFila.includes(nombreSedeEsperado)) continue;
+      if (sedeEnFila) {
+        const esSedeConocida = SEDES.includes(sedeEnFila as Sede) || sedeEnFila === "CIUDAD JARDIN";
+        const normalizada = sedeEnFila.replace(/_/g, " ");
+        if (esSedeConocida && normalizada !== nombreSedeEsperado) continue;
+      }
 
       return {
         hoja,
