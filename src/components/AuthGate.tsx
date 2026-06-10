@@ -411,16 +411,12 @@ function PasswordCard({
                 )}
               >
                 <div
-                  className="rounded-xl overflow-hidden bg-white dark:bg-neutral-900"
+                  className="rounded-xl shadow-neu"
                   style={{
-                    border: "1px solid var(--border-default)",
-                    boxShadow: `
-                      0 8px 32px rgba(0,0,0,0.12),
-                      0 2px 8px rgba(0,0,0,0.06)
-                    `,
+                    background: "var(--bg-surface)",
                   }}
                 >
-                  {BUBBLE_ITEMS.map((b) => {
+                  {BUBBLE_ITEMS.map((b, i) => {
                     const isSelected = selectedSede === b.value;
                     return (
                       <button
@@ -434,7 +430,9 @@ function PasswordCard({
                           "w-full text-left px-4 py-3 text-sm transition-colors duration-100",
                           isSelected
                             ? "font-semibold"
-                            : "font-medium hover:bg-[var(--bg-hover)]"
+                            : "font-medium hover:bg-[var(--bg-hover)]",
+                          i === 0 && "rounded-t-xl",
+                          i === BUBBLE_ITEMS.length - 1 && "rounded-b-xl"
                         )}
                         style={{
                           color: isSelected ? "var(--accent)" : "var(--text-primary)",
