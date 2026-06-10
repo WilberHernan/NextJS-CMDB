@@ -235,12 +235,12 @@ function PasswordCard({
 
   const selectBubble = useCallback(
     (sede: Sede) => {
-      setExiting(sede);
+      setSelectedSede(sede);   // ← seleccionar YA, sin esperar
+      setExiting("__all__");    // animación de salida
       setTimeout(() => {
-        setSelectedSede(sede);
         setExiting(null);
         setBubblesOpen(false);
-      }, 450);
+      }, 300);
     },
     [setSelectedSede]
   );
@@ -258,7 +258,7 @@ function PasswordCard({
         setTimeout(() => {
           setExiting(null);
           setBubblesOpen(false);
-        }, 450);
+        }, 300);
       }
     };
     const timer = setTimeout(() => document.addEventListener("click", handleClick), 100);
@@ -413,14 +413,11 @@ function PasswordCard({
                 <div
                   className="rounded-xl overflow-hidden"
                   style={{
-                    background: "var(--glass-bg)",
-                    backdropFilter: "blur(32px) saturate(160%)",
-                    WebkitBackdropFilter: "blur(32px) saturate(160%)",
-                    border: "1px solid var(--glass-border)",
+                    background: "var(--bg-surface)",
+                    border: "1px solid var(--border-default)",
                     boxShadow: `
-                      4px 4px 16px var(--neu-shadow-dark),
-                      -4px -4px 16px var(--neu-shadow-light),
-                      0 1px 0 0 var(--glass-highlight) inset
+                      0 8px 32px rgba(0,0,0,0.12),
+                      0 2px 8px rgba(0,0,0,0.06)
                     `,
                   }}
                 >
@@ -435,9 +432,10 @@ function PasswordCard({
                           selectBubble(b.value);
                         }}
                         className={cn(
-                          "w-full text-left px-4 py-3 text-sm font-medium transition-all duration-150",
-                          "hover:bg-[rgba(255,255,255,0.06)] dark:hover:bg-[rgba(255,255,255,0.04)]",
-                          isSelected && "bg-[rgba(255,255,255,0.08)] dark:bg-[rgba(255,255,255,0.06)]"
+                          "w-full text-left px-4 py-3 text-sm transition-colors duration-100",
+                          isSelected
+                            ? "font-semibold"
+                            : "font-medium hover:bg-[var(--bg-hover)]"
                         )}
                         style={{
                           color: isSelected ? "var(--accent)" : "var(--text-primary)",
@@ -446,14 +444,14 @@ function PasswordCard({
                       >
                         <div className="flex items-center gap-3">
                           <div
-                            className="h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0"
+                            className="h-[18px] w-[18px] rounded-full border-2 flex items-center justify-center shrink-0 transition-colors duration-100"
                             style={{
                               borderColor: isSelected ? "var(--accent)" : "var(--border-default)",
                             }}
                           >
                             {isSelected && (
                               <div
-                                className="h-2.5 w-2.5 rounded-full"
+                                className="h-[10px] w-[10px] rounded-full"
                                 style={{ background: "var(--accent)" }}
                               />
                             )}
