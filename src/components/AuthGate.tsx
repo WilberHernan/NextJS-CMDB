@@ -443,16 +443,31 @@ function PasswordCard({
                       >
                         <div className="flex items-center gap-3">
                           <div
-                            className="h-[18px] w-[18px] rounded border-2 flex items-center justify-center shrink-0 transition-colors duration-100"
+                            className="flex items-center justify-center shrink-0"
                             style={{
-                              borderColor: isSelected ? "var(--accent)" : "var(--border-default)",
+                              width: 22,
+                              height: 22,
+                              borderRadius: 7,
+                              background: "var(--accent-muted)",
+                              boxShadow: `
+                                inset 1.5px 1.5px 3px var(--neu-shadow-dark),
+                                inset -1.5px -1.5px 3px var(--neu-shadow-light)
+                              `,
                             }}
                           >
                             {isSelected && (
-                              <div
-                                className="h-[10px] w-[10px] rounded-sm"
-                                style={{ background: "var(--accent)" }}
-                              />
+                              <svg
+                                width="13"
+                                height="13"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="var(--accent)"
+                                strokeWidth="3.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
                             )}
                           </div>
                           <span>{b.label}</span>
