@@ -214,10 +214,16 @@ function PasswordCard({
     triggerHeight: 0,
   });
 
+  const SEDE_LABEL: Record<Sede, string> = {
+    CCYS: "CCYS",
+    REGIONAL: "REGIONAL",
+    CIUDAD_JARDIN: "CIUDAD JARDIN",
+  };
+
   const BUBBLE_ITEMS: { value: Sede; label: string }[] = [
-    { value: "CCYS", label: "CCYS" },
-    { value: "REGIONAL", label: "REGIONAL" },
-    { value: "CIUDAD_JARDIN", label: "CIUDAD JARDIN" },
+    { value: "CCYS", label: SEDE_LABEL.CCYS },
+    { value: "REGIONAL", label: SEDE_LABEL.REGIONAL },
+    { value: "CIUDAD_JARDIN", label: SEDE_LABEL.CIUDAD_JARDIN },
   ];
 
   const openBubbles = useCallback(() => {
@@ -380,7 +386,7 @@ function PasswordCard({
                   !selectedSede && "text-muted-foreground"
                 )}
               >
-                {selectedSede || "Seleccione sede"}
+                {selectedSede ? SEDE_LABEL[selectedSede] : "Seleccione sede"}
               </span>
               <ChevronDown
                 className={cn(
