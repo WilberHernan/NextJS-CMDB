@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useSede } from "@/contexts/sede-context";
-import { isSede, type Sede } from "@/lib/sedes";
+import { isSede, SEDE_LABELS, type Sede } from "@/lib/sedes";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 
@@ -214,16 +214,10 @@ function PasswordCard({
     triggerHeight: 0,
   });
 
-  const SEDE_LABEL: Record<Sede, string> = {
-    CCYS: "CCYS",
-    REGIONAL: "REGIONAL",
-    CIUDAD_JARDIN: "CIUDAD JARDIN",
-  };
-
   const BUBBLE_ITEMS: { value: Sede; label: string }[] = [
-    { value: "CCYS", label: SEDE_LABEL.CCYS },
-    { value: "REGIONAL", label: SEDE_LABEL.REGIONAL },
-    { value: "CIUDAD_JARDIN", label: SEDE_LABEL.CIUDAD_JARDIN },
+    { value: "CCYS", label: SEDE_LABELS.CCYS },
+    { value: "REGIONAL", label: SEDE_LABELS.REGIONAL },
+    { value: "CIUDAD_JARDIN", label: SEDE_LABELS.CIUDAD_JARDIN },
   ];
 
   const openBubbles = useCallback(() => {
@@ -386,7 +380,7 @@ function PasswordCard({
                   !selectedSede && "text-muted-foreground"
                 )}
               >
-                {selectedSede ? SEDE_LABEL[selectedSede] : "Seleccione sede"}
+                {selectedSede ? SEDE_LABELS[selectedSede] : "Seleccione sede"}
               </span>
               <ChevronDown
                 className={cn(
