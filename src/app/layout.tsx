@@ -73,6 +73,9 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/icon.png" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="antialiased font-sans">
         <ErrorBoundary>

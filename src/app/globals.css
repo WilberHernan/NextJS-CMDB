@@ -489,4 +489,36 @@
       transition-duration: 0.01ms !important;
     }
   }
+
+  /* ── Touch / Mobile Optimizations ────────────────────────────
+   * 1. Remove 300ms tap delay (already mitigated by viewport,
+   *    but explicit for older WebViews).
+   * 2. Remove default Android tap highlight (grey box on tap).
+   * 3. Prevent text selection on buttons (double-tap bleed).
+   * 4. Neutralize sticky hover transforms on touch devices —
+   *    hover effects that lift/translate buttons persist after
+   *    tap on mobile, creating a "stuck" visual state.
+   *    The :hover stays active until the user taps elsewhere,
+   *    so we reset transforms on hover for touch interactives.  */
+  html {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button, [role="button"], a {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Prevent "sticky hover" on touch — these hover effects
+   * (translateY lift, shadow changes) would persist after tap
+   * on mobile/tablet and look broken */
+  @media (hover: none) and (pointer: coarse) {
+    button:hover,
+    [role="button"]:hover,
+    a:hover {
+      transform: none !important;
+    }
+  }
 }

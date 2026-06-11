@@ -1,0 +1,19 @@
+{
+  "name": "CMDB SENA — Centro de Comercio y Servicios",
+  "short_name": "CMDB SENA",
+  "description": "Gestión de Configuración CMDB para equipos SENA — Cauca 2026",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f1f5f9",
+  "theme_color": "#16a34a",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
