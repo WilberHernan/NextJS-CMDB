@@ -41,8 +41,8 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // ── Always let auth API through (login, check) ──────────────
-  if (pathname.startsWith("/api/auth/")) {
+  // ── Always let auth API + health through ────────────────────
+  if (pathname.startsWith("/api/auth/") || pathname === "/api/health") {
     return NextResponse.next();
   }
 

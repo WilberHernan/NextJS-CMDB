@@ -51,13 +51,35 @@ export function Header({
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/health")
-      .then((r) => {
-        if (!cancelled) setConnStatus(r.ok ? "connected" : "error");
-      })
-      .catch(() => {
-        if (!cancelled) setConnStatus("error");
-      });
+    let retries = 0;
+    const maxRetries = 2;
+
+    const check = () => {
+      if (cancelled) return;
+      fetch("/api/health")
+        .then((r) => {
+          if (cancelled) return;
+          if (r.ok) {
+            setConnStatus("connected");
+          } else if (retries < maxRetries) {
+            retries++;
+            setTimeout(check, 1500 * retries);
+          } else {
+            setConnStatus("error");
+          }
+        })
+        .catch(() => {
+          if (cancelled) return;
+          if (retries < maxRetries) {
+            retries++;
+            setTimeout(check, 1500 * retries);
+          } else {
+            setConnStatus("error");
+          }
+        });
+    };
+
+    check();
     return () => { cancelled = true; };
   }, []);
 

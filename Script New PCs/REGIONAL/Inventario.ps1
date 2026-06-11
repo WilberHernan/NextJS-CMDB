@@ -1,13 +1,13 @@
-<#
+﻿<#
 .SYNOPSIS
-  Script de inventario de hardware SEDE REGIONAL para CMDB SENA.
+  Script de inventario de hardware UNIVERSAL para CMDB SENA CCYS.
   Lee especificaciones del equipo local con multiples metodos de fallback.
 
 .DESCRIPTION
   Ejecutar en el equipo nuevo (Windows).
   Detecta hardware via WMI/CIM/Registry/CLI con fallback por capas.
   Abre el navegador en el CMDB con query parameters listos para autorellenar
-  el formulario en la web de Next.js — SEDE REGIONAL.
+  el formulario en la web de Next.js - SEDE REGIONAL.
 
 .USAGE
   1. Copiar este archivo al equipo nuevo.
@@ -25,14 +25,15 @@
 # ============================================
 $script:CMDB_URL = "https://next-js-cmdb.vercel.app"
 
-# Clave de acceso a la pagina (protege contra acceso no autorizado)
+# Clave de acceso a la página (protege contra acceso no autorizado)
+# Reemplazar XXXXXXXX con la clave definida en Vercel como PAGE_KEY
 $script:CMDB_KEY = "SENA2026_"
-
 # Sede: CCYS | REGIONAL | CIUDAD_JARDIN
 $script:SEDE = "REGIONAL"
 
 if ($CMDB_URL -match "XXXXXXXX") {
-    Write-Host ""
+    Write-Host "Abriendo CMDB (SEDE: $SEDE)..." -ForegroundColor Green
+Write-Host ""
     Write-Host "ERROR: Debes configurar la URL del CMDB." -ForegroundColor Red
     Write-Host "Abre este archivo en un editor de texto y reemplaza la variable `$CMDB_URL" -ForegroundColor Yellow
     Write-Host "con la URL del deployment de Next.js (Vercel o servidor propio)." -ForegroundColor Yellow
@@ -580,7 +581,7 @@ function Get-OSCaptionUniversal {
 # ============================================
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor DarkGray
-Write-Host "  CMDB SENA CCYS — SEDE $SEDE" -ForegroundColor Green
+Write-Host "  CMDB SENA CCYS - SEDE REGIONAL" -ForegroundColor Green
 Write-Host "============================================================" -ForegroundColor DarkGray
 Write-Host ""
 Write-Host "Detectando hardware con multiples metodos..." -ForegroundColor DarkGray
@@ -794,7 +795,7 @@ $qsParts += "key=$(Url-Encode -Value $CMDB_KEY)"
 $qsParts += "sede=$(Url-Encode -Value $SEDE)"
 $finalUrl = "$CMDB_URL`?$($qsParts -join '&')"
 
-Write-Host "Abriendo CMDB (SEDE: $SEDE)..." -ForegroundColor Green
+Write-Host "Abriendo CMDB..." -ForegroundColor Green
 Write-Host ""
 try {
     Start-Process $finalUrl
