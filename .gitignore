@@ -36,6 +36,7 @@ next-env.d.ts
 
 # AI artifacts
 .atl/
+.agents/
 
 # AI tooling cache
 .codedev-mcp/
