@@ -147,7 +147,7 @@ export function Header({
             <span
               className={cn(
                 "w-[6px] h-[6px] rounded-full transition-all duration-500",
-                connStatus === "loading" && "bg-muted-foreground",
+                connStatus === "loading" && "bg-muted-foreground animate-pulse",
                 connStatus === "connected" && "bg-accent animate-pulse-glow",
                 connStatus === "error" && "bg-danger"
               )}
