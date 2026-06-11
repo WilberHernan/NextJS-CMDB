@@ -103,8 +103,8 @@ const config: Config = {
       },
       keyframes: {
         "pulse-glow": {
-          "0%, 100%": { boxShadow: "0 0 20px rgba(57, 169, 0, 0.35)" },
-          "50%": { boxShadow: "0 0 40px rgba(57, 169, 0, 0.35), 0 0 60px rgba(57, 169, 0, 0.35)" },
+          "0%, 100%": { boxShadow: "0 0 20px var(--sena-green-glow)" },
+          "50%": { boxShadow: "0 0 40px var(--sena-green-glow), 0 0 60px var(--sena-green-glow)" },
         },
         "gradient-shift": {
           "0%": { backgroundPosition: "0% 50%" },

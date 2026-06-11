@@ -60,16 +60,28 @@ export async function getSheetsClient() {
   return sheetsClient;
 }
 
-const SPREADSHEET_IDS: Record<Sede, string> = {
-  CCYS: process.env.SPREADSHEET_ID_CCYS!,
-  REGIONAL: process.env.SPREADSHEET_ID_REGIONAL!,
-  CIUDAD_JARDIN: process.env.SPREADSHEET_ID_CIUDAD_JARDIN!,
+/** Mapa de env var → sede para errores descriptivos */
+const ENV_VAR_MAP: Record<Sede, string> = {
+  CCYS: "SPREADSHEET_ID_CCYS",
+  REGIONAL: "SPREADSHEET_ID_REGIONAL",
+  CIUDAD_JARDIN: "SPREADSHEET_ID_CIUDAD_JARDIN",
+};
+
+const SPREADSHEET_IDS: Record<Sede, string | undefined> = {
+  CCYS: process.env.SPREADSHEET_ID_CCYS,
+  REGIONAL: process.env.SPREADSHEET_ID_REGIONAL,
+  CIUDAD_JARDIN: process.env.SPREADSHEET_ID_CIUDAD_JARDIN,
 };
 
 /** Retorna el Spreadsheet ID según la sede. Default: CCYS. */
 function getSpreadsheetId(sede: Sede = "CCYS"): string {
   const id = SPREADSHEET_IDS[sede];
-  if (!id) throw new Error(`SPREADSHEET_ID no configurado para la sede: ${sede}`);
+  if (!id) {
+    const varName = ENV_VAR_MAP[sede];
+    throw new Error(
+      `Falta ${varName} en .env — no se puede conectar con la sede ${sede}`
+    );
+  }
   return id;
 }
 

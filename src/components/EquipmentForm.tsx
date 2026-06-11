@@ -77,7 +77,7 @@ export function EquipmentForm({
                     isObservaciones && "col-span-full"
                   )}
                 >
-                  <label className="text-[0.6875rem] font-semibold uppercase tracking-display-loose text-muted-foreground flex items-center gap-2">
+                  <label htmlFor={`field-${index}`} className="text-[0.6875rem] font-semibold uppercase tracking-display-loose text-muted-foreground flex items-center gap-2">
                     <span className="inline-flex items-center justify-center min-w-[20px] h-5 text-[10px] font-semibold rounded-md bg-surface-elevated text-muted-foreground border border-border-default font-mono">
                       {index + 1}
                     </span>
@@ -91,6 +91,7 @@ export function EquipmentForm({
                     validacionesIndices={validacionesIndices}
                     validaciones={validaciones}
                     readOnly={esModoNuevo && isPlaca}
+                    fieldId={`field-${index}`}
                     onChange={onValorChange}
                   />
                 </div>

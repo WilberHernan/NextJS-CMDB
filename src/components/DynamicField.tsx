@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { CustomSelect } from "@/components/CustomSelect";
 import { DateField } from "@/components/DateField";
 
@@ -10,6 +11,7 @@ interface DynamicFieldProps {
   validacionesIndices: number[];
   validaciones: Record<number, string[]>;
   readOnly?: boolean;
+  fieldId?: string;
   onChange: (index: number, value: string) => void;
 }
 
@@ -20,6 +22,7 @@ export function DynamicField({
   validacionesIndices,
   validaciones,
   readOnly,
+  fieldId,
   onChange,
 }: DynamicFieldProps) {
   const isObservaciones = nombre === "Observaciones";
@@ -53,6 +56,7 @@ export function DynamicField({
   if (isObservaciones) {
     return (
       <textarea
+        id={fieldId}
         rows={3}
         value={value || ""}
         onChange={(e) => handleChange(e.target.value)}
@@ -63,11 +67,15 @@ export function DynamicField({
 
   return (
     <input
+      id={fieldId}
       type="text"
       value={value || ""}
       readOnly={readOnly || isPlaca}
       onChange={(e) => handleChange(e.target.value)}
-        className={`flex w-full rounded-xl border border-border-default bg-surface-input px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground-60 shadow-neu-pressed hover:border-border-hover focus:border-accent focus:shadow-[var(--focus-ring)] focus:outline-none transition-all duration-200 ease-cinematic font-sans ${isPlaca ? "bg-surface-elevated text-muted-foreground font-semibold cursor-not-allowed border-dashed shadow-none" : ""}`}
+      className={cn(
+        "flex w-full rounded-xl border border-border-default bg-surface-input px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground-60 shadow-neu-pressed hover:border-border-hover focus:border-accent focus:shadow-[var(--focus-ring)] focus:outline-none transition-all duration-200 ease-cinematic font-sans",
+        isPlaca && "bg-surface-elevated text-muted-foreground font-semibold cursor-not-allowed border-dashed shadow-none"
+      )}
     />
   );
 }

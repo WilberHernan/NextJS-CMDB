@@ -165,6 +165,13 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   );
 }
 
+/* ── Static bubble items (moved outside component to avoid re-creation) ── */
+const BUBBLE_ITEMS: { value: Sede; label: string }[] = [
+  { value: "CCYS", label: SEDE_LABELS.CCYS },
+  { value: "REGIONAL", label: SEDE_LABELS.REGIONAL },
+  { value: "CIUDAD_JARDIN", label: SEDE_LABELS.CIUDAD_JARDIN },
+];
+
 /* ───────────────────────────────────────────────
  * Password card — integrated sede selector
  * ─────────────────────────────────────────────── */
@@ -204,12 +211,6 @@ function PasswordCard({
     triggerWidth: 0,
     triggerHeight: 0,
   });
-
-  const BUBBLE_ITEMS: { value: Sede; label: string }[] = [
-    { value: "CCYS", label: SEDE_LABELS.CCYS },
-    { value: "REGIONAL", label: SEDE_LABELS.REGIONAL },
-    { value: "CIUDAD_JARDIN", label: SEDE_LABELS.CIUDAD_JARDIN },
-  ];
 
   const openBubbles = useCallback(() => {
     const tr = bubbleTriggerRef.current?.getBoundingClientRect();
@@ -479,7 +480,7 @@ function PasswordCard({
             Contraseña
           </label>
           <div
-            className="relative rounded-xl overflow-hidden mb-5"
+            className="relative rounded-xl overflow-hidden mb-5 bg-surface-input"
             style={{
               boxShadow:
                 "inset 2px 2px 6px var(--neu-shadow-dark), inset -2px -2px 6px var(--neu-shadow-light)",

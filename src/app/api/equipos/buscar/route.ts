@@ -10,18 +10,12 @@ export async function GET(request: NextRequest) {
     const sedeRaw = searchParams.get("sede");
     const sede = isSede(sedeRaw) ? sedeRaw : "CCYS";
 
-    console.log(`[${requestId}] GET buscar placa=${placa} sede=${sede}`);
-
     if (!placa) {
       return NextResponse.json(
         { ok: false, error: "Parámetro 'placa' requerido" },
         { status: 400 }
       );
     }
-
-    console.log(`[${requestId}] SPREADSHEET_ID_CCYS=${process.env.SPREADSHEET_ID_CCYS ? "✓ definido" : "✗ NO DEFINIDO"}`);
-    console.log(`[${requestId}] SPREADSHEET_ID_REGIONAL=${process.env.SPREADSHEET_ID_REGIONAL ? "✓ definido" : "✗ NO DEFINIDO"}`);
-    console.log(`[${requestId}] SPREADSHEET_ID_CIUDAD_JARDIN=${process.env.SPREADSHEET_ID_CIUDAD_JARDIN ? "✓ definido" : "✗ NO DEFINIDO"}`);
 
     const resultado = await buscarEquipo(placa, sede);
 

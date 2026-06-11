@@ -167,6 +167,7 @@ export function Header({
             onClick={onToggleTheme}
             className="rounded-xl"
             title="Cambiar tema"
+            aria-label="Cambiar tema"
           >
             {theme === "dark" ? (
               <Moon className="h-[18px] w-[18px]" />
@@ -181,6 +182,7 @@ export function Header({
             onClick={handleLogout}
             className="rounded-xl"
             title="Salir"
+            aria-label="Cerrar sesión"
           >
             <LogOut className="h-[18px] w-[18px] text-muted-foreground hover:text-danger transition-colors duration-200" />
           </Button>
@@ -195,8 +197,7 @@ export function Header({
             aria-hidden
             className="pointer-events-none absolute left-0 right-0 bottom-0 h-[1.5px] rounded-b-2xl animate-success-bar"
             style={{
-              background:
-                "linear-gradient(90deg, transparent 0%, #39a900 18%, #4ade80 50%, #39a900 82%, transparent 100%)",
+              background: `linear-gradient(90deg, transparent 0%, var(--sena-green) 18%, var(--sena-green-light) 50%, var(--sena-green) 82%, transparent 100%)`,
             }}
           />
         )}

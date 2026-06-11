@@ -176,10 +176,9 @@ export function CustomSelect({
           }}
           className={cn(
             "min-w-[180px] rounded-2xl p-1.5",
-            "bg-[rgba(255,255,255,0.92)] dark:bg-[rgba(28,28,30,0.92)]",
-            "backdrop-blur-2xl",
-            "shadow-[0_12px_48px_rgba(0,0,0,0.18),0_4px_12px_rgba(0,0,0,0.06)]",
-            "border border-[rgba(0,0,0,0.06)] dark:border-[rgba(255,255,255,0.06)]",
+            "glass",
+            "shadow-neu-flat",
+            "border border-border-default",
             "animate-scale-in origin-top-left",
             "overflow-y-auto max-h-[280px] overscroll-behavior-contain"
           )}
@@ -192,10 +191,10 @@ export function CustomSelect({
               className={cn(
                 "flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-sm text-left",
                 "transition-all duration-100 font-sans tracking-tight",
-                "text-[var(--text-secondary)]",
-                "hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.07)]",
+                "text-muted-foreground",
+                "hover:bg-surface-hover",
                 item.value === value &&
-                  "text-[var(--text-primary)] dark:text-white font-medium"
+                  "text-foreground font-medium"
               )}
             >
               <span>{item.label}</span>
