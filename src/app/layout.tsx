@@ -45,16 +45,16 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    template: "%s — CMDB SENA",
-    default: "CMDB — SENA",
+    template: "%s — SENA CMDB",
+    default: "SENA CMDB",
   },
   description:
     "Gestión de Configuración CMDB — SENA Centro de Comercio y Servicios",
   robots: { index: false, follow: false },
   openGraph: {
-    title: "CMDB — SENA",
+    title: "SENA CMDB",
     description:
-      "Gestión de Configuración CMDB — SENA Centro de Comercio y Servicios",
+      "Gestión de Configuración — SENA Centro de Comercio y Servicios",
     locale: "es_CO",
     type: "website",
   },
