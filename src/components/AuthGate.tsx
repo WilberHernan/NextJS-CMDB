@@ -480,9 +480,12 @@ function PasswordCard({
             Contraseña
           </label>
           <div
-            className="relative rounded-xl overflow-hidden mb-5 bg-surface-input"
+            className="relative rounded-xl overflow-hidden mb-5"
             style={{
+              background: "var(--bg-elevated)",
               boxShadow:
+                "inset 2px 2px 6px var(--neu-shadow-dark), inset -2px -2px 6px var(--neu-shadow-light)",
+              WebkitBoxShadow:
                 "inset 2px 2px 6px var(--neu-shadow-dark), inset -2px -2px 6px var(--neu-shadow-light)",
             }}
           >

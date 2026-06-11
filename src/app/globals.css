@@ -209,6 +209,21 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+
+  /* === BROWSER AUTOFILL OVERRIDE ===
+     Prevents Chrome/Safari from forcing white/yellow backgrounds on
+     password and text inputs when browser autofill is active, which
+     breaks the dark mode neumorphic aesthetic. Uses a long-duration
+     box-shadow inset trick to override Chrome's !important bg-color
+     without losing the input background. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text-primary);
+    -webkit-box-shadow: 0 0 0px 1000px var(--bg-elevated) inset;
+    transition: background-color 9999s ease-in-out 0s;
+  }
+
 }
 
 @layer utilities {
