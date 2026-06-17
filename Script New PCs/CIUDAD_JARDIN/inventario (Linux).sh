@@ -17,7 +17,8 @@ SEDE="CIUDAD_JARDIN"
 # AUXILIARES
 # ========================================================================
 urlencode() {
-    local s="$1" l=${#s} e="" p c o
+    local s="$1" e="" p c o
+    local l=${#s}
     for (( p=0; p<l; p++ )); do
         c="${s:$p:1}"
         case "$c" in [-_.~a-zA-Z0-9]) o="$c" ;; *) printf -v o '%%%02x' "'$c" ;; esac
