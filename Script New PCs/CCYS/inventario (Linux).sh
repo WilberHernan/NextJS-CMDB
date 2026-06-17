@@ -157,12 +157,12 @@ red() {
 discos() {
     local d1t="" d1s="" d2t="N/A" d2s="N/A" cnt=0 idx=0 n r ss g ts
     if have lsblk; then
-        while IFS='|' read -r n s r m; do
+        while IFS=' ' read -r n s r; do
             [[ "$n" == loop* || "$n" == ram* || "$n" == sr* || "$n" == zram* ]] && continue
             idx=$((idx + 1)); [[ $idx -gt 2 ]] && break
             local t="HDD"
-            [[ "$r" == "0" ]] && { [[ "$n" == nvme* || "$m" == *NVMe* || "$m" == *"M.2"* ]] && t="M2" || t="SSD"; }
-            local tn; tn=$(echo "$s" | grep -oP '^\K[0-9.]+' || echo "0")
+            [[ "$r" == "0" ]] && { [[ "$n" == nvme* ]] && t="M2" || t="SSD"; }
+            local tn; tn=$(echo "$s" | grep -oP '^[0-9.]+' || echo "0")
             local g; g=$(echo "$tn" | awk '{printf "%.0f", $1}')
             if   [[ "$g" -lt 150 ]]; then ts="120 GB"
             elif [[ "$g" -lt 380 ]]; then ts="256 GB"
@@ -174,7 +174,7 @@ discos() {
             if   [[ $idx -eq 1 ]]; then d1t="$t"; d1s="$ts"
             elif [[ $idx -eq 2 ]]; then d2t="$t"; d2s="$ts"; fi
             cnt=$idx
-        done < <(lsblk -d -o NAME,SIZE,ROTA,MODEL -n -p 2>/dev/null || true)
+        done < <(lsblk -d -o NAME,SIZE,ROTA -n 2>/dev/null || true)
     fi
     if [[ "$cnt" -eq 0 ]]; then
         for blk in /sys/block/*; do
