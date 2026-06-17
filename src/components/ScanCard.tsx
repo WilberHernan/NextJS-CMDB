@@ -152,7 +152,7 @@ export function ScanCard({
             "shadow-neu border border-border-default",
             scanMode === "scanner"
               ? "bg-accent-soft text-accent border-border-accent shadow-neu-pressed"
-              : "bg-surface-elevated text-muted-foreground hover:text-foreground hover:-translate-y-0.5"
+              : "bg-surface text-muted-foreground hover:text-foreground hover:-translate-y-0.5"
           )}
         >
           <Scan className="h-[18px] w-[18px]" />
@@ -166,7 +166,7 @@ export function ScanCard({
             "shadow-neu border border-border-default",
             scanMode === "camera"
               ? "bg-accent-soft text-accent border-border-accent shadow-neu-pressed"
-              : "bg-surface-elevated text-muted-foreground hover:text-foreground hover:-translate-y-0.5"
+              : "bg-surface text-muted-foreground hover:text-foreground hover:-translate-y-0.5"
           )}
         >
           <Camera className="h-[18px] w-[18px]" />
@@ -302,7 +302,7 @@ export function ScanCard({
                   onClick={handleRescan}
                   className={cn(
                     "flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl",
-                    "bg-surface-elevated text-muted-foreground hover:text-foreground",
+                    "bg-surface text-muted-foreground hover:text-foreground",
                     "border border-border-default shadow-neu",
                     "transition-all duration-200 ease-cinematic",
                     "hover:-translate-y-0.5"
