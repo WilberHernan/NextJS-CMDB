@@ -86,7 +86,8 @@ ram_bytes() {
     echo 0
 }
 ram_norm() {
-    local b=$1 g=$(( (b + 500000000) / 1000000000 ))
+    local b=$1 g
+    g=$(( (b + 500000000) / 1000000000 ))
     [[ "$b" -le 0 ]] && { echo ""; return; }
     if   [[ "$g" -le 5 ]];   then echo "4 GB"
     elif [[ "$g" -le 10 ]];  then echo "8 GB"
