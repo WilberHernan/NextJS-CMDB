@@ -4,7 +4,7 @@ title CMDB SENA - Lanzador de Inventario [REGIONAL]
 color 0A
 
 echo ============================================
-echo   CMDB SENA CCYS - Inventario de Equipos
+echo   CMDB SENA REGIONAL - Inventario de Equipos
 echo   SEDE: REGIONAL
 echo ============================================
 echo.
@@ -33,10 +33,12 @@ echo.
 
 powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1_FILE%"
 
-if %errorlevel% neq 0 (
+if %errorlevel% NEQ 0 (
     echo.
     echo ============================================
     echo [ERROR] El script termino con codigo %errorlevel%
+    echo.
+    echo Si ves un error de "ExecutionPolicy", contacta al administrador.
     echo.
     pause
     exit /b %errorlevel%

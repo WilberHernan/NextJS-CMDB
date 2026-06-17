@@ -32,7 +32,7 @@ echo.
 
 powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1_FILE%"
 
-if %errorlevel% neq 0 (
+if %errorlevel% NEQ 0 (
     echo.
     echo ============================================
     echo [ERROR] El script termino con codigo %errorlevel%
