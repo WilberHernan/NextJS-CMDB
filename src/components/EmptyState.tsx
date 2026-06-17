@@ -54,7 +54,7 @@ export function EmptyState({ placa, onRetry, onRegisterNew }: EmptyStateProps) {
         <button
           type="button"
           onClick={onRetry}
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[0.9375rem] font-semibold text-muted-foreground bg-surface-elevated border border-border-default shadow-neu hover:-translate-y-0.5 hover:shadow-neu-flat hover:text-foreground active:translate-y-0 active:shadow-neu-pressed transition-all duration-200 ease-cinematic outline-none font-sans"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[0.9375rem] font-semibold text-muted-foreground bg-surface border border-border-default shadow-neu hover:-translate-y-0.5 hover:shadow-neu-flat hover:text-foreground active:translate-y-0 active:shadow-neu-pressed transition-all duration-200 ease-cinematic outline-none font-sans"
         >
           <Search className="h-[18px] w-[18px]" strokeWidth={2} />
           Escanear otra placa

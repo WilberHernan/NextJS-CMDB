@@ -44,9 +44,8 @@ export function Alert({ type, message, className, onDismiss }: AlertProps) {
       aria-live="polite"
       className={cn(
         "flex items-center gap-3 w-full",
-        "rounded-2xl border border-border-default bg-surface-elevated",
+        "rounded-2xl glass shadow-neu-flat",
         "px-4 py-3.5 text-sm font-medium text-foreground",
-        "shadow-neu-flat",
         dismissing ? "animate-alert-out" : "animate-alert-in",
         className
       )}
