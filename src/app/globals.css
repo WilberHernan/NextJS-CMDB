@@ -112,12 +112,13 @@
     --bg-input: #0d0d11;
 
     /* === BORDERS ===
-       Subtle in dark — neumorphic shadows carry the depth,
-       but a faint 3-4% white border keeps card edges from
-       disappearing into the background. */
-    --border-subtle: rgba(255, 255, 255, 0.03);
-    --border-default: rgba(255, 255, 255, 0.04);
-    --border-hover: rgba(255, 255, 255, 0.10);
+       Invisible in dark — the neumorphic shadows do ALL the edge
+       definition. Light mode uses visible black borders (4-8%),
+       dark mode relies on the top-left light shadow + bottom-right
+       dark shadow to pop cards off the background. */
+    --border-subtle: transparent;
+    --border-default: transparent;
+    --border-hover: rgba(255, 255, 255, 0.08);
     --border-accent: rgba(134, 239, 172, 0.30);
 
     --text-primary: #ededee;
@@ -141,10 +142,10 @@
        Reduced from 0.35 to 0.04 in dark so it doesn't dominate. */
     --sena-green-glow: rgba(57, 169, 0, 0.04);
 
-    --glass-bg: rgba(18, 18, 23, 0.80);
-    --glass-border: rgba(255, 255, 255, 0.04);
-    --glass-border-hover: rgba(255, 255, 255, 0.09);
-    --glass-highlight: rgba(255, 255, 255, 0.05);
+    --glass-bg: rgba(18, 18, 23, 0.85);
+    --glass-border: transparent;
+    --glass-border-hover: transparent;
+    --glass-highlight: rgba(255, 255, 255, 0.04);
 
     /* === NEUMORPHISM (DARK MODE) ===
        True neumorphism needs BOTH outer shadows — light from top-left,
@@ -288,14 +289,15 @@
     border-color: var(--glass-border-hover);
   }
 
-  /* Dark mode borders — neumorphic shadows do most of the edge
-     definition, but a subtle border (--border-default at 4% white)
-     prevents cards from looking like undifferentiated rectangles.
-     Elements that opt in via border-border-default get this by
-     default. Elements with no border class stay borderless.
+  /* Dark mode borders are invisible — the neumorphic light-shadow
+     on top-left and dark-shadow on bottom-right define every edge.
+     This global override keeps stray borders from appearing.
      IMPORTANT: only :focus — NOT :focus-within (would propagate
      to parent cards). Components with focus-within use specific
      .focus-within:border-accent utilities. */
+  .dark * {
+    border-color: transparent;
+  }
   .dark *:hover {
     border-color: var(--border-hover);
   }
