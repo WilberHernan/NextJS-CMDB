@@ -86,6 +86,8 @@ export function useEquipmentForm(): UseEquipmentFormReturn {
   const [alertInfo, setAlertInfo] = useState<AlertInfo | null>(null);
   const [equipmentFound, setEquipmentFound] = useState(false);
   const propietarioOriginalRef = useRef<string>("");
+  /** Tracks the most recent search to cancel stale async responses. */
+  const latestSearchRef = useRef<string>("");
 
   // Initial data load
   useEffect(() => {
@@ -173,11 +175,18 @@ export function useEquipmentForm(): UseEquipmentFormReturn {
 
   const handleScan = useCallback(
     async (placa: string) => {
+      // Mark this as the latest search BEFORE clearing state
+      latestSearchRef.current = placa;
+
       setAlertInfo(null);
       setEmptyStatePlaca(null);
       setEquipmentFound(false);
 
       const data = await buscar(placa);
+
+      // Stale response — a newer search already superseded this one
+      if (latestSearchRef.current !== placa) return;
+
       if (!data) {
         setFormVisible(false);
         setEmptyStatePlaca(placa);
