@@ -108,8 +108,8 @@ tipo_mem() {
 
 video() {
     local v
-    have lspci && v=$(lspci 2>/dev/null | grep -iE "VGA|3D|Display" | head -1 | sed 's/.*: //') && [[ -n "$v" ]] && { echo "$v"; return; }
-    have glxinfo && v=$(glxinfo 2>/dev/null | grep "OpenGL renderer" | sed 's/.*: //') && [[ -n "$v" ]] && { echo "$v"; return; }
+    have glxinfo && v=$(glxinfo 2>/dev/null | grep "OpenGL renderer" | sed 's/.*: //' | sed 's/(.*)//g' | xargs) && [[ -n "$v" ]] && { echo "$v"; return; }
+    have lspci && v=$(lspci 2>/dev/null | grep -iE "VGA|3D|Display" | head -1 | sed 's/.*: //' | sed -E 's/\(rev[^)]*\)//g; s/Corporation//g; s/Inc\.?//g; s/Ltd\.?//g' | xargs) && [[ -n "$v" ]] && { echo "$v"; return; }
     echo ""
 }
 
@@ -350,14 +350,11 @@ FU="${CMDB_URL}?${u}"
 
 echo "Abriendo CMDB..."
 echo ""
-echo "URL generada (primeros 200 caracteres):"
-echo "${FU:0:200}..."
-echo ""
 if abrir_naveragor "$FU"; then
     echo "Navegador abierto."
 else
     echo "No se pudo abrir el navegador automaticamente."
-    echo "URL completa:"
+    echo "Abre esta URL manualmente:"
     echo "${FU}"
 fi
 
