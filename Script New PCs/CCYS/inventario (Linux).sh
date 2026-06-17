@@ -350,11 +350,14 @@ FU="${CMDB_URL}?${u}"
 
 echo "Abriendo CMDB..."
 echo ""
+echo "URL generada (primeros 200 caracteres):"
+echo "${FU:0:200}..."
+echo ""
 if abrir_naveragor "$FU"; then
     echo "Navegador abierto."
 else
     echo "No se pudo abrir el navegador automaticamente."
-    echo "Copia esta URL:"
+    echo "URL completa:"
     echo "${FU}"
 fi
 
