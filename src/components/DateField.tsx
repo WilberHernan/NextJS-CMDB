@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useRef, useCallback } from "react";
-import { Calendar } from "lucide-react";
-import { formatearFechaParaInput } from "@/lib/utils";
+import { useRef, useCallback } from 'react';
+import { Calendar } from 'lucide-react';
+import { formatearFechaParaInput } from '@/lib/utils';
 
 interface DateFieldProps {
   value?: string;
@@ -10,7 +10,7 @@ interface DateFieldProps {
   className?: string;
 }
 
-export function DateField({ value, onChange, className }: DateFieldProps) {
+export function DateField ({ value, onChange, className }: DateFieldProps) {
   const dateInputRef = useRef<HTMLInputElement>(null);
 
   const handleWrapperClick = useCallback(() => {
@@ -20,41 +20,41 @@ export function DateField({ value, onChange, className }: DateFieldProps) {
   const handleDateChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.value) {
-        const d = new Date(e.target.value + "T00:00:00");
-        const dd = String(d.getDate()).padStart(2, "0");
-        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const d = new Date(e.target.value + 'T00:00:00');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
         const yyyy = d.getFullYear();
         onChange(`${dd}/${mm}/${yyyy}`);
       } else {
-        onChange("");
+        onChange('');
       }
     },
     [onChange]
   );
 
-  const isoValue = formatearFechaParaInput(value || "");
+  const isoValue = formatearFechaParaInput(value || '');
 
   return (
     // Single surface, same vocabulary as the scanner input and CustomSelect.
     <div
       onClick={handleWrapperClick}
-      className={`group relative flex items-center w-full cursor-pointer rounded-xl bg-surface-input border border-border-default shadow-neu-pressed transition-all duration-200 ease-cinematic hover:border-border-hover focus-within:border-accent focus-within:shadow-[var(--focus-ring)] ${className ?? ""}`}
+      className={`group relative flex items-center w-full cursor-pointer rounded-xl bg-surface-input border border-border-default shadow-neu-pressed transition-all duration-200 ease-cinematic hover:border-border-hover focus-within:border-accent focus-within:shadow-[var(--focus-ring)] ${className ?? ''}`}
     >
       <input
-        type="text"
+        type='text'
         readOnly
-        value={value || ""}
-        placeholder="DD/MM/AAAA"
-        className="w-full bg-transparent px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground-60 cursor-pointer outline-none font-sans"
+        value={value || ''}
+        placeholder='DD/MM/AAAA'
+        className='w-full bg-transparent px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground-60 cursor-pointer outline-none font-sans'
       />
       <input
         ref={dateInputRef}
-        type="date"
+        type='date'
         value={isoValue}
         onChange={handleDateChange}
-        className="absolute inset-0 w-full h-full opacity-[0.01] cursor-pointer border-none bg-transparent text-transparent"
+        className='absolute inset-0 w-full h-full opacity-[0.01] cursor-pointer border-none bg-transparent text-transparent'
       />
-      <Calendar className="mr-3 h-4 w-4 shrink-0 text-muted-foreground pointer-events-none transition-colors duration-200 group-hover:text-accent group-focus-within:text-accent" />
+      <Calendar className='mr-3 h-4 w-4 shrink-0 text-muted-foreground pointer-events-none transition-colors duration-200 group-hover:text-accent group-focus-within:text-accent' />
     </div>
   );
 }

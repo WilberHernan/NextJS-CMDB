@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useState, useRef, useEffect } from "react";
-import { BrowserMultiFormatReader } from "@zxing/browser";
-import { DecodeHintType, BarcodeFormat } from "@zxing/library";
+import { useState, useRef, useEffect } from 'react';
+import { BrowserMultiFormatReader } from '@zxing/browser';
+import { DecodeHintType, BarcodeFormat } from '@zxing/library';
 import {
   loadImage,
   tryDecodeAggressive,
   type DecodeAttempt,
-} from "@/lib/imagePreprocess";
+} from '@/lib/imagePreprocess';
 
 const HINTS = new Map<DecodeHintType, unknown>([
   [DecodeHintType.POSSIBLE_FORMATS, [
@@ -19,13 +19,13 @@ const HINTS = new Map<DecodeHintType, unknown>([
   [DecodeHintType.TRY_HARDER, true],
 ]);
 
-export type ScanStage = "idle" | "preprocessing" | "decoding" | "done" | "error";
+export type ScanStage = 'idle' | 'preprocessing' | 'decoding' | 'done' | 'error';
 
 export interface UseScannerReturn {
-  scanMode: "scanner" | "camera";
+  scanMode: 'scanner' | 'camera';
   cameraStatus: string;
   cameraReady: boolean;
-  setScanMode: (mode: "scanner" | "camera") => void;
+  setScanMode: (mode: 'scanner' | 'camera') => void;
   processScan: (text: string) => string | null;
   scanFile: (file: File) => Promise<string | null>;
   setCameraStatus: (status: string) => void;
@@ -36,11 +36,11 @@ export interface UseScannerReturn {
   cancelPending: () => void;
 }
 
-export function useScanner(onScan: (placa: string) => void): UseScannerReturn {
-  const [scanMode, setScanMode] = useState<"scanner" | "camera">("scanner");
-  const [cameraStatus, setCameraStatus] = useState("");
+export function useScanner (onScan: (placa: string) => void): UseScannerReturn {
+  const [scanMode, setScanMode] = useState<'scanner' | 'camera'>('scanner');
+  const [cameraStatus, setCameraStatus] = useState('');
   const [cameraReady, setCameraReady] = useState(false);
-  const [stage, setStage] = useState<ScanStage>("idle");
+  const [stage, setStage] = useState<ScanStage>('idle');
   const [pendingValue, setPendingValue] = useState<string | null>(null);
   const [currentAttempt, setCurrentAttempt] = useState<string | null>(null);
 
@@ -57,7 +57,7 @@ export function useScanner(onScan: (placa: string) => void): UseScannerReturn {
   };
 
   const processScan = (text: string): string | null => {
-    const limpia = text.toString().replace(/'/g, "-").replace(/[^a-zA-Z0-9-]/g, "").toUpperCase();
+    const limpia = text.toString().replace(/'/g, '-').replace(/[^a-zA-Z0-9-]/g, '').toUpperCase();
     if (limpia.length === 0) return null;
     onScanRef.current(limpia);
     return limpia;
@@ -68,14 +68,14 @@ export function useScanner(onScan: (placa: string) => void): UseScannerReturn {
   };
 
   const scanFile = async (file: File): Promise<string | null> => {
-    setCameraStatus("Analizando imagen...");
+    setCameraStatus('Analizando imagen...');
     setCameraReady(false);
     setCurrentAttempt(null);
-    setStage("preprocessing");
+    setStage('preprocessing');
     try {
       const img = await loadImage(file);
       const reader = getReader();
-      setStage("decoding");
+      setStage('decoding');
       const detected = await tryDecodeAggressive(img, reader, {
         budgetMs: 3000,
         onAttempt,
@@ -83,18 +83,18 @@ export function useScanner(onScan: (placa: string) => void): UseScannerReturn {
       setCurrentAttempt(null);
       if (detected) {
         setPendingValue(detected);
-        setStage("done");
+        setStage('done');
         setCameraStatus(`Código detectado: ${detected}`);
         return detected;
       }
-      setStage("error");
-      setCameraStatus("No se pudo leer el código. Asegúrate de que esté bien iluminado, enfocado y que el código de barras sea visible.");
+      setStage('error');
+      setCameraStatus('No se pudo leer el código. Asegúrate de que esté bien iluminado, enfocado y que el código de barras sea visible.');
       setPendingValue(null);
       return null;
     } catch {
       setCurrentAttempt(null);
-      setStage("error");
-      setCameraStatus("Error al procesar la imagen. Intentá de nuevo.");
+      setStage('error');
+      setCameraStatus('Error al procesar la imagen. Intentá de nuevo.');
       setPendingValue(null);
       return null;
     }
@@ -105,21 +105,30 @@ export function useScanner(onScan: (placa: string) => void): UseScannerReturn {
     if (value === null) return null;
     const result = processScan(value);
     setCameraReady(result !== null);
-    setStage("idle");
+    setStage('idle');
     setPendingValue(null);
     return result;
   };
 
   const cancelPending = (): void => {
-    setStage("idle");
+    setStage('idle');
     setPendingValue(null);
     setCameraReady(false);
-    setCameraStatus("");
+    setCameraStatus('');
   };
 
   return {
-    scanMode, cameraStatus, cameraReady, setScanMode, processScan,
-    scanFile, setCameraStatus, stage, pendingValue, currentAttempt,
-    confirmPending, cancelPending,
+    scanMode,
+    cameraStatus,
+    cameraReady,
+    setScanMode,
+    processScan,
+    scanFile,
+    setCameraStatus,
+    stage,
+    pendingValue,
+    currentAttempt,
+    confirmPending,
+    cancelPending,
   };
 }

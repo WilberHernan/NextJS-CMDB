@@ -1,4 +1,4 @@
-import type { BrowserMultiFormatReader } from "@zxing/browser";
+import type { BrowserMultiFormatReader } from '@zxing/browser';
 
 const CONTRAST_FACTOR = 1.3;
 const MAX_IMAGE_WIDTH = 1280;
@@ -6,20 +6,20 @@ const DEFAULT_BUDGET_MS = 3000;
 const ROTATIONS: ReadonlyArray<0 | 90 | 180 | 270> = [0, 90, 180, 270] as const;
 
 export type Strategy =
-  | "raw"
-  | "contrast"
-  | "bin-80"
-  | "bin-128"
-  | "bin-180"
-  | "inverted";
+  | 'raw'
+  | 'contrast'
+  | 'bin-80'
+  | 'bin-128'
+  | 'bin-180'
+  | 'inverted';
 
 const STRATEGY_ORDER: ReadonlyArray<Strategy> = [
-  "raw",
-  "contrast",
-  "bin-128",
-  "bin-80",
-  "bin-180",
-  "inverted",
+  'raw',
+  'contrast',
+  'bin-128',
+  'bin-80',
+  'bin-180',
+  'inverted',
 ] as const;
 
 export interface DecodeAttempt {
@@ -33,15 +33,15 @@ export interface AggressiveOptions {
   onAttempt?: (info: DecodeAttempt) => void;
 }
 
-export async function loadImage(src: string | File): Promise<HTMLImageElement> {
-  const url = typeof src === "string" ? src : URL.createObjectURL(src);
-  const isObjectUrl = typeof src !== "string";
+export async function loadImage (src: string | File): Promise<HTMLImageElement> {
+  const url = typeof src === 'string' ? src : URL.createObjectURL(src);
+  const isObjectUrl = typeof src !== 'string';
   try {
     return await new Promise<HTMLImageElement>((resolve, reject) => {
       const img = new Image();
-      img.crossOrigin = "anonymous";
+      img.crossOrigin = 'anonymous';
       img.onload = () => resolve(img);
-      img.onerror = () => reject(new Error("No se pudo cargar la imagen"));
+      img.onerror = () => reject(new Error('No se pudo cargar la imagen'));
       img.src = url;
     });
   } finally {
@@ -49,32 +49,32 @@ export async function loadImage(src: string | File): Promise<HTMLImageElement> {
   }
 }
 
-function getCtx(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas 2D context no disponible");
+function getCtx (canvas: HTMLCanvasElement): CanvasRenderingContext2D {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas 2D context no disponible');
   return ctx;
 }
 
-function drawImageToCanvas(source: HTMLImageElement | HTMLCanvasElement): HTMLCanvasElement {
+function drawImageToCanvas (source: HTMLImageElement | HTMLCanvasElement): HTMLCanvasElement {
   const w = source instanceof HTMLImageElement
     ? (source.naturalWidth || source.width)
     : source.width;
   const h = source instanceof HTMLImageElement
     ? (source.naturalHeight || source.height)
     : source.height;
-  const canvas = document.createElement("canvas");
+  const canvas = document.createElement('canvas');
   canvas.width = w;
   canvas.height = h;
   getCtx(canvas).drawImage(source, 0, 0, w, h);
   return canvas;
 }
 
-export function rotateCanvas(
+export function rotateCanvas (
   source: HTMLCanvasElement,
   angle: 90 | 180 | 270
 ): HTMLCanvasElement {
   const swap = angle === 90 || angle === 270;
-  const canvas = document.createElement("canvas");
+  const canvas = document.createElement('canvas');
   canvas.width = swap ? source.height : source.width;
   canvas.height = swap ? source.width : source.height;
   const ctx = getCtx(canvas);
@@ -94,11 +94,11 @@ export function rotateCanvas(
 
 const clamp = (v: number): number => Math.max(0, Math.min(255, v));
 
-function applyPixelTransform(
+function applyPixelTransform (
   source: HTMLCanvasElement,
   transform: (gray: number) => number
 ): HTMLCanvasElement {
-  const canvas = document.createElement("canvas");
+  const canvas = document.createElement('canvas');
   canvas.width = source.width;
   canvas.height = source.height;
   const ctx = getCtx(canvas);
@@ -117,22 +117,22 @@ function applyPixelTransform(
   return canvas;
 }
 
-function toGrayscaleContrast(canvas: HTMLCanvasElement): HTMLCanvasElement {
+function toGrayscaleContrast (canvas: HTMLCanvasElement): HTMLCanvasElement {
   return applyPixelTransform(canvas, (g) => clamp(CONTRAST_FACTOR * (g - 128) + 128));
 }
 
-export function binarizeCanvas(
+export function binarizeCanvas (
   canvas: HTMLCanvasElement,
   threshold: number
 ): HTMLCanvasElement {
   return applyPixelTransform(canvas, (g) => (g >= threshold ? 255 : 0));
 }
 
-export function invertCanvas(canvas: HTMLCanvasElement): HTMLCanvasElement {
+export function invertCanvas (canvas: HTMLCanvasElement): HTMLCanvasElement {
   return applyPixelTransform(canvas, (g) => 255 - g);
 }
 
-export function sharpenCanvas(canvas: HTMLCanvasElement): HTMLCanvasElement {
+export function sharpenCanvas (canvas: HTMLCanvasElement): HTMLCanvasElement {
   const w = canvas.width;
   const h = canvas.height;
   const ctx = getCtx(canvas);
@@ -146,8 +146,8 @@ export function sharpenCanvas(canvas: HTMLCanvasElement): HTMLCanvasElement {
       for (let ky = -1; ky <= 1; ky++) {
         for (let kx = -1; kx <= 1; kx++) {
           const idx = ((y + ky) * w + (x + kx)) * 4;
-          sum += (0.299 * src[idx] + 0.587 * src[idx + 1] + 0.114 * src[idx + 2])
-            * k[(ky + 1) * 3 + (kx + 1)];
+          sum += (0.299 * src[idx] + 0.587 * src[idx + 1] + 0.114 * src[idx + 2]) *
+            k[(ky + 1) * 3 + (kx + 1)];
         }
       }
       const v = clamp(sum);
@@ -162,18 +162,18 @@ export function sharpenCanvas(canvas: HTMLCanvasElement): HTMLCanvasElement {
   return canvas;
 }
 
-function downscaleIfNeeded(image: HTMLImageElement, maxWidth: number): HTMLCanvasElement {
+function downscaleIfNeeded (image: HTMLImageElement, maxWidth: number): HTMLCanvasElement {
   const w = image.naturalWidth || image.width;
   const h = image.naturalHeight || image.height;
   if (w <= maxWidth) return drawImageToCanvas(image);
-  const canvas = document.createElement("canvas");
+  const canvas = document.createElement('canvas');
   canvas.width = maxWidth;
   canvas.height = Math.round((h * maxWidth) / w);
   getCtx(canvas).drawImage(image, 0, 0, canvas.width, canvas.height);
   return canvas;
 }
 
-export async function preprocessImage(
+export async function preprocessImage (
   imageSource: string | File | HTMLImageElement
 ): Promise<HTMLCanvasElement> {
   const image =
@@ -183,12 +183,12 @@ export async function preprocessImage(
   return binarizeCanvas(toGrayscaleContrast(drawImageToCanvas(image)), 128);
 }
 
-export async function tryDecodeBarcode(
+export async function tryDecodeBarcode (
   canvas: HTMLCanvasElement,
   reader: BrowserMultiFormatReader
 ): Promise<string | null> {
   try {
-    const result = await reader.decodeFromImageUrl(canvas.toDataURL("image/png"));
+    const result = await reader.decodeFromImageUrl(canvas.toDataURL('image/png'));
     const text = result.getText();
     return text.length > 0 ? text : null;
   } catch {
@@ -196,7 +196,7 @@ export async function tryDecodeBarcode(
   }
 }
 
-export async function tryRotateAndDecode(
+export async function tryRotateAndDecode (
   canvas: HTMLCanvasElement,
   reader: BrowserMultiFormatReader
 ): Promise<string | null> {
@@ -229,7 +229,7 @@ export async function tryRotateAndDecode(
  * angle — much faster than re-binarizing per rotation. Yields to the UI
  * between failed attempts so the spinner stays responsive.
  */
-export async function tryDecodeAggressive(
+export async function tryDecodeAggressive (
   img: HTMLImageElement,
   reader: BrowserMultiFormatReader,
   options: AggressiveOptions = {}
@@ -250,19 +250,19 @@ export async function tryDecodeAggressive(
       const decoded = await tryDecodeBarcode(candidate, reader);
       onAttempt?.({ variant: strategy, angle, durationMs: Date.now() - attemptStart });
       if (decoded) return decoded;
-      await new Promise<void>((r) => setTimeout(r, 0));
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
     }
   }
   return null;
 }
 
-function prepareStrategy(base: HTMLCanvasElement, strategy: Strategy): HTMLCanvasElement {
+function prepareStrategy (base: HTMLCanvasElement, strategy: Strategy): HTMLCanvasElement {
   switch (strategy) {
-    case "raw":       return base;
-    case "contrast":  return toGrayscaleContrast(base);
-    case "bin-80":    return binarizeCanvas(base, 80);
-    case "bin-128":   return binarizeCanvas(base, 128);
-    case "bin-180":   return binarizeCanvas(base, 180);
-    case "inverted":  return invertCanvas(binarizeCanvas(base, 128));
+    case 'raw': return base;
+    case 'contrast': return toGrayscaleContrast(base);
+    case 'bin-80': return binarizeCanvas(base, 80);
+    case 'bin-128': return binarizeCanvas(base, 128);
+    case 'bin-180': return binarizeCanvas(base, 180);
+    case 'inverted': return invertCanvas(binarizeCanvas(base, 128));
   }
 }

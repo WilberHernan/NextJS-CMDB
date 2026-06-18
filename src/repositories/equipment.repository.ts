@@ -4,16 +4,16 @@ import {
   updateSheetRow,
   deleteSheetRow,
   formatSheetRow,
-} from "@/services/sheets";
-import type { EquipoResponse, EquipmentValue, ApiResult } from "@/types/equipment";
-import { SEDES, type Sede } from "@/lib/sedes";
-import { sanitizarPlaca } from "@/lib/utils";
+} from '@/services/sheets';
+import type { EquipoResponse, EquipmentValue, ApiResult } from '@/types/equipment';
+import { SEDES, type Sede } from '@/lib/sedes';
+import { sanitizarPlaca } from '@/lib/utils';
 
-const HOJAS_EQUIPOS = ["EquiposSena", "EquiposTelefonica"];
+const HOJAS_EQUIPOS = ['EquiposSena', 'EquiposTelefonica'];
 
-export async function buscarEquipo(
+export async function buscarEquipo (
   placa: string,
-  sede: Sede = "CCYS"
+  sede: Sede = 'CCYS'
 ): Promise<EquipoResponse | null> {
   const placaBuscada = sanitizarPlaca(placa);
   if (!placaBuscada) return null;
@@ -25,12 +25,12 @@ export async function buscarEquipo(
     const data = await getSheetData(hoja, sede);
     if (!data || data.length < 2) continue;
 
-    const nombreSedeEsperado = sede === "CIUDAD_JARDIN" ? "CIUDAD JARDIN" : sede;
+    const nombreSedeEsperado = sede === 'CIUDAD_JARDIN' ? 'CIUDAD JARDIN' : sede;
 
     for (let i = 1; i < data.length; i++) {
       const placaEnHoja = data[i][6]
         ? sanitizarPlaca(data[i][6])
-        : "";
+        : '';
 
       if (placaEnHoja !== placaBuscada) continue;
 
@@ -38,10 +38,10 @@ export async function buscarEquipo(
       // nombre de sede CONOCIDO y DIFERENTE al esperado. Si contiene algo que
       // no es una sede (ej: nombre de contratista, área), la fila pasa libre.
       // Si está vacía también pasa porque ya leemos el spreadsheet correcto.
-      const sedeEnFila = data[i][8]?.toString().trim().toUpperCase() ?? "";
+      const sedeEnFila = data[i][8]?.toString().trim().toUpperCase() ?? '';
       if (sedeEnFila) {
-        const esSedeConocida = SEDES.includes(sedeEnFila as Sede) || sedeEnFila === "CIUDAD JARDIN";
-        const normalizada = sedeEnFila.replace(/_/g, " ");
+        const esSedeConocida = SEDES.includes(sedeEnFila as Sede) || sedeEnFila === 'CIUDAD JARDIN';
+        const normalizada = sedeEnFila.replace(/_/g, ' ');
         if (esSedeConocida && normalizada !== nombreSedeEsperado) continue;
       }
 
@@ -58,7 +58,7 @@ export async function buscarEquipo(
   return null;
 }
 
-export async function actualizarEquipo(datos: {
+export async function actualizarEquipo (datos: {
   fila: string;
   hoja: string;
   valores: EquipmentValue[];
@@ -68,22 +68,21 @@ export async function actualizarEquipo(datos: {
     const { fila, hoja, valores, sede } = datos;
     const rowNum = parseInt(fila);
     const valoresLimpios = sanitizarValores(valores);
-    const cantidadDatos = valoresLimpios.length;
 
     const propietarioNuevo = (
-      valoresLimpios[2] || ""
+      valoresLimpios[2] || ''
     ).toString().toUpperCase().trim();
     const hojaDestino =
-      propietarioNuevo === "TELEFONICA"
-        ? "EquiposTelefonica"
-        : "EquiposSena";
+      propietarioNuevo === 'TELEFONICA'
+        ? 'EquiposTelefonica'
+        : 'EquiposSena';
 
     const dataActual = await getSheetData(hoja, sede);
     if (!dataActual || !dataActual[rowNum - 1]) {
-      return { exito: false, mensaje: "Fila no encontrada en la hoja origen" };
+      return { exito: false, mensaje: 'Fila no encontrada en la hoja origen' };
     }
     const propietarioActual = (
-      dataActual[rowNum - 1][2] || ""
+      dataActual[rowNum - 1][2] || ''
     ).toString().toUpperCase().trim();
 
     if (hojaDestino !== hoja && propietarioActual !== propietarioNuevo) {
@@ -91,12 +90,12 @@ export async function actualizarEquipo(datos: {
       if (destData) {
         const placa = valoresLimpios[6]
           ? sanitizarPlaca(valoresLimpios[6])
-          : "";
+          : '';
         if (placa) {
           for (let i = 1; i < destData.length; i++) {
             const placaExistente = destData[i][6]
               ? sanitizarPlaca(destData[i][6])
-              : "";
+              : '';
             if (placaExistente === placa) {
               return {
                 exito: false,
@@ -121,7 +120,7 @@ export async function actualizarEquipo(datos: {
           await formatSheetRow(
             hojaDestino,
             parseInt(rowMatch[1]),
-            "#dbeafe",
+            '#dbeafe',
             sede
           );
         }
@@ -134,17 +133,17 @@ export async function actualizarEquipo(datos: {
     }
 
     await updateSheetRow(hoja, rowNum, valoresLimpios, sede);
-    await formatSheetRow(hoja, rowNum, "#dcfce7", sede);
-    return { exito: true, mensaje: "¡CMDB Actualizada con éxito!" };
+    await formatSheetRow(hoja, rowNum, '#dcfce7', sede);
+    return { exito: true, mensaje: '¡CMDB Actualizada con éxito!' };
   } catch (e) {
     return {
       exito: false,
-      mensaje: e instanceof Error ? e.message : "Error desconocido",
+      mensaje: e instanceof Error ? e.message : 'Error desconocido',
     };
   }
 }
 
-export async function crearEquipo(datos: {
+export async function crearEquipo (datos: {
   hoja: string;
   valores: EquipmentValue[];
   sede: Sede;
@@ -155,7 +154,7 @@ export async function crearEquipo(datos: {
 
     const placaNueva = valoresLimpios[6]
       ? sanitizarPlaca(valoresLimpios[6])
-      : "";
+      : '';
 
     if (placaNueva) {
       const data = await getSheetData(hoja, sede);
@@ -163,7 +162,7 @@ export async function crearEquipo(datos: {
         for (let i = 1; i < data.length; i++) {
           const placaExistente = data[i][6]
             ? sanitizarPlaca(data[i][6])
-            : "";
+            : '';
           if (placaExistente === placaNueva) {
             return {
               exito: false,
@@ -180,7 +179,7 @@ export async function crearEquipo(datos: {
     if (result?.updates?.updatedRange) {
       const rowMatch = result.updates.updatedRange.match(/[A-Z]+(\d+):/);
       if (rowMatch) {
-        await formatSheetRow(hoja, parseInt(rowMatch[1]), "#dbeafe", sede);
+        await formatSheetRow(hoja, parseInt(rowMatch[1]), '#dbeafe', sede);
       }
     }
 
@@ -191,13 +190,13 @@ export async function crearEquipo(datos: {
   } catch (e) {
     return {
       exito: false,
-      mensaje: e instanceof Error ? e.message : "Error desconocido",
+      mensaje: e instanceof Error ? e.message : 'Error desconocido',
     };
   }
 }
 
-export async function obtenerMapeoSedeId(sede: Sede = "CCYS") {
-  const data = await getSheetData("Hoja3", sede);
+export async function obtenerMapeoSedeId (sede: Sede = 'CCYS') {
+  const data = await getSheetData('Hoja3', sede);
   const sedeAId: Record<string, string> = {};
   const idASede: Record<string, string> = {};
 
@@ -215,7 +214,7 @@ export async function obtenerMapeoSedeId(sede: Sede = "CCYS") {
 
     for (let r = 1; r < Math.min(data.length, 25); r++) {
       const val = data[r][c];
-      if (!val || val.toString().trim() === "") continue;
+      if (!val || val.toString().trim() === '') continue;
       const str = val.toString().trim();
       if (/^\d+$/.test(str)) numericValues.push(str);
       else textValues.push(str);
@@ -256,113 +255,147 @@ export async function obtenerMapeoSedeId(sede: Sede = "CCYS") {
 }
 
 const VALIDACIONES_POR_DEFECTO: Record<number, string[]> = {
-  1: ["DESKTOP", "PORTATIL", "TODO EN UNO", "IMAC"],
-  2: ["SENA", "TELEFONICA"],
-  3: ["LENOVO", "DELL", "HP", "ASUS", "JANUS", "ACER", "APPLE"],
-  7: ["65", "68", "69", "300", "319", "320", "321", "374", "389"],
+  1: ['DESKTOP', 'PORTATIL', 'TODO EN UNO', 'IMAC'],
+  2: ['SENA', 'TELEFONICA'],
+  3: ['LENOVO', 'DELL', 'HP', 'ASUS', 'JANUS', 'ACER', 'APPLE'],
+  7: ['65', '68', '69', '300', '319', '320', '321', '374', '389'],
   8: [
-    "REGIONAL", "CCYS", "GUAPI", "TECNOPARQUE", "SNFT",
-    "ARCHIVO CENTRAL", "SAN JOSE", "LA PAMBA", "CIUDAD JARDIN",
+    'REGIONAL', 'CCYS', 'GUAPI', 'TECNOPARQUE', 'SNFT',
+    'ARCHIVO CENTRAL', 'SAN JOSE', 'LA PAMBA', 'CIUDAD JARDIN',
   ],
-  9: ["POPAYAN", "GUAPI"],
-  10: ["OFICINA", "AMBIENTE"],
-  12: ["1", "2", "3"],
-  14: ["ADMINISTRATIVO", "CONTRATISTA", "INSTRUCTOR", "APRENDIZ"],
-  15: ["FUNCIONARIO", "FORMACION"],
-  17: ["HDD", "SSD", "M2"],
-  18: ["120 GB", "256 GB", "512 GB", "1 TB"],
-  19: ["HDD", "SSD", "M2", "N/A"],
-  20: ["120 GB", "256 GB", "512 GB", "1 TB", "N/A"],
-  21: ["DDR3", "DDR4", "DDR5"],
-  22: ["4 GB", "8 GB", "16 GB", "32 GB", "64 GB"],
-  33: ["WINDOWS 10", "WINDOWS 11", "MAC OS MONTEREY", "MAC OS VENTURA"],
-  34: ["20H2", "21H1", "21H2", "22H2", "23H2"],
-  35: ["SI", "NO", "N/A"],
-  36: ["SI", "NO", "N/A"],
-  37: ["SI", "NO", "N/A"],
-  38: ["SI", "NO", "N/A"],
-  39: ["SI", "NO", "N/A"],
-  40: ["SI", "NO", "N/A"],
-  41: ["SI", "NO", "N/A"],
-  43: ["OPERATIVO", "PRESENTA FALLA", "DAÑADO"],
-  44: ["SI", "NO"],
-  45: ["SENA.RED", "FORMACION.RED", "N/A"],
-  46: ["SI", "NO", "N/A"],
+  9: ['POPAYAN', 'GUAPI'],
+  10: ['OFICINA', 'AMBIENTE'],
+  12: ['1', '2', '3'],
+  14: ['ADMINISTRATIVO', 'CONTRATISTA', 'INSTRUCTOR', 'APRENDIZ'],
+  15: ['FUNCIONARIO', 'FORMACION'],
+  17: ['HDD', 'SSD', 'M2'],
+  18: ['120 GB', '256 GB', '512 GB', '1 TB'],
+  19: ['HDD', 'SSD', 'M2', 'N/A'],
+  20: ['120 GB', '256 GB', '512 GB', '1 TB', 'N/A'],
+  21: ['DDR3', 'DDR4', 'DDR5'],
+  22: ['4 GB', '8 GB', '16 GB', '32 GB', '64 GB'],
+  33: ['WINDOWS 10', 'WINDOWS 11', 'MAC OS MONTEREY', 'MAC OS VENTURA'],
+  34: ['20H2', '21H1', '21H2', '22H2', '23H2'],
+  35: ['SI', 'NO', 'N/A'],
+  36: ['SI', 'NO', 'N/A'],
+  37: ['SI', 'NO', 'N/A'],
+  38: ['SI', 'NO', 'N/A'],
+  39: ['SI', 'NO', 'N/A'],
+  40: ['SI', 'NO', 'N/A'],
+  41: ['SI', 'NO', 'N/A'],
+  43: ['OPERATIVO', 'PRESENTA FALLA', 'DAÑADO'],
+  44: ['SI', 'NO'],
+  45: ['SENA.RED', 'FORMACION.RED', 'N/A'],
+  46: ['SI', 'NO', 'N/A'],
   49: [
-    "ANDRES SEBASTIAN BRAVO PALACIOS",
-    "JULIAN ANDRES NOGUERA BURGOS",
-    "LEONARDO ANDRES GUITIERREZ NARVAEZ",
-    "HARRY LEHANDRO PEDRAZA ARROYO",
-    "LUIS FELIPE FLOREZ DORADO",
-    "YESID ANTONIO BRAVO RAMIREZ",
-    "JESUS ALEXIS VEGA SANCHEZ",
-    "JESUS HERNAN AMAYA ROJAS",
-    "JHON ALEXANDER CORTES PAZ",
+    'ANDRES SEBASTIAN BRAVO PALACIOS',
+    'JULIAN ANDRES NOGUERA BURGOS',
+    'LEONARDO ANDRES GUITIERREZ NARVAEZ',
+    'HARRY LEHANDRO PEDRAZA ARROYO',
+    'LUIS FELIPE FLOREZ DORADO',
+    'YESID ANTONIO BRAVO RAMIREZ',
+    'JESUS ALEXIS VEGA SANCHEZ',
+    'JESUS HERNAN AMAYA ROJAS',
+    'JHON ALEXANDER CORTES PAZ',
   ],
 };
 
 const HEADER_ALIASES: Record<string, string> = {
-  "EN": "TIPO DE USUARIO",
-  "EN ": "TIPO DE USUARIO",
-  "TIPO USUARIO": "TIPO DE USUARIO",
-  "USUARIO": "TIPO DE USUARIO",
-  "ID": "ID SEDE",
-  "NUMERO SEDE": "ID SEDE",
-  "NOMBRE SEDE": "NOMBRE DE LA SEDE",
-  "SEDE": "NOMBRE DE LA SEDE",
-  "UBICACION": "UBICACIÓN",
-  "VERSION SO": "VERSION DEL S.O.",
-  "VERSION S.O.": "VERSION DEL S.O.",
-  "VERSION SISTEMA OPERATIVO": "VERSION DEL S.O.",
-  "SO VERSION": "VERSION DEL S.O.",
-  "ESTADO": "ESTADO DEL EQUIPO",
-  "ESTADO EQUIPO": "ESTADO DEL EQUIPO",
-  "DOMINIO": "EN QUE DOMINIO SE ENCUENTRA",
-  "CONTRASENA BIOS": "CONTRASEÑA BIOS",
-  "PASSWORD BIOS": "CONTRASEÑA BIOS",
-  "FECHA MANTENIMIENTO": "FECHA ULTIMO MANTENIMIENTO",
-  "FECHA IMPACTO": "FECHA IMPACTO MAQUINA",
-  "OBSERVACIONES": "Observaciones",
-  "RESPONSABLE MANTENIMIENTO ABRIL": "RESPONSABLE DEL PRIMER MANTENIMIENTO ABRIL 2026",
-  "RESPONSABLE PRIMER MANTENIMIENTO": "RESPONSABLE DEL PRIMER MANTENIMIENTO ABRIL 2026",
-  "RESPONSABLE ABRIL": "RESPONSABLE DEL PRIMER MANTENIMIENTO ABRIL 2026",
-  "RESPONSABLE MANTENIMIENTO OCTUBRE": "RESPONSABLE DEL SEGUNDO MANTENIMIENTO OCTUBRE 2026",
-  "RESPONSABLE SEGUNDO MANTENIMIENTO": "RESPONSABLE DEL SEGUNDO MANTENIMIENTO OCTUBRE 2026",
-  "RESPONSABLE OCTUBRE": "RESPONSABLE DEL SEGUNDO MANTENIMIENTO OCTUBRE 2026",
+  EN: 'TIPO DE USUARIO',
+  'EN ': 'TIPO DE USUARIO',
+  'TIPO USUARIO': 'TIPO DE USUARIO',
+  USUARIO: 'TIPO DE USUARIO',
+  ID: 'ID SEDE',
+  'NUMERO SEDE': 'ID SEDE',
+  'NOMBRE SEDE': 'NOMBRE DE LA SEDE',
+  SEDE: 'NOMBRE DE LA SEDE',
+  UBICACION: 'UBICACIÓN',
+  'VERSION SO': 'VERSION DEL S.O.',
+  'VERSION S.O.': 'VERSION DEL S.O.',
+  'VERSION SISTEMA OPERATIVO': 'VERSION DEL S.O.',
+  'SO VERSION': 'VERSION DEL S.O.',
+  ESTADO: 'ESTADO DEL EQUIPO',
+  'ESTADO EQUIPO': 'ESTADO DEL EQUIPO',
+  DOMINIO: 'EN QUE DOMINIO SE ENCUENTRA',
+  'CONTRASENA BIOS': 'CONTRASEÑA BIOS',
+  'PASSWORD BIOS': 'CONTRASEÑA BIOS',
+  'FECHA MANTENIMIENTO': 'FECHA ULTIMO MANTENIMIENTO',
+  'FECHA IMPACTO': 'FECHA IMPACTO MAQUINA',
+  OBSERVACIONES: 'Observaciones',
+  'RESPONSABLE MANTENIMIENTO ABRIL': 'RESPONSABLE DEL PRIMER MANTENIMIENTO ABRIL 2026',
+  'RESPONSABLE PRIMER MANTENIMIENTO': 'RESPONSABLE DEL PRIMER MANTENIMIENTO ABRIL 2026',
+  'RESPONSABLE ABRIL': 'RESPONSABLE DEL PRIMER MANTENIMIENTO ABRIL 2026',
+  'RESPONSABLE MANTENIMIENTO OCTUBRE': 'RESPONSABLE DEL SEGUNDO MANTENIMIENTO OCTUBRE 2026',
+  'RESPONSABLE SEGUNDO MANTENIMIENTO': 'RESPONSABLE DEL SEGUNDO MANTENIMIENTO OCTUBRE 2026',
+  'RESPONSABLE OCTUBRE': 'RESPONSABLE DEL SEGUNDO MANTENIMIENTO OCTUBRE 2026',
 };
 
 const FORM_FIELDS: Record<string, number> = {
-  HOSTNAME: 0, TIPO: 1, PROPIETARIO: 2, MARCA: 3, MODELO: 4,
-  SERIAL: 5, PLACA: 6, "ID SEDE": 7, "NOMBRE DE LA SEDE": 8,
-  CIUDAD: 9, UBICACIÓN: 10,
-  "NOMBRE DE LA OFICINA O AMBIENTE": 11, PISO: 12,
-  "NOMBRE DEL USUARIO": 13, "TIPO DE USUARIO": 14, "TIPO DE RED": 15,
+  HOSTNAME: 0,
+  TIPO: 1,
+  PROPIETARIO: 2,
+  MARCA: 3,
+  MODELO: 4,
+  SERIAL: 5,
+  PLACA: 6,
+  'ID SEDE': 7,
+  'NOMBRE DE LA SEDE': 8,
+  CIUDAD: 9,
+  UBICACIÓN: 10,
+  'NOMBRE DE LA OFICINA O AMBIENTE': 11,
+  PISO: 12,
+  'NOMBRE DEL USUARIO': 13,
+  'TIPO DE USUARIO': 14,
+  'TIPO DE RED': 15,
   PROCESADOR: 16,
-  "TIPO DISCO 1": 17, "TAMAÑO DISCO 1": 18, "TIPO DISCO 2": 19,
-  "TAMAÑO DISCO 2": 20, "TIPO MEMORIA": 21, "TAMAÑO MEMORIA": 22,
-  "TARJETA DE VIDEO": 23, "CAMBIO DE PARTE": 24, "CAMBIO DE PARTE 2": 25,
-  "# DE CASO PARA REPUESTO": 26, "PLACA MONITOR": 27, "PLACA MOUSE": 28,
-  "PLACA TECLADO": 29, "PLACA CARGADOR": 30, "MAC:RED CABLEADA": 31,
-  "MAC RED INALAMBRICA": 32, "SISTEMA OPERATIVO": 33, "VERSION DEL S.O.": 34,
-  ANTIVIRUS: 35, OFFICE: 36, ADOBE: 37, LAPS: 38, "7ZIP": 39,
-  VPN: 40, JAMF: 41, "OTRO SOFTWARE": 42, "ESTADO DEL EQUIPO": 43,
-  "TIENE DOMINIO": 44, "EN QUE DOMINIO SE ENCUENTRA": 45,
-  "CONTRASEÑA BIOS": 46, "FECHA ULTIMO MANTENIMIENTO": 47,
-  "FECHA IMPACTO MAQUINA": 48, ASS: 49, Observaciones: 50,
-  "RESPONSABLE DEL PRIMER MANTENIMIENTO ABRIL 2026": 51,
-  "RESPONSABLE DEL SEGUNDO MANTENIMIENTO OCTUBRE 2026": 52,
+  'TIPO DISCO 1': 17,
+  'TAMAÑO DISCO 1': 18,
+  'TIPO DISCO 2': 19,
+  'TAMAÑO DISCO 2': 20,
+  'TIPO MEMORIA': 21,
+  'TAMAÑO MEMORIA': 22,
+  'TARJETA DE VIDEO': 23,
+  'CAMBIO DE PARTE': 24,
+  'CAMBIO DE PARTE 2': 25,
+  '# DE CASO PARA REPUESTO': 26,
+  'PLACA MONITOR': 27,
+  'PLACA MOUSE': 28,
+  'PLACA TECLADO': 29,
+  'PLACA CARGADOR': 30,
+  'MAC:RED CABLEADA': 31,
+  'MAC RED INALAMBRICA': 32,
+  'SISTEMA OPERATIVO': 33,
+  'VERSION DEL S.O.': 34,
+  ANTIVIRUS: 35,
+  OFFICE: 36,
+  ADOBE: 37,
+  LAPS: 38,
+  '7ZIP': 39,
+  VPN: 40,
+  JAMF: 41,
+  'OTRO SOFTWARE': 42,
+  'ESTADO DEL EQUIPO': 43,
+  'TIENE DOMINIO': 44,
+  'EN QUE DOMINIO SE ENCUENTRA': 45,
+  'CONTRASEÑA BIOS': 46,
+  'FECHA ULTIMO MANTENIMIENTO': 47,
+  'FECHA IMPACTO MAQUINA': 48,
+  ASS: 49,
+  Observaciones: 50,
+  'RESPONSABLE DEL PRIMER MANTENIMIENTO ABRIL 2026': 51,
+  'RESPONSABLE DEL SEGUNDO MANTENIMIENTO OCTUBRE 2026': 52,
 };
 
-function normalizarHeader(header: string): string {
+function normalizarHeader (header: string): string {
   return header
     .toString()
     .toUpperCase()
-    .replace(/[^A-Z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
+    .replace(/[^A-Z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
-function matchHeaderConFormField(hoja3Header: string): string | null {
+function matchHeaderConFormField (hoja3Header: string): string | null {
   const hNorm = normalizarHeader(hoja3Header);
 
   if (HEADER_ALIASES[hNorm]) return HEADER_ALIASES[hNorm];
@@ -379,11 +412,11 @@ function matchHeaderConFormField(hoja3Header: string): string | null {
   return null;
 }
 
-export async function obtenerValidacionesManuales(
-  sede: Sede = "CCYS"
+export async function obtenerValidacionesManuales (
+  sede: Sede = 'CCYS'
 ): Promise<Record<number, string[]>> {
   const resultado: Record<number, string[]> = {};
-  const data = await getSheetData("Hoja3", sede);
+  const data = await getSheetData('Hoja3', sede);
 
   if (!data || data.length < 2) {
     return { ...VALIDACIONES_POR_DEFECTO };
@@ -408,8 +441,7 @@ export async function obtenerValidacionesManuales(
 
     for (let i = 1; i < data.length; i++) {
       const raw = data[i][colHoja3];
-      if (raw === undefined || raw === null || raw.toString().trim() === "")
-        continue;
+      if (raw === undefined || raw === null || raw.toString().trim() === '') { continue; }
       const val = raw.toString().trim().toUpperCase();
       if (!visto.has(val)) {
         visto.add(val);
@@ -432,10 +464,10 @@ export async function obtenerValidacionesManuales(
   return resultado;
 }
 
-function sanitizarValores(valores: EquipmentValue[]): string[] {
+function sanitizarValores (valores: EquipmentValue[]): string[] {
   return valores.map((v) => {
-    if (typeof v === "string") {
-      return v.replace(/'/g, "-");
+    if (typeof v === 'string') {
+      return v.replace(/'/g, '-');
     }
     return String(v);
   });

@@ -1,14 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
-import { buscarEquipo } from "@/repositories/equipment.repository";
-import { isSede } from "@/lib/sedes";
+import { NextRequest, NextResponse } from 'next/server';
+import { buscarEquipo } from '@/repositories/equipment.repository';
+import { isSede } from '@/lib/sedes';
 
-export async function GET(request: NextRequest) {
+export async function GET (request: NextRequest) {
   const requestId = crypto.randomUUID().slice(0, 8);
   try {
     const { searchParams } = new URL(request.url);
-    const placa = searchParams.get("placa");
-    const sedeRaw = searchParams.get("sede");
-    const sede = isSede(sedeRaw) ? sedeRaw : "CCYS";
+    const placa = searchParams.get('placa');
+    const sedeRaw = searchParams.get('sede');
+    const sede = isSede(sedeRaw) ? sedeRaw : 'CCYS';
 
     if (!placa) {
       return NextResponse.json(
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       {
         ok: false,
         error:
-          error instanceof Error ? error.message : "Error interno del servidor",
+          error instanceof Error ? error.message : 'Error interno del servidor',
       },
       { status: 500 }
     );

@@ -1,13 +1,13 @@
-import { sheets } from "@googleapis/sheets";
-import type { Sede } from "@/lib/sedes";
+import { sheets } from '@googleapis/sheets';
+import type { Sede } from '@/lib/sedes';
 
 let sheetsClient: ReturnType<typeof sheets> | null = null;
 
-function fixPrivateKey(pk: string): string {
-  return pk.replace(/\\n/g, "\n").replace(/"?-----/g, "-----").trim();
+function fixPrivateKey (pk: string): string {
+  return pk.replace(/\\n/g, '\n').replace(/"?-----/g, '-----').trim();
 }
 
-async function loadCredentials(): Promise<{
+async function loadCredentials (): Promise<{
   client_email: string;
   private_key: string;
 }> {
@@ -24,13 +24,13 @@ async function loadCredentials(): Promise<{
         };
       }
     } catch {
-      console.warn("GOOGLE_SERVICE_ACCOUNT_KEY_JSON inválido, probando KEY_PATH...");
+      console.warn('GOOGLE_SERVICE_ACCOUNT_KEY_JSON inválido, probando KEY_PATH...');
     }
   }
 
   if (keyPath) {
-    const fs = await import("fs");
-    const raw = fs.readFileSync(keyPath, "utf-8");
+    const fs = await import('fs');
+    const raw = fs.readFileSync(keyPath, 'utf-8');
     const parsed = JSON.parse(raw);
     return {
       client_email: parsed.client_email,
@@ -39,32 +39,32 @@ async function loadCredentials(): Promise<{
   }
 
   throw new Error(
-    "Se requiere GOOGLE_SERVICE_ACCOUNT_KEY_JSON (JSON válido) " +
-      "o GOOGLE_SERVICE_ACCOUNT_KEY_PATH (ruta al archivo)"
+    'Se requiere GOOGLE_SERVICE_ACCOUNT_KEY_JSON (JSON válido) ' +
+      'o GOOGLE_SERVICE_ACCOUNT_KEY_PATH (ruta al archivo)'
   );
 }
 
-export async function getSheetsClient() {
+export async function getSheetsClient () {
   if (sheetsClient) return sheetsClient;
 
-  const { JWT } = await import("google-auth-library");
+  const { JWT } = await import('google-auth-library');
   const credentials = await loadCredentials();
 
   const client = new JWT({
     email: credentials.client_email,
     key: credentials.private_key,
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
 
-  sheetsClient = sheets({ version: "v4", auth: client });
+  sheetsClient = sheets({ version: 'v4', auth: client });
   return sheetsClient;
 }
 
 /** Mapa de env var → sede para errores descriptivos */
 const ENV_VAR_MAP: Record<Sede, string> = {
-  CCYS: "SPREADSHEET_ID_CCYS",
-  REGIONAL: "SPREADSHEET_ID_REGIONAL",
-  CIUDAD_JARDIN: "SPREADSHEET_ID_CIUDAD_JARDIN",
+  CCYS: 'SPREADSHEET_ID_CCYS',
+  REGIONAL: 'SPREADSHEET_ID_REGIONAL',
+  CIUDAD_JARDIN: 'SPREADSHEET_ID_CIUDAD_JARDIN',
 };
 
 const SPREADSHEET_IDS: Record<Sede, string | undefined> = {
@@ -74,7 +74,7 @@ const SPREADSHEET_IDS: Record<Sede, string | undefined> = {
 };
 
 /** Retorna el Spreadsheet ID según la sede. Default: CCYS. */
-function getSpreadsheetId(sede: Sede = "CCYS"): string {
+function getSpreadsheetId (sede: Sede = 'CCYS'): string {
   const id = SPREADSHEET_IDS[sede];
   if (!id) {
     const varName = ENV_VAR_MAP[sede];
@@ -85,50 +85,57 @@ function getSpreadsheetId(sede: Sede = "CCYS"): string {
   return id;
 }
 
-export async function getSheetData(sheetName: string, sede: Sede = "CCYS") {
+export async function getSheetData (sheetName: string, sede: Sede = 'CCYS') {
   const client = await getSheetsClient();
   const res = await client.spreadsheets.values.get({
     spreadsheetId: getSpreadsheetId(sede),
     range: sheetName,
   });
-  return (res.data.values as string[][]) ?? null;
+  const raw = res.data.values;
+  if (!raw || raw.length === 0) return null;
+
+  // Google Sheets API returns any[][] — normalize every cell to string
+  // so downstream code always gets predictable types.
+  return raw.map((row: unknown[]) =>
+    row.map((cell: unknown) => (cell == null ? '' : String(cell)))
+  );
 }
 
-export async function appendSheetRow(
+export async function appendSheetRow (
   sheetName: string,
   values: string[],
-  sede: Sede = "CCYS"
+  sede: Sede = 'CCYS'
 ) {
   const client = await getSheetsClient();
   const res = await client.spreadsheets.values.append({
     spreadsheetId: getSpreadsheetId(sede),
     range: sheetName,
-    valueInputOption: "USER_ENTERED",
-    insertDataOption: "INSERT_ROWS",
+    valueInputOption: 'USER_ENTERED',
+    insertDataOption: 'INSERT_ROWS',
     requestBody: { values: [values] },
   });
   return res.data;
 }
 
-export async function updateSheetRow(
+export async function updateSheetRow (
   sheetName: string,
   row: number,
   values: string[],
-  sede: Sede = "CCYS"
+  sede: Sede = 'CCYS'
 ) {
   const client = await getSheetsClient();
   const res = await client.spreadsheets.values.update({
     spreadsheetId: getSpreadsheetId(sede),
     range: `${sheetName}!A${row}`,
-    valueInputOption: "USER_ENTERED",
+    valueInputOption: 'USER_ENTERED',
     requestBody: { values: [values] },
   });
   return res.data;
 }
 
-export async function getSheetId(
+export async function getSheetId (
   sheetName: string,
-  sede: Sede = "CCYS"
+  sede: Sede = 'CCYS'
 ): Promise<number> {
   const client = await getSheetsClient();
   const spreadsheetId = getSpreadsheetId(sede);
@@ -148,11 +155,11 @@ export async function getSheetId(
   return sheetId;
 }
 
-export async function formatSheetRow(
+export async function formatSheetRow (
   sheetName: string,
   row: number,
   hexColor: string,
-  sede: Sede = "CCYS"
+  sede: Sede = 'CCYS'
 ) {
   const client = await getSheetsClient();
   const spreadsheetId = getSpreadsheetId(sede);
@@ -179,7 +186,7 @@ export async function formatSheetRow(
                 backgroundColor: { red: r, green: g, blue: b },
               },
             },
-            fields: "userEnteredFormat.backgroundColor",
+            fields: 'userEnteredFormat.backgroundColor',
           },
         },
       ],
@@ -187,10 +194,10 @@ export async function formatSheetRow(
   });
 }
 
-export async function deleteSheetRow(
+export async function deleteSheetRow (
   sheetName: string,
   row: number,
-  sede: Sede = "CCYS"
+  sede: Sede = 'CCYS'
 ) {
   const client = await getSheetsClient();
   const spreadsheetId = getSpreadsheetId(sede);
@@ -204,7 +211,7 @@ export async function deleteSheetRow(
           deleteDimension: {
             range: {
               sheetId,
-              dimension: "ROWS",
+              dimension: 'ROWS',
               startIndex: row - 1,
               endIndex: row,
             },

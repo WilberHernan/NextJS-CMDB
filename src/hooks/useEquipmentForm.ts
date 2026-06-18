@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
-import { useEquipment } from "@/hooks/useEquipment";
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useEquipment } from '@/hooks/useEquipment';
 import {
   COLUMNAS,
   DEFAULT_NUEVO_EQUIPO,
   type EquipmentValue,
   type ApiResult,
-} from "@/types/equipment";
-import { findMatchingOption, sanitizarPlaca } from "@/lib/utils";
+} from '@/types/equipment';
+import { findMatchingOption, sanitizarPlaca } from '@/lib/utils';
 
-export type AlertType = "success" | "error" | "info" | "warning";
+export type AlertType = 'success' | 'error' | 'info' | 'warning';
 
 export interface AlertInfo {
   type: AlertType;
   message: string;
 }
 
-export type BadgeVariant = "default" | "blue" | "secondary";
+export type BadgeVariant = 'default' | 'blue' | 'secondary';
 
 export interface UseEquipmentFormReturn {
   // Equipment data hook
@@ -62,7 +62,7 @@ export interface UseEquipmentFormReturn {
  *
  * page.tsx should consume this hook and render UI only.
  */
-export function useEquipmentForm(): UseEquipmentFormReturn {
+export function useEquipmentForm (): UseEquipmentFormReturn {
   const {
     loading,
     validaciones,
@@ -75,19 +75,19 @@ export function useEquipmentForm(): UseEquipmentFormReturn {
   } = useEquipment();
 
   const [valores, setValores] = useState<string[]>(
-    Array(COLUMNAS.length).fill("")
+    Array(COLUMNAS.length).fill('')
   );
   const [esModoNuevo, setEsModoNuevo] = useState(false);
-  const [hojaActual, setHojaActual] = useState("");
-  const [filaActual, setFilaActual] = useState("");
+  const [hojaActual, setHojaActual] = useState('');
+  const [filaActual, setFilaActual] = useState('');
   const [formVisible, setFormVisible] = useState(false);
   const [saving, setSaving] = useState(false);
   const [emptyStatePlaca, setEmptyStatePlaca] = useState<string | null>(null);
   const [alertInfo, setAlertInfo] = useState<AlertInfo | null>(null);
   const [equipmentFound, setEquipmentFound] = useState(false);
-  const propietarioOriginalRef = useRef<string>("");
+  const propietarioOriginalRef = useRef<string>('');
   /** Tracks the most recent search to cancel stale async responses. */
-  const latestSearchRef = useRef<string>("");
+  const latestSearchRef = useRef<string>('');
 
   // Initial data load
   useEffect(() => {
@@ -107,20 +107,35 @@ export function useEquipmentForm(): UseEquipmentFormReturn {
     if (Object.keys(validaciones).length === 0) return;
 
     const params = new URLSearchParams(window.location.search);
-    const modo = params.get("modo");
-    const placa = params.get("placa");
-    if (modo !== "nuevo" || !placa) return;
+    const modo = params.get('modo');
+    const placa = params.get('placa');
+    if (modo !== 'nuevo' || !placa) return;
 
     const mapeo: Record<string, number> = {
-      hostname: 0, marca: 3, modelo: 4, serial: 5, placa: 6,
-      procesador: 16, disco1_tipo: 17, disco1_tam: 18,
-      disco2_tipo: 19, disco2_tam: 20, tipo_memoria: 21, ram: 22,
-      video: 23, mac_cableada: 31, mac_wifi: 32, so: 33, version_so: 34,
-      fecha_mantenimiento: 47, fecha_impacto: 48,
-      propietario: 2, ciudad: 9,
+      hostname: 0,
+      marca: 3,
+      modelo: 4,
+      serial: 5,
+      placa: 6,
+      procesador: 16,
+      disco1_tipo: 17,
+      disco1_tam: 18,
+      disco2_tipo: 19,
+      disco2_tam: 20,
+      tipo_memoria: 21,
+      ram: 22,
+      video: 23,
+      mac_cableada: 31,
+      mac_wifi: 32,
+      so: 33,
+      version_so: 34,
+      fecha_mantenimiento: 47,
+      fecha_impacto: 48,
+      propietario: 2,
+      ciudad: 9,
     };
 
-    const nuevos = Array(COLUMNAS.length).fill("");
+    const nuevos = Array(COLUMNAS.length).fill('');
     Object.entries(DEFAULT_NUEVO_EQUIPO).forEach(([idx, val]) => {
       nuevos[parseInt(idx)] = val;
     });
@@ -139,23 +154,23 @@ export function useEquipmentForm(): UseEquipmentFormReturn {
     setFormVisible(true);
     setAlertInfo(null);
 
-    window.history.replaceState({}, "", window.location.pathname);
+    window.history.replaceState({}, '', window.location.pathname);
     urlParamsRef.current = true;
   }, [validaciones]);
 
   // Compute the target sheet (SENA vs Telefonica) based on propietario
   const getHojaDestino = useCallback(
     (propietario: string) =>
-      propietario === "TELEFONICA" ? "EquiposTelefonica" : "EquiposSena",
+      propietario === 'TELEFONICA' ? 'EquiposTelefonica' : 'EquiposSena',
     []
   );
 
   // Derived: badge text and variant
   const hojaBadgeText = useMemo(() => {
-    if (esModoNuevo) return "NUEVO EQUIPO";
-    if (!formVisible || !hojaActual) return "";
+    if (esModoNuevo) return 'NUEVO EQUIPO';
+    if (!formVisible || !hojaActual) return '';
 
-    const propValue = (valores[2] || "").toUpperCase().trim();
+    const propValue = (valores[2] || '').toUpperCase().trim();
     const hojaDestino = getHojaDestino(propValue);
 
     if (
@@ -169,7 +184,7 @@ export function useEquipmentForm(): UseEquipmentFormReturn {
   }, [esModoNuevo, formVisible, hojaActual, filaActual, valores, getHojaDestino]);
 
   const hojaBadgeVariant: BadgeVariant =
-    esModoNuevo || hojaBadgeText.startsWith("Se moverá") ? "blue" : "default";
+    esModoNuevo || hojaBadgeText.startsWith('Se moverá') ? 'blue' : 'default';
 
   // ---- Handlers ----
 
@@ -197,7 +212,7 @@ export function useEquipmentForm(): UseEquipmentFormReturn {
       setHojaActual(data.hoja);
       setFilaActual(String(data.fila));
       setValores([...data.valores]);
-      propietarioOriginalRef.current = (data.valores[2] || "")
+      propietarioOriginalRef.current = (data.valores[2] || '')
         .toString()
         .toUpperCase()
         .trim();
@@ -213,7 +228,7 @@ export function useEquipmentForm(): UseEquipmentFormReturn {
       setFormVisible(true);
       setEmptyStatePlaca(null);
 
-      const nuevos = Array(COLUMNAS.length).fill("");
+      const nuevos = Array(COLUMNAS.length).fill('');
       Object.entries(DEFAULT_NUEVO_EQUIPO).forEach(([idx, val]) => {
         nuevos[parseInt(idx)] = val;
       });
@@ -222,7 +237,7 @@ export function useEquipmentForm(): UseEquipmentFormReturn {
       validacionesIndices.forEach((idx) => {
         const opts = validaciones[idx] || [];
         if (opts.length === 0) return;
-        const match = findMatchingOption(nuevos[idx] || "", opts);
+        const match = findMatchingOption(nuevos[idx] || '', opts);
         if (match) nuevos[idx] = match;
       });
 
@@ -257,39 +272,39 @@ export function useEquipmentForm(): UseEquipmentFormReturn {
     setAlertInfo(null);
 
     const valoresLimpios: EquipmentValue[] = valores.map((v) =>
-      v.replace(/'/g, "-").toUpperCase()
+      v.replace(/'/g, '-').toUpperCase()
     );
 
     let respuesta: ApiResult | null = null;
-    let successMessage = "";
+    let successMessage = '';
 
     if (esModoNuevo) {
-      const hojaDestino = getHojaDestino(valoresLimpios[2] || "");
+      const hojaDestino = getHojaDestino(valoresLimpios[2] || '');
       setAlertInfo({
-        type: "info",
-        message: "Registrando nuevo equipo en CMDB...",
+        type: 'info',
+        message: 'Registrando nuevo equipo en CMDB...',
       });
       respuesta = await crear(hojaDestino, valoresLimpios);
-      successMessage = "registrado";
+      successMessage = 'registrado';
     } else {
       setAlertInfo({
-        type: "info",
-        message: "Sincronizando con CMDB, por favor espere...",
+        type: 'info',
+        message: 'Sincronizando con CMDB, por favor espere...',
       });
       respuesta = await actualizar(filaActual, hojaActual, valoresLimpios);
-      successMessage = "actualizado";
+      successMessage = 'actualizado';
     }
 
     setSaving(false);
 
     if (respuesta?.exito) {
-      setAlertInfo({ type: "success", message: respuesta.mensaje });
+      setAlertInfo({ type: 'success', message: respuesta.mensaje });
       setFormVisible(false);
       if (esModoNuevo) setEsModoNuevo(false);
     } else {
       setAlertInfo({
-        type: "error",
-        message: `Error al ${successMessage}: ${respuesta?.mensaje || "Error desconocido"}`,
+        type: 'error',
+        message: `Error al ${successMessage}: ${respuesta?.mensaje || 'Error desconocido'}`,
       });
     }
   }, [valores, esModoNuevo, crear, actualizar, filaActual, hojaActual, getHojaDestino]);

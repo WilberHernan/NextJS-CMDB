@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { cn } from "@/lib/utils";
-import { CustomSelect } from "@/components/CustomSelect";
-import { DateField } from "@/components/DateField";
+import { cn } from '@/lib/utils';
+import { CustomSelect } from '@/components/CustomSelect';
+import { DateField } from '@/components/DateField';
 
 interface DynamicFieldProps {
   index: number;
@@ -15,7 +15,7 @@ interface DynamicFieldProps {
   onChange: (index: number, value: string) => void;
 }
 
-export function DynamicField({
+export function DynamicField ({
   index,
   nombre,
   value,
@@ -25,16 +25,15 @@ export function DynamicField({
   fieldId,
   onChange,
 }: DynamicFieldProps) {
-  const isObservaciones = nombre === "Observaciones";
+  const isObservaciones = nombre === 'Observaciones';
   const isDate = index === 47 || index === 48;
   const isSelect = validacionesIndices.includes(index) && index !== 6;
   const isPlaca = index === 6;
-  const isFullWidth = isObservaciones;
 
   const handleChange = (newValue: string) => {
     let val = newValue;
-    if (typeof val === "string") {
-      val = val.replace(/'/g, "-").toUpperCase();
+    if (typeof val === 'string') {
+      val = val.replace(/'/g, '-').toUpperCase();
     }
     onChange(index, val);
   };
@@ -43,7 +42,7 @@ export function DynamicField({
     return (
       <CustomSelect
         options={validaciones[index] || []}
-        value={value || ""}
+        value={value || ''}
         onChange={handleChange}
       />
     );
@@ -58,9 +57,9 @@ export function DynamicField({
       <textarea
         id={fieldId}
         rows={3}
-        value={value || ""}
+        value={value || ''}
         onChange={(e) => handleChange(e.target.value)}
-        className="flex w-full rounded-xl border border-border-default bg-surface-input px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground-60 shadow-neu-pressed hover:border-border-hover focus:border-accent focus:shadow-[var(--focus-ring)] focus:outline-none transition-all duration-200 ease-cinematic font-sans resize-vertical min-h-[90px] leading-relaxed"
+        className='flex w-full rounded-xl border border-border-default bg-surface-input px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground-60 shadow-neu-pressed hover:border-border-hover focus:border-accent focus:shadow-[var(--focus-ring)] focus:outline-none transition-all duration-200 ease-cinematic font-sans resize-vertical min-h-[90px] leading-relaxed'
       />
     );
   }
@@ -68,13 +67,13 @@ export function DynamicField({
   return (
     <input
       id={fieldId}
-      type="text"
-      value={value || ""}
+      type='text'
+      value={value || ''}
       readOnly={readOnly || isPlaca}
       onChange={(e) => handleChange(e.target.value)}
       className={cn(
-        "flex w-full rounded-xl border border-border-default bg-surface-input px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground-60 shadow-neu-pressed hover:border-border-hover focus:border-accent focus:shadow-[var(--focus-ring)] focus:outline-none transition-all duration-200 ease-cinematic font-sans",
-        isPlaca && "bg-surface-elevated text-muted-foreground font-semibold cursor-not-allowed border-dashed shadow-none"
+        'flex w-full rounded-xl border border-border-default bg-surface-input px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground-60 shadow-neu-pressed hover:border-border-hover focus:border-accent focus:shadow-[var(--focus-ring)] focus:outline-none transition-all duration-200 ease-cinematic font-sans',
+        isPlaca && 'bg-surface-elevated text-muted-foreground font-semibold cursor-not-allowed border-dashed shadow-none'
       )}
     />
   );

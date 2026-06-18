@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 
-export async function POST() {
+export async function POST () {
   const response = NextResponse.json({ ok: true });
-  response.cookies.set("cmdb-auth", "", {
+  response.cookies.set('cmdb-auth', '', {
     httpOnly: true,
     secure: true,
-    sameSite: "lax",
+    sameSite: 'lax',
     maxAge: 0,
-    path: "/",
+    path: '/',
   });
   return response;
 }

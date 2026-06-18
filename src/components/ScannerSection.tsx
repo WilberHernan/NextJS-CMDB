@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useCallback } from "react";
-import { useScanner } from "@/hooks/useScanner";
-import { ScanCard } from "@/components/ScanCard";
+import { useCallback } from 'react';
+import { useScanner } from '@/hooks/useScanner';
+import { ScanCard } from '@/components/ScanCard';
 
 interface ScannerSectionProps {
   loading: boolean;
@@ -14,7 +14,7 @@ interface ScannerSectionProps {
  * Client-only wrapper that isolates @zxing/* from the server bundle.
  * Must be loaded via next/dynamic({ ssr: false }) from any parent.
  */
-export function ScannerSection({ loading, onScan, equipmentFound }: ScannerSectionProps) {
+export function ScannerSection ({ loading, onScan, equipmentFound }: ScannerSectionProps) {
   const {
     scanMode,
     setScanMode,

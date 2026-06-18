@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface TypewriterTextProps {
   text: string;
@@ -20,15 +20,15 @@ interface TypewriterTextProps {
  * rhythm (jitter) for that "hacker terminal" feel.
  * Re‑triggers the animation every time `text` changes.
  */
-export function TypewriterText({
+export function TypewriterText ({
   text,
-  className = "",
+  className = '',
   speed = 35,
   jitter = 20,
   cursor = true,
   onComplete,
 }: TypewriterTextProps) {
-  const [displayed, setDisplayed] = useState("");
+  const [displayed, setDisplayed] = useState('');
   const prevRef = useRef(text);
   const intervalRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const completedRef = useRef(false);
@@ -41,11 +41,11 @@ export function TypewriterText({
     prevRef.current = text;
     completedRef.current = false;
 
-    setDisplayed("");
+    setDisplayed('');
 
     let i = 0;
 
-    function tick() {
+    function tick () {
       i++;
       const partial = text.slice(0, i);
       setDisplayed(partial);
@@ -71,8 +71,8 @@ export function TypewriterText({
       {displayed}
       {cursor && (
         <span
-          className="inline-block w-[2px] h-[1em] ml-[1px] align-middle bg-current animate-pulse"
-          style={{ animationDuration: "0.7s" }}
+          className='inline-block w-[2px] h-[1em] ml-[1px] align-middle bg-current animate-pulse'
+          style={{ animationDuration: '0.7s' }}
         />
       )}
     </span>

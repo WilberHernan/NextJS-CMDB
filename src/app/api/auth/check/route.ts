@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET (request: NextRequest) {
   const PAGE_KEY = process.env.PAGE_KEY;
 
   // No key configured → open access
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
-  const authCookie = request.cookies.get("cmdb-auth");
+  const authCookie = request.cookies.get('cmdb-auth');
   if (authCookie?.value === PAGE_KEY) {
     return NextResponse.json({ ok: true });
   }

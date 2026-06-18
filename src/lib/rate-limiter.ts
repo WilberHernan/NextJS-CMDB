@@ -20,7 +20,7 @@ const DEFAULT_CONFIG: RateLimitConfig = {
  * Check if the given IP is rate-limited.
  * Returns `{ allowed: true }` or `{ allowed: false, remaining, resetInSeconds }`.
  */
-export function checkRateLimit(
+export function checkRateLimit (
   ip: string,
   config: RateLimitConfig = DEFAULT_CONFIG
 ): { allowed: true } | { allowed: false; remaining: number; resetInSeconds: number } {
@@ -49,7 +49,7 @@ export function checkRateLimit(
  * Clean up stale entries to prevent memory leaks.
  * Call periodically or just let it run on process exit.
  */
-export function pruneRateLimiter(): void {
+export function pruneRateLimiter (): void {
   const now = Date.now();
   for (const [ip, entry] of attempts) {
     if (now >= entry.resetAt) {

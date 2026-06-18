@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   createContext,
@@ -7,8 +7,8 @@ import {
   useEffect,
   useCallback,
   type ReactNode,
-} from "react";
-import { isSede, type Sede } from "@/lib/sedes";
+} from 'react';
+import { isSede, type Sede } from '@/lib/sedes';
 
 interface SedeContextType {
   sede: Sede | null;
@@ -22,19 +22,19 @@ const SedeContext = createContext<SedeContextType>({
   loading: true,
 });
 
-export function SedeProvider({ children }: { children: ReactNode }) {
+export function SedeProvider ({ children }: { children: ReactNode }) {
   const [sede, setSedeState] = useState<Sede | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const sedeFromUrl = params.get("sede");
+    const sedeFromUrl = params.get('sede');
 
     if (isSede(sedeFromUrl)) {
       setSedeState(sedeFromUrl);
-      localStorage.setItem("cmdb-sede", sedeFromUrl);
+      localStorage.setItem('cmdb-sede', sedeFromUrl);
     } else {
-      const saved = localStorage.getItem("cmdb-sede");
+      const saved = localStorage.getItem('cmdb-sede');
       if (isSede(saved)) {
         setSedeState(saved);
       }
@@ -44,7 +44,7 @@ export function SedeProvider({ children }: { children: ReactNode }) {
 
   const setSede = useCallback((newSede: Sede) => {
     setSedeState(newSede);
-    localStorage.setItem("cmdb-sede", newSede);
+    localStorage.setItem('cmdb-sede', newSede);
   }, []);
 
   return (
@@ -54,6 +54,6 @@ export function SedeProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useSede() {
+export function useSede () {
   return useContext(SedeContext);
 }
