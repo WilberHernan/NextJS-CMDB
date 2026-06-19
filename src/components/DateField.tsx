@@ -14,7 +14,7 @@ export function DateField ({ value, onChange, className }: DateFieldProps) {
   const dateInputRef = useRef<HTMLInputElement>(null);
 
   const handleWrapperClick = useCallback(() => {
-    dateInputRef.current?.showPicker?.() ?? dateInputRef.current?.click();
+    dateInputRef.current?.click();
   }, []);
 
   const handleDateChange = useCallback(
