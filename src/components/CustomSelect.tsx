@@ -133,7 +133,7 @@ export function CustomSelect ({
             openUp
               ? 'bottom-[calc(100%+8px)]'
               : 'top-[calc(100%+8px)]',
-            'rounded-xl glass',
+            'rounded-xl bg-surface-elevated border border-border-default shadow-neu-flat',
             'p-2 max-h-[300px] overflow-y-auto',
             'overscroll-behavior-contain'
           )}
@@ -176,7 +176,7 @@ export function CustomSelect ({
           }}
           className={cn(
             'min-w-[180px] rounded-2xl p-1.5',
-            'glass',
+            'bg-surface-elevated',
             'shadow-neu-flat',
             'border border-border-default',
             'animate-scale-in origin-top-left',
