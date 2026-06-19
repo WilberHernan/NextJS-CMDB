@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 export function useTheme () {
   const [theme, setThemeState] = useState<'dark' | 'light'>('light');
   const initialized = useRef(false);
+  const transitioningRef = useRef(false);
 
   /* ── On mount: sync with localStorage (no transition jank) ── */
   useEffect(() => {
@@ -29,9 +30,11 @@ export function useTheme () {
   }
 
   /* ── setTheme with View Transitions API (circle reveal) ─────
-   *  Descubre el botón toggle en el DOM y usa su centro como
-   *  origen del circle clip-path reveal. Falls back a toggle
-   *  directo si el browser no soporta View Transitions.            */
+   *  Usa el centro del botón toggle como origen del circle
+   *  clip-path reveal. Si una transición ya está en curso
+   *  (usuario clickeó rápido) saltea la animación y hace el
+   *  toggle directo — evita que el browser descarte el efecto
+   *  dejando un cambio seco e inconsistente.                    */
   const setTheme = useCallback((next: 'dark' | 'light') => {
     const html = document.documentElement;
     const isDark = next === 'dark';
@@ -39,35 +42,49 @@ export function useTheme () {
     setThemeState(next);
     localStorage.setItem('cmdb-theme', next);
 
-    if (document.startViewTransition) {
+    if (document.startViewTransition && !transitioningRef.current) {
       const { x, y } = getToggleOrigin();
+
+      transitioningRef.current = true;
 
       const transition = document.startViewTransition(() => {
         html.classList.toggle('dark', isDark);
       });
 
-      /* Esperar a que los pseudo-elementos estén listos para animar */
-      transition.ready.then(() => {
-        const endRadius = Math.hypot(
-          Math.max(x, innerWidth - x),
-          Math.max(y, innerHeight - y)
-        );
-        html.animate(
-          {
-            clipPath: [
-              `circle(0 at ${x}px ${y}px)`,
-              `circle(${endRadius}px at ${x}px ${y}px)`,
-            ],
-          },
-          {
-            duration: 600,
-            easing: 'ease-in-out',
-            pseudoElement: '::view-transition-new(root)',
-          }
-        );
-      });
+      /* Animar el circle clip-path desde el toggle */
+      transition.ready
+        .then(() => {
+          const endRadius = Math.hypot(
+            Math.max(x, innerWidth - x),
+            Math.max(y, innerHeight - y)
+          );
+          html.animate(
+            {
+              clipPath: [
+                `circle(0 at ${x}px ${y}px)`,
+                `circle(${endRadius}px at ${x}px ${y}px)`,
+              ],
+            },
+            {
+              duration: 600,
+              easing: 'ease-in-out',
+              pseudoElement: '::view-transition-new(root)',
+            }
+          );
+        })
+        .catch(() => {
+          /* Transición saltada: el DOM ya cambió en el callback,
+           * solo perdemos la animación. No es error. */
+        });
+
+      /* Liberar el guard cuando termine (éxito o fracaso) */
+      transition.finished
+        .catch(() => {})
+        .finally(() => {
+          transitioningRef.current = false;
+        });
     } else {
-      /* Fallback: Safari <18, older browsers */
+      /* Fallback: sin View Transitions, o ya hay una en curso */
       html.classList.toggle('dark', isDark);
     }
   }, []);
