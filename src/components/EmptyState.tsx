@@ -62,7 +62,7 @@ export function EmptyState ({ placa, onRetry, onRegisterNew }: EmptyStateProps) 
         <button
           type='button'
           onClick={onRegisterNew}
-          className='inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[0.9375rem] font-semibold transition-all duration-200 ease-cinematic outline-none font-sans bg-accent-soft text-accent border border-border-accent shadow-neu-pressed hover:-translate-y-0.5 hover:shadow-neu-flat active:translate-y-0 active:shadow-neu-pressed'
+          className='inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[0.9375rem] font-semibold transition-all duration-200 ease-cinematic outline-none font-sans bg-info-soft text-foreground border border-info shadow-neu-pressed hover:-translate-y-0.5 hover:shadow-neu-flat active:translate-y-0 active:shadow-neu-pressed'
         >
           <Plus className='h-[18px] w-[18px]' strokeWidth={2} />
           Registrar nuevo

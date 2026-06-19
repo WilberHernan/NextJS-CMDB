@@ -108,11 +108,13 @@ export function EquipmentForm ({
             className={cn(
               'flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold',
               'transition-all duration-200 ease-cinematic outline-none',
-              'shadow-neu border border-border-default',
-              'bg-accent-soft text-accent border-border-accent shadow-neu-pressed',
+              'shadow-neu border shadow-neu-pressed',
               'hover:-translate-y-0.5 hover:shadow-neu-flat',
               'active:translate-y-0 active:shadow-neu-pressed',
-              saving && 'opacity-60 pointer-events-none'
+              saving && 'opacity-60 pointer-events-none',
+              esModoNuevo
+                ? 'bg-info-soft text-foreground border-info'
+                : 'bg-accent-soft text-foreground border-border-accent'
             )}
           >
             {saving
