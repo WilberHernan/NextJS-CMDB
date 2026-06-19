@@ -173,12 +173,19 @@
   }
 
   /*
-   * Theme transitions — ONLY when the user actively toggles themes.
-   * The `theme-transitioning` class is added/removed by useTheme
-   * so page loads have ZERO transition jank.
-   */
-  html.theme-transitioning *, html.theme-transitioning *::before, html.theme-transitioning *::after {
-    transition: background-color 300ms ease, border-color 300ms ease, color 200ms ease, box-shadow 300ms ease !important;
+   * View Transitions API — circle-reveal clip-path from click origin.
+   * Neutralize the default crossfade so our custom clip-path animation
+   * (driven from useTheme.ts via WAAPI on ::view-transition-new(root))
+   * is the ONLY thing the user sees.                                  */
+  ::view-transition-image-pair(root) {
+    isolation: auto;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+    display: block;
   }
 
   html {

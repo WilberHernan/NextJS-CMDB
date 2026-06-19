@@ -164,6 +164,7 @@ export function Header ({
           <Button
             variant='ghost'
             size='icon'
+            data-theme-toggle
             onClick={onToggleTheme}
             className='rounded-xl'
             title='Cambiar tema'
