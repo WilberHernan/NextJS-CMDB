@@ -73,97 +73,100 @@
 
   .dark {
     /* === ACCENT ===
-       Slightly desaturated green for less "hype" feel in dark.
-       Pure #4ade80 reads as a neon toy. #86efac is the "premium dark" green.
-       accent-soft/muted kept very low (0.06/0.03) so active states
-       don't add a "green tint" to the whole page. */
-    --accent: #86efac;
-    --accent-hover: #4ade80;
-    --accent-soft: rgba(134, 239, 172, 0.06);
-    --accent-25: rgba(134, 239, 172, 0.20);
-    --accent-35: rgba(134, 239, 172, 0.30);
-    --accent-45: rgba(134, 239, 172, 0.40);
-    --accent-30: rgba(134, 239, 172, 0.25);
-    --accent-muted: rgba(134, 239, 172, 0.03);
-    --text-muted-60: rgba(156, 163, 175, 0.6);
+       Vibrant green with contrast on matte black.
+       #4ade80 is fresh without being neon — it reads as "premium alert"
+       against the dark neutral canvas. accent-soft kept low so green
+       stays reserved for actions, never tints the page. */
+    --accent: #4ade80;
+    --accent-hover: #22c55e;
+    --accent-soft: rgba(74, 222, 128, 0.08);
+    --accent-25: rgba(74, 222, 128, 0.20);
+    --accent-35: rgba(74, 222, 128, 0.30);
+    --accent-45: rgba(74, 222, 128, 0.40);
+    --accent-30: rgba(74, 222, 128, 0.25);
+    --accent-muted: rgba(74, 222, 128, 0.04);
+    --text-muted-60: rgba(163, 163, 163, 0.6);
 
     --danger: #f87171;
     --danger-soft: rgba(248, 113, 113, 0.10);
-    --success: #86efac;
-    --success-soft: rgba(134, 239, 172, 0.06);
-    --info: #93c5fd;
-    --info-soft: rgba(147, 197, 253, 0.10);
-    --warning: #fcd34d;
-    --warning-soft: rgba(252, 211, 77, 0.10);
+    --success: #4ade80;
+    --success-soft: rgba(74, 222, 128, 0.08);
+    --info: #60a5fa;
+    --info-soft: rgba(96, 165, 250, 0.10);
+    --warning: #fbbf24;
+    --warning-soft: rgba(251, 191, 36, 0.10);
 
-    --mode-blue: #93c5fd;
-    --mode-blue-soft: rgba(147, 197, 253, 0.15);
-    --mode-blue-glow: rgba(147, 197, 253, 0.3);
+    --mode-blue: #60a5fa;
+    --mode-blue-soft: rgba(96, 165, 250, 0.12);
+    --mode-blue-glow: rgba(96, 165, 250, 0.25);
 
-    /* === BACKGROUND SCALE ===
-       Slightly more separation than before: bg-elevated is lighter so
-       neumorphism has room to breathe. bg-input is a touch darker so
-       pressed surfaces (inputs) contrast with raised ones (cards). */
-    --bg-base: #0a0a0d;
-    --bg-surface: #121217;
-    --bg-elevated: #1e1e2a;
-    --bg-hover: #252533;
-    --bg-active: #2d2d3a;
-    --bg-input: #0d0d11;
+    /* === BACKGROUND SCALE (MATTE BLACK) ===
+       Pure neutral grays — zero color tint. The entire scale sits
+       between true black (#000) and dark charcoal (#2a2a2a).
+       Elevation is communicated by subtle lightness shifts, not
+       by shifting hue toward blue or purple.
+       bg-input is the deepest so pressed surfaces (forms) visually
+       recede while cards (bg-surface) feel raised. */
+    --bg-base: #050505;
+    --bg-surface: #0c0c0c;
+    --bg-elevated: #141414;
+    --bg-hover: #1c1c1c;
+    --bg-active: #242424;
+    --bg-input: #070707;
 
     /* === BORDERS ===
-       Invisible in dark — the neumorphic shadows do ALL the edge
-       definition. Light mode uses visible black borders (4-8%),
-       dark mode relies on the top-left light shadow + bottom-right
-       dark shadow to pop cards off the background. */
-    --border-subtle: transparent;
-    --border-default: transparent;
-    --border-hover: rgba(255, 255, 255, 0.08);
-    --border-accent: rgba(134, 239, 172, 0.30);
+       With matte black backgrounds, micro-borders define edges.
+       Neumorphism alone is too subtle on true black — a whisper
+       of a border gives structure without fighting the shadows.
+       border-default is visible but barely, border-hover appears
+       on interaction. */
+    --border-subtle: rgba(255, 255, 255, 0.03);
+    --border-default: rgba(255, 255, 255, 0.06);
+    --border-hover: rgba(255, 255, 255, 0.12);
+    --border-accent: rgba(74, 222, 128, 0.25);
 
-    --text-primary: #ededee;
-    --text-secondary: #a1a1aa;
-    --text-tertiary: #71717a;
-    --text-disabled: #3f3f46;
+    --text-primary: #f5f5f5;
+    --text-secondary: #a3a3a3;
+    --text-tertiary: #666666;
+    --text-disabled: #333333;
 
     /* === SHADOWS ===
-       Deeper dark shadows for elevation (cards need to "float up" off near-black).
-       No more green tint on shadows — pure black is correct in dark mode. */
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.5);
-    --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.55);
-    --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
-    --shadow-glow: 0 0 30px rgba(134, 239, 172, 0.08);
-    --shadow-button: 0 2px 8px rgba(0, 0, 0, 0.4);
-    --shadow-button-hover: 0 6px 20px rgba(134, 239, 172, 0.20);
-    --focus-ring: inset 0 0 0 2px rgba(134, 239, 172, 0.15);
+       Pure black shadows — no color cast. Depth comes from
+       opacity, not hue. */
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.55);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.6);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.65);
+    --shadow-glow: 0 0 30px rgba(74, 222, 128, 0.06);
+    --shadow-button: 0 2px 8px rgba(0, 0, 0, 0.5);
+    --shadow-button-hover: 0 6px 20px rgba(74, 222, 128, 0.18);
+    --focus-ring: inset 0 0 0 2px rgba(74, 222, 128, 0.15);
 
-    /* SENA brand glow — used by "Registrar nuevo" button.
-       Reduced from 0.35 to 0.04 in dark so it doesn't dominate. */
-    --sena-green-glow: rgba(57, 169, 0, 0.04);
+    /* SENA brand glow — used by "Registrar nuevo" button. */
+    --sena-green-glow: rgba(74, 222, 128, 0.06);
 
-    --glass-bg: rgba(18, 18, 23, 0.85);
-    --glass-border: transparent;
-    --glass-border-hover: transparent;
-    --glass-highlight: rgba(255, 255, 255, 0.04);
+    --glass-bg: rgba(12, 12, 12, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --glass-border-hover: rgba(255, 255, 255, 0.10);
+    --glass-highlight: rgba(255, 255, 255, 0.03);
 
     /* === NEUMORPHISM (DARK MODE) ===
-       True neumorphism needs BOTH outer shadows — light from top-left,
-       dark from bottom-right. The --neu-light value determines how much
-       the card "glows" against the dark background. At 8-10% white it's
-       visible as a subtle edge without looking like a glow stick.
-       The pressed state inverts both sides: dark inset on top-left,
-       light inset on bottom-right (surface sinks in). */
-    --neu-light: rgba(255, 255, 255, 0.08);
-    --neu-dark: rgba(0, 0, 0, 0.6);
-    --neu-shadow-light: rgba(255, 255, 255, 0.07);
-    --neu-shadow-dark: rgba(0, 0, 0, 0.65);
+       On matte black, neumorphism must be restrained.
+       The light source (top-left) is barely perceptible — just enough
+       to hint that the surface is raised. The dark shadow (bottom-right)
+       gives the depth. Unlike light-mode neumorphism where both sides
+       are visible, dark neumorphism on true black depends on micro-
+       shadows paired with micro-borders (--border-default above). */
+    --neu-light: rgba(255, 255, 255, 0.04);
+    --neu-dark: rgba(0, 0, 0, 0.45);
+    --neu-shadow-light: rgba(255, 255, 255, 0.03);
+    --neu-shadow-dark: rgba(0, 0, 0, 0.50);
 
     /* === MESH ===
-       Very subtle blue-ish radial atmosphere at the top of the viewport.
-       Gives depth to the flat near-black base without being decorative.
-       Blue tone (NOT green) so green remains reserved for actions. */
-    --grad-mesh: radial-gradient(ellipse 80% 40% at 50% -10%, rgba(147, 197, 253, 0.04) 0%, transparent 60%);
+       Cool-white atmosphere at the top — absolutely neutral.
+       No blue, no green. Just a whisper of light giving depth
+       to the flat matte black canvas. */
+    --grad-mesh: radial-gradient(ellipse 80% 40% at 50% -10%, rgba(255, 255, 255, 0.015) 0%, transparent 60%);
 
     --grad-border: linear-gradient(90deg, transparent, var(--accent-soft), transparent);
   }
@@ -269,49 +272,67 @@
    * was visible and the light was a 4% inset top line — too
    * subtle to define the card edge.
    */
-  .dark .shadow-neu,
+  .dark .shadow-neu {
+    box-shadow:
+      3px 3px 10px var(--neu-shadow-dark),
+      -3px -3px 10px var(--neu-shadow-light);
+  }
+
   .dark .shadow-neu-flat {
     box-shadow:
-      4px 4px 12px var(--neu-shadow-dark),
-      -4px -4px 12px var(--neu-shadow-light);
+      4px 4px 14px var(--neu-shadow-dark),
+      -4px -4px 14px var(--neu-shadow-light);
   }
 
   .dark .shadow-neu-pressed {
     box-shadow:
-      inset 2px 2px 6px var(--neu-shadow-dark),
-      inset -2px -2px 6px var(--neu-shadow-light);
+      inset 1.5px 1.5px 4px var(--neu-shadow-dark),
+      inset -1.5px -1.5px 4px var(--neu-shadow-light);
   }
 
   .dark .glass {
     background: var(--glass-bg);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
     border: 1px solid var(--glass-border);
     box-shadow:
-      4px 4px 16px var(--neu-shadow-dark),
-      -4px -4px 16px var(--neu-shadow-light),
-      0 1px 0 0 var(--glass-highlight) inset;
+      3px 3px 14px var(--neu-shadow-dark),
+      -3px -3px 14px var(--neu-shadow-light),
+      0 1px 0 0 var(--glass-highlight) inset,
+      0 -1px 0 0 rgba(0, 0, 0, 0.15) inset;
   }
   .dark .glass:hover {
     border-color: var(--glass-border-hover);
+    box-shadow:
+      4px 4px 18px var(--neu-shadow-dark),
+      -4px -4px 18px var(--neu-shadow-light),
+      0 1px 0 0 var(--glass-highlight) inset,
+      0 -1px 0 0 rgba(0, 0, 0, 0.15) inset;
   }
 
-  /* Dark mode borders are invisible — the neumorphic light-shadow
-     on top-left and dark-shadow on bottom-right define every edge.
-     This global override keeps stray borders from appearing.
+  /* Dark mode: micro-borders for structure (--border-default: 6% white),
+     neumorphism shadows for depth. Components explicitly use
+     border-border-* Tailwind classes — they always win because
+     class specificity beats fallback overrides. The :where() below
+     catches stray native borders (fieldset, hr, etc.) with ZERO
+     specificity so component classes are never blocked.
      IMPORTANT: only :focus — NOT :focus-within (would propagate
      to parent cards). Components with focus-within use specific
      .focus-within:border-accent utilities. */
-  .dark * {
+  :where(.dark) * {
     border-color: transparent;
   }
-  .dark *:hover {
+  /* Hover/focus border helpers with :where() on pseudo-classes too.
+     Zero specificity everywhere — component classes like border-danger
+     or hover:border-border-hover always win. If a component needs
+     hover border feedback, add hover:border-border-hover explicitly. */
+  :where(.dark) *:where(:hover) {
     border-color: var(--border-hover);
   }
-  .dark *:focus {
+  :where(.dark) *:where(:focus) {
     border-color: var(--accent);
   }
-  .dark *:focus-visible {
+  :where(.dark) *:where(:focus-visible) {
     border-color: var(--accent);
     outline: none;
   }

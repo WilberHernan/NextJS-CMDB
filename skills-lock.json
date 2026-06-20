@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "baseline-ui": {
+      "source": "ibelick/ui-skills",
+      "sourceType": "github",
+      "skillPath": "skills/baseline-ui/SKILL.md",
+      "computedHash": "016ad266e4e3bfd058096bb032ae890b09973267a547048414a371f5b1b266de"
+    },
     "brandkit": {
       "source": "Leonxlnx/taste-skill",
       "sourceType": "github",
@@ -49,11 +55,24 @@
       "skillPath": "skills/personal/edit-article/SKILL.md",
       "computedHash": "e0c50de6d64f528cb4ea32b142e2ec499e291efbc6996369ac4a1eea76d4870c"
     },
-    "fastify-best-practices": {
-      "source": "mcollina/skills",
+
+    "fixing-accessibility": {
+      "source": "ibelick/ui-skills",
       "sourceType": "github",
-      "skillPath": "skills/fastify/SKILL.md",
-      "computedHash": "b3a771fa66bc5d8dac0af14e99e51fca2ff4a9add56f09d986778528bdf72c4c"
+      "skillPath": "skills/fixing-accessibility/SKILL.md",
+      "computedHash": "f8ddcb0a8c7b8728105eab18e17223e41d74fb8649becba58a6deb90c6a5ce8d"
+    },
+    "fixing-metadata": {
+      "source": "ibelick/ui-skills",
+      "sourceType": "github",
+      "skillPath": "skills/fixing-metadata/SKILL.md",
+      "computedHash": "10047222b01c2c9b6e904ef90079880d9dbc09de3241df7f311b238dbcb7869a"
+    },
+    "fixing-motion-performance": {
+      "source": "ibelick/ui-skills",
+      "sourceType": "github",
+      "skillPath": "skills/fixing-motion-performance/SKILL.md",
+      "computedHash": "c1aca76fe18e8594f401cf78e5e76be24f182ce63167a398bdd4458f2a07639f"
     },
     "full-output-enforcement": {
       "source": "Leonxlnx/taste-skill",
@@ -157,18 +176,8 @@
       "skillPath": "skills/node/SKILL.md",
       "computedHash": "c92b3da4a4ea153207eb72d8f6a77c0e9f7b98d29f5092433143195d154d58c9"
     },
-    "nodejs-core": {
-      "source": "mcollina/skills",
-      "sourceType": "github",
-      "skillPath": "skills/nodejs-core/SKILL.md",
-      "computedHash": "3ed9716734e7b6cc0f94a0efecd2914b50b7d00cbd095d06e352faa2c8ab9ae8"
-    },
-    "oauth": {
-      "source": "mcollina/skills",
-      "sourceType": "github",
-      "skillPath": "skills/oauth/SKILL.md",
-      "computedHash": "0911bf3d2d4fd8d6ef567b91f60a34e34bfd7887f506f4a4c37a198ee0020865"
-    },
+
+
     "obsidian-vault": {
       "source": "mattpocock/skills",
       "sourceType": "github",
@@ -229,18 +238,8 @@
       "skillPath": "skills/misc/setup-pre-commit/SKILL.md",
       "computedHash": "f2ce8663857d919cf7e4146cd716b0aee1757b85123b758e6e7d98fcbaf14054"
     },
-    "skill-optimizer": {
-      "source": "mcollina/skills",
-      "sourceType": "github",
-      "skillPath": "skills/skill-optimizer/SKILL.md",
-      "computedHash": "7aa7e9bba558235dd145e1bdecf2952d0f3b2b03cf385884a2d59a2b4a4a1b91"
-    },
-    "snipgrapher": {
-      "source": "mcollina/skills",
-      "sourceType": "github",
-      "skillPath": "skills/snipgrapher/SKILL.md",
-      "computedHash": "ede2ff01d91a1956a0542feb379c646663c40de3b8bbbc749b56a6d262f2312e"
-    },
+
+
     "stitch-design-taste": {
       "source": "Leonxlnx/taste-skill",
       "sourceType": "github",
