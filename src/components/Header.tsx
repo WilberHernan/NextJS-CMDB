@@ -24,24 +24,9 @@ export function Header ({
   onToggleTheme,
   highlightSuccess = false,
 }: HeaderProps) {
-  const [stuck, setStuck] = useState(false);
   const [connStatus, setConnStatus] = useState<'loading' | 'connected' | 'error'>('loading');
-  const sentinelRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const { sede } = useSede();
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    const header = headerRef.current;
-    if (!sentinel || !header) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => setStuck(!entry.isIntersecting),
-      { threshold: [1] }
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     document.title = sede
@@ -94,25 +79,9 @@ export function Header ({
 
   return (
     <>
-      {/* Sticky sentinel */}
-      <div
-        ref={sentinelRef}
-        style={{ position: 'absolute', top: 0, height: 1, visibility: 'hidden', pointerEvents: 'none' }}
-      />
-
       <header
         ref={headerRef}
-        className={cn(
-          'sticky top-0 z-50 flex items-center justify-between px-4 sm:px-6 py-3.5',
-          'rounded-2xl glass border-border-default',
-          'transition-all duration-350',
-          stuck && 'rounded-b-[18px] rounded-t-none shadow-[var(--shadow-md)] border-border-hover'
-        )}
-        style={
-          stuck
-            ? { backdropFilter: 'blur(28px) saturate(180%)', WebkitBackdropFilter: 'blur(28px) saturate(180%)' }
-            : undefined
-        }
+        className='flex items-center justify-between px-4 sm:px-6 py-3.5 rounded-2xl glass border-border-default'
       >
         <div className='flex items-center gap-3.5'>
           <img
