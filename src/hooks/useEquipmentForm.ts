@@ -65,7 +65,6 @@ export interface UseEquipmentFormReturn {
 export function useEquipmentForm (): UseEquipmentFormReturn {
   const {
     loading,
-    error: equipmentError,
     validaciones,
     buscar,
     actualizar,
@@ -303,10 +302,9 @@ export function useEquipmentForm (): UseEquipmentFormReturn {
       setFormVisible(false);
       if (esModoNuevo) setEsModoNuevo(false);
     } else {
-      const errorMsg = respuesta?.mensaje || equipmentError || 'Error desconocido';
       setAlertInfo({
         type: 'error',
-        message: `Error al ${successMessage}: ${errorMsg}`,
+        message: `Error al ${successMessage}: ${respuesta?.mensaje || 'Error desconocido'}`,
       });
     }
   }, [valores, esModoNuevo, crear, actualizar, filaActual, hojaActual, getHojaDestino]);

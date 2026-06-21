@@ -83,7 +83,8 @@ export function useEquipment (): UseEquipmentReturn {
       } catch (e) {
         const msg = e instanceof Error ? e.message : 'Error al actualizar equipo';
         setError(msg);
-        return null;
+        // Return as ApiResult so the caller has the actual error message
+        return { exito: false, mensaje: msg };
       } finally {
         setLoading(false);
       }
@@ -106,7 +107,7 @@ export function useEquipment (): UseEquipmentReturn {
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Error al crear equipo';
       setError(msg);
-      return null;
+      return { exito: false, mensaje: msg };
     } finally {
       setLoading(false);
     }
