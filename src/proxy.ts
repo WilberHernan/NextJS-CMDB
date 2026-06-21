@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const ALLOWED_ORIGINS = [
-  'https://next-js-cmdb.vercel.app',
-  'http://localhost:3000',
-  'http://localhost:3001',
+  /^https:\/\/next-js-cmdb(-[^.]+)?\.vercel\.app$/,
+  /^http:\/\/localhost:30\d{2}$/,
 ];
 
 function originGuard (request: NextRequest): NextResponse | null {
@@ -18,10 +17,10 @@ function originGuard (request: NextRequest): NextResponse | null {
       { status: 403 }
     );
   }
-  const ok = ALLOWED_ORIGINS.some((a) => origin.startsWith(a));
+  const ok = ALLOWED_ORIGINS.some((a) => a.test(origin));
   if (!ok) {
     return NextResponse.json(
-      { ok: false, error: 'Origen no autorizado' },
+      { ok: false, error: `Origen no autorizado: ${origin}` },
       { status: 403 }
     );
   }
