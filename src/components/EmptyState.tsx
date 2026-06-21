@@ -10,7 +10,7 @@ interface EmptyStateProps {
 
 export function EmptyState ({ placa, onRetry, onRegisterNew }: EmptyStateProps) {
   return (
-    <div className='relative max-w-[520px] mx-auto my-8 p-12 sm:p-10 text-center rounded-2xl glass border-border-default overflow-hidden animate-empty-state-in'>
+    <div className='relative max-w-[520px] mx-auto my-8 p-10 sm:p-12 text-center rounded-2xl glass border-border-default overflow-hidden animate-empty-state-in'>
       {/* Radial gradient background glow */}
       <div
         className='absolute -top-[40%] -left-[40%] w-[180%] h-[180%] pointer-events-none'

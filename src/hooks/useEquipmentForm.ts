@@ -276,9 +276,11 @@ export function useEquipmentForm (): UseEquipmentFormReturn {
     setSaving(true);
     setAlertInfo(null);
 
-    const valoresLimpios: EquipmentValue[] = valores.map((v) =>
-      v.replace(/'/g, '-').toUpperCase()
-    );
+    const valoresLimpios: EquipmentValue[] = valores.map((v, i) => {
+      // Observaciones (index 50) preserves original case — free text field
+      if (i === 50) return v.replace(/'/g, '-');
+      return v.replace(/'/g, '-').toUpperCase();
+    });
 
     let respuesta: ApiResult | null = null;
     let successMessage = '';

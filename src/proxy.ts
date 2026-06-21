@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { COOKIE_MAX_AGE } from '@/lib/constants';
 
 const ALLOWED_ORIGINS = [
-  /^https:\/\/next-js-cmdb(-[^.]+)?\.vercel\.app$/,
-  /^https:\/\/will-labs\.dev$/,
-  /^https:\/\/www\.will-labs\.dev$/,
-  /^http:\/\/localhost:30\d{2}$/,
+  /^https:\/\/next-js-cmdb(-[^.]+)?\.vercel\.app(?:\/.*)?$/,
+  /^https:\/\/will-labs\.dev(?:\/.*)?$/,
+  /^https:\/\/www\.will-labs\.dev(?:\/.*)?$/,
+  /^http:\/\/localhost:30\d{2}(?:\/.*)?$/,
 ];
 
 function originGuard (request: NextRequest): NextResponse | null {
@@ -69,7 +70,7 @@ export function proxy (request: NextRequest) {
       secure: true,
       sameSite: 'lax',
       path: '/',
-      maxAge: 28800,
+      maxAge: COOKIE_MAX_AGE,
     });
     return response;
   }

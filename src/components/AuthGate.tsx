@@ -65,6 +65,8 @@ export function AuthGate ({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
+  // Intentionally empty: finishAuth is stable (wrapped in useCallback),
+  // and we only want to fire this effect ONCE on mount — not on ref changes.
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Finish auth: set sede from URL or context, then done ──

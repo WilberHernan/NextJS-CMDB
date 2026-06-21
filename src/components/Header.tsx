@@ -87,7 +87,8 @@ export function Header ({
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
     } catch {
-      // Si falla el fetch, igual recargamos — la cookie se borrará al recargar
+      // Si falla el fetch, igual recargamos — la cookie se borrará
+      // porque el middleware proxy la verifica y el backend da 401.
     }
     window.location.reload();
   };

@@ -7,8 +7,6 @@ import { cn } from '@/lib/utils';
 
 /**
  * GradientButton — Reusable button with animated gradient border.
- * Replaces the duplicated .btn-save-wrap/.btn-save and
- * .camera-btn-wrap/.camera-btn CSS patterns from globals.css.
  *
  * Variants:
  *  - primary: solid filled with accent gradient (for main actions like Save)

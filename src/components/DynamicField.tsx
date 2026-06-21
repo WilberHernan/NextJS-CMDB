@@ -33,7 +33,8 @@ export function DynamicField ({
   const handleChange = (newValue: string) => {
     let val = newValue;
     if (typeof val === 'string') {
-      val = val.replace(/'/g, '-').toUpperCase();
+      // Observaciones preserves original case — it's free text, not a code.
+      val = isObservaciones ? val.replace(/'/g, '-') : val.replace(/'/g, '-').toUpperCase();
     }
     onChange(index, val);
   };
