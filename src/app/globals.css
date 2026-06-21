@@ -337,6 +337,16 @@
     outline: none;
   }
 
+  /* Camera drop-zone card — needs visible borders in dark mode.
+     The universal :where(.dark) * sets transparent, but this is a
+     dashed drop target: the border IS the visual affordance.
+     This rule is also unlayered, so it wins against component classes.
+     A solid gray (#444444) reads as visible border without fighting
+     the neumorphic shadows. */
+  .dark .drop-zone-card {
+    border-color: #444444;
+  }
+
   /* Inline arbitrary-value shadows — mapped to neumorphic pattern. */
   .dark .shadow-\[inset_3px_3px_6px_var\(--neu-shadow-dark\),inset_-3px_-3px_6px_var\(--neu-shadow-light\)\] {
     box-shadow:

@@ -316,7 +316,7 @@ export function ScanCard ({
           ) : (
             <div
               className={cn(
-                'relative mx-auto max-w-md rounded-2xl border-2 border-dashed p-10 text-center transition-all duration-200 ease-cinematic',
+                'relative mx-auto max-w-md rounded-2xl border-2 border-dashed p-10 text-center transition-all duration-200 ease-cinematic drop-zone-card',
                 stage === 'error'
                   ? 'border-danger bg-danger-soft'
                   : 'border-border-default bg-surface-elevated',
