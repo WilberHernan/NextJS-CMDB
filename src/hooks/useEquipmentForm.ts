@@ -43,6 +43,10 @@ export interface UseEquipmentFormReturn {
   hojaBadgeText: string;
   hojaBadgeVariant: BadgeVariant;
 
+  /** Increments after a successful save — use as key={searchResetKey}
+   *  on ScannerSection to reset the search input. */
+  searchResetKey: number;
+
   // Actions
   handleScan: (placa: string) => Promise<void>;
   handleModoNuevo: (placa: string) => void;
@@ -82,6 +86,7 @@ export function useEquipmentForm (): UseEquipmentFormReturn {
   const [filaActual, setFilaActual] = useState('');
   const [formVisible, setFormVisible] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [searchResetKey, setSearchResetKey] = useState(0);
   const [emptyStatePlaca, setEmptyStatePlaca] = useState<string | null>(null);
   const [alertInfo, setAlertInfo] = useState<AlertInfo | null>(null);
   const [equipmentFound, setEquipmentFound] = useState(false);
@@ -300,6 +305,7 @@ export function useEquipmentForm (): UseEquipmentFormReturn {
     if (respuesta?.exito) {
       setAlertInfo({ type: 'success', message: respuesta.mensaje });
       setFormVisible(false);
+      setSearchResetKey((k) => k + 1);
       if (esModoNuevo) setEsModoNuevo(false);
     } else {
       setAlertInfo({
@@ -329,6 +335,7 @@ export function useEquipmentForm (): UseEquipmentFormReturn {
     saving,
     emptyStatePlaca,
     alertInfo,
+    searchResetKey,
     equipmentFound,
     validacionesIndices,
     hojaBadgeText,

@@ -51,7 +51,7 @@ export default function Home () {
         </div>
 
         <div className='animate-stagger-2'>
-          <ScannerSection loading={form.loading} onScan={form.handleScan} equipmentFound={form.equipmentFound} />
+          <ScannerSection key={form.searchResetKey} loading={form.loading} onScan={form.handleScan} equipmentFound={form.equipmentFound} />
         </div>
 
         {/* Status area — solo para mensajes de guardar (el scan usa equipmentFound) */}
