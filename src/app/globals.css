@@ -118,11 +118,11 @@
        With matte black backgrounds, micro-borders define edges.
        Neumorphism alone is too subtle on true black — a whisper
        of a border gives structure without fighting the shadows.
-       border-default is visible but barely, border-hover appears
-       on interaction. */
-    --border-subtle: rgba(255, 255, 255, 0.03);
-    --border-default: rgba(255, 255, 255, 0.06);
-    --border-hover: rgba(255, 255, 255, 0.12);
+       border-default at 10% is visible on dashed cards like the
+       camera drop zone, without looking aggressive. */
+    --border-subtle: rgba(255, 255, 255, 0.04);
+    --border-default: rgba(255, 255, 255, 0.10);
+    --border-hover: rgba(255, 255, 255, 0.18);
     --border-accent: rgba(74, 222, 128, 0.25);
 
     --text-primary: #f5f5f5;
@@ -146,8 +146,8 @@
     --sena-green-glow: rgba(74, 222, 128, 0.06);
 
     --glass-bg: rgba(12, 12, 12, 0.85);
-    --glass-border: rgba(255, 255, 255, 0.06);
-    --glass-border-hover: rgba(255, 255, 255, 0.10);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-border-hover: rgba(255, 255, 255, 0.14);
     --glass-highlight: rgba(255, 255, 255, 0.03);
 
     /* === NEUMORPHISM (DARK MODE) ===
