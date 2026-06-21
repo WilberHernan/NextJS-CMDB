@@ -135,7 +135,7 @@ export function CustomSelect ({
               : 'top-[calc(100%+8px)]',
             'rounded-xl bg-surface-elevated border border-border-default shadow-neu-flat',
             'p-2 max-h-[300px] overflow-y-auto',
-            'overscroll-behavior-contain'
+            'overscroll-contain'
           )}
         >
           {items.map((item) => (
@@ -180,7 +180,7 @@ export function CustomSelect ({
             'shadow-neu-flat',
             'border border-border-default',
             'animate-scale-in origin-top-left',
-            'overflow-y-auto max-h-[280px] overscroll-behavior-contain'
+            'overflow-y-auto max-h-[280px] overscroll-contain'
           )}
         >
           {items.map((item) => (
