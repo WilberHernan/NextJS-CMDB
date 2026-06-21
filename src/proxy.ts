@@ -3,6 +3,8 @@ import type { NextRequest } from 'next/server';
 
 const ALLOWED_ORIGINS = [
   /^https:\/\/next-js-cmdb(-[^.]+)?\.vercel\.app$/,
+  /^https:\/\/will-labs\.dev$/,
+  /^https:\/\/www\.will-labs\.dev$/,
   /^http:\/\/localhost:30\d{2}$/,
 ];
 
