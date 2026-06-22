@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useSede } from '@/contexts/sede-context';
 import { SEDE_LABELS } from '@/lib/sedes';
-import senaLogo from '@/app/icon.png';
 
 interface HeaderProps {
   theme: 'dark' | 'light';
@@ -117,9 +116,9 @@ export function Header ({
       >
         <div className='flex items-center gap-3.5'>
           <img
-            src={senaLogo.src}
+            src='/favicon.svg'
             alt='SENA'
-            className='w-9 h-9 object-contain block shrink-0'
+            className='w-9 h-9 object-contain block shrink-0 animate-logo-aura'
           />
           <div>
             <div
