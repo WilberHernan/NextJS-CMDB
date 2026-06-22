@@ -1,30 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkRateLimit } from '@/lib/rate-limiter';
 
 export async function POST (request: NextRequest) {
   try {
-    // ── Rate limiting by IP ──
-    const ip =
-      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-      request.headers.get('x-real-ip') ||
-      '127.0.0.1';
-    const rateCheck = checkRateLimit(ip);
-
-    if (!rateCheck.allowed) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: `Demasiados intentos. Probá de nuevo en ${rateCheck.resetInSeconds} segundos.`,
-        },
-        {
-          status: 429,
-          headers: {
-            'Retry-After': String(rateCheck.resetInSeconds),
-          },
-        }
-      );
-    }
-
     const body = await request.json();
     const { password } = body;
 
