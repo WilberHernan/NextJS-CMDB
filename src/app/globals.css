@@ -539,8 +539,8 @@
      Uses two drop-shadows — tight (main glow) + spread (soft halo) —
      so the light pools behind the logo, not a contour outline. */
   @keyframes logo-aura {
-    0%, 100% { filter: drop-shadow(0 0 4px rgba(57, 169, 0, 0.15)) drop-shadow(0 0 12px rgba(57, 169, 0, 0.06)); }
-    50%      { filter: drop-shadow(0 0 8px rgba(57, 169, 0, 0.40)) drop-shadow(0 0 18px rgba(57, 169, 0, 0.15)); }
+    0%, 100% { filter: drop-shadow(0 0 5px rgba(57, 169, 0, 0.25)) drop-shadow(0 0 14px rgba(57, 169, 0, 0.10)); }
+    50%      { filter: drop-shadow(0 0 10px rgba(57, 169, 0, 0.55)) drop-shadow(0 0 22px rgba(57, 169, 0, 0.25)); }
   }
   .animate-logo-aura {
     animation: logo-aura 3s ease-in-out infinite;
