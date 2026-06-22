@@ -344,7 +344,7 @@
      A solid gray (#444444) reads as visible border without fighting
      the neumorphic shadows. */
   .dark .drop-zone-card {
-    border-color: #444444;
+    border-color: var(--text-tertiary);
   }
 
   /* Inline arbitrary-value shadows — mapped to neumorphic pattern. */
