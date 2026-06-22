@@ -236,7 +236,7 @@ fi
 # ========================================================================
 echo ""
 echo "============================================================"
-echo "  CMDB SENA CCYS - SEDE ${SEDE}"
+echo "  CMDB SENA CIUDAD JARDIN - SEDE ${SEDE}"
 echo "============================================================"
 echo ""
 echo "Detectando hardware con multiples metodos..."

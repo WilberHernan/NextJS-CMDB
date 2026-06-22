@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-  Script de inventario de hardware UNIVERSAL para CMDB SENA CCYS.
+  Script de inventario de hardware UNIVERSAL para CMDB SENA CIUDAD JARDIN.
   Lee especificaciones del equipo local con multiples metodos de fallback.
 
 .DESCRIPTION
@@ -32,8 +32,6 @@ $script:CMDB_KEY = "SENA2026_"
 $script:SEDE = "CIUDAD_JARDIN"
 
 if ($CMDB_URL -match "XXXXXXXX") {
-    Write-Host "Abriendo CMDB (SEDE: $SEDE)..." -ForegroundColor Green
-Write-Host ""
     Write-Host "ERROR: Debes configurar la URL del CMDB." -ForegroundColor Red
     Write-Host "Abre este archivo en un editor de texto y reemplaza la variable `$CMDB_URL" -ForegroundColor Yellow
     Write-Host "con la URL del deployment de Next.js (Vercel o servidor propio)." -ForegroundColor Yellow

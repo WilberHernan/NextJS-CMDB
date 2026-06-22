@@ -32,8 +32,6 @@ $script:CMDB_KEY = "SENA2026_"
 $script:SEDE = "CCYS"
 
 if ($CMDB_URL -match "XXXXXXXX") {
-    Write-Host "Abriendo CMDB (SEDE: $SEDE)..." -ForegroundColor Green
-Write-Host ""
     Write-Host "ERROR: Debes configurar la URL del CMDB." -ForegroundColor Red
     Write-Host "Abre este archivo en un editor de texto y reemplaza la variable `$CMDB_URL" -ForegroundColor Yellow
     Write-Host "con la URL del deployment de Next.js (Vercel o servidor propio)." -ForegroundColor Yellow

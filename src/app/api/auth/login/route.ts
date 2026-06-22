@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { COOKIE_MAX_AGE } from '@/lib/constants';
 
 export async function POST (request: NextRequest) {
   try {
@@ -50,7 +49,6 @@ export async function POST (request: NextRequest) {
       secure: true,
       sameSite: 'lax',
       path: '/',
-      maxAge: COOKIE_MAX_AGE,
     });
 
     return response;
