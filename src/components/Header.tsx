@@ -118,7 +118,7 @@ export function Header ({
           <img
             src='/favicon.svg'
             alt='SENA'
-            className='w-9 h-9 object-contain block shrink-0 animate-logo-aura'
+            className='w-9 h-9 object-contain block shrink-0'
           />
           <div>
             <div
