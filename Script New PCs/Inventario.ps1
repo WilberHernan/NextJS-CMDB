@@ -27,7 +27,7 @@ $script:CMDB_URL = "https://next-js-cmdb.vercel.app"
 
 # Clave de acceso a la página (protege contra acceso no autorizado)
 # Reemplazar XXXXXXXX con la clave definida en Vercel como PAGE_KEY
-$script:CMDB_KEY = "SENA2026_"
+$script:CMDB_KEY = "SeguridadSENA2026+"
 
 if ($CMDB_URL -match "XXXXXXXX") {
     Write-Host ""

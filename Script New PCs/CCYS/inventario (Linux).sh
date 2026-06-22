@@ -10,7 +10,7 @@
 set -euo pipefail
 
 CMDB_URL="https://next-js-cmdb.vercel.app"
-CMDB_KEY="SENA2026_"
+CMDB_KEY="SeguridadSENA2026+"
 SEDE="CCYS"
 
 # ========================================================================
