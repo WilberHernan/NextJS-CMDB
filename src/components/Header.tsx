@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useSede } from '@/contexts/sede-context';
 import { SEDE_LABELS } from '@/lib/sedes';
+import { ScriptDownloadMenu } from '@/components/ScriptDownloadMenu';
 
 interface HeaderProps {
   theme: 'dark' | 'light';
@@ -160,6 +161,8 @@ export function Header ({
                   : 'Inactiva'}
             </span>
           </div>
+
+          <ScriptDownloadMenu />
 
           <Button
             variant='ghost'

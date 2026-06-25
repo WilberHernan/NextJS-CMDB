@@ -5,8 +5,6 @@ import { Scan, Camera, Search, ImageIcon, CheckCircle2, RotateCcw } from 'lucide
 import { cn } from '@/lib/utils';
 import { Loader } from '@/components/Loader';
 import { TypewriterText } from '@/components/TypewriterText';
-import { useSede } from '@/contexts/sede-context';
-import { SEDE_LABELS } from '@/lib/sedes';
 import type { ScanStage } from '@/hooks/useScanner';
 
 interface ScanCardProps {
@@ -121,68 +119,11 @@ export function ScanCard ({
     onCancel();
   };
 
-  const { sede } = useSede();
-
-  const dl = (plataforma: string) => `/api/descargar-script?sede=${sede}&plataforma=${plataforma}`;
-
   return (
-    <section className='relative rounded-3xl glass border-border-default overflow-hidden flex flex-col sm:flex-row'>
-      {/* LEFT: download sandwich */}
-      <aside
-        className={cn(
-          'flex sm:flex-col items-center justify-center gap-2 sm:gap-3.5',
-          'px-5 sm:px-0 sm:py-8 sm:w-28 shrink-0',
-          'order-2 sm:order-1',
-          'border-t sm:border-t-0 sm:border-r border-border-default',
-          'bg-surface-elevated/30'
-        )}
-      >
-        <span className='text-[9px] font-semibold uppercase tracking-widest text-muted-foreground text-center leading-tight'>
-          {sede ? SEDE_LABELS[sede] : 'SCRIPTS'}
-        </span>
+    <section className='relative rounded-3xl glass border-border-default overflow-hidden flex flex-col'>
 
-        <a
-          href={dl('win')}
-          className={cn(
-            'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold no-underline',
-            'bg-surface-elevated border border-border-default',
-            'hover:bg-surface-hover hover:-translate-y-0.5 active:translate-y-0',
-            'transition-all duration-200 ease-cinematic text-foreground'
-          )}
-        >
-          <span className='text-sm'>🪟</span>
-          Windows
-        </a>
-
-        <a
-          href={dl('mac')}
-          className={cn(
-            'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold no-underline',
-            'bg-surface-elevated border border-border-default',
-            'hover:bg-surface-hover hover:-translate-y-0.5 active:translate-y-0',
-            'transition-all duration-200 ease-cinematic text-foreground'
-          )}
-        >
-          <span className='text-sm'>🍎</span>
-          macOS
-        </a>
-
-        <a
-          href={dl('linux')}
-          className={cn(
-            'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold no-underline',
-            'bg-surface-elevated border border-border-default',
-            'hover:bg-surface-hover hover:-translate-y-0.5 active:translate-y-0',
-            'transition-all duration-200 ease-cinematic text-foreground'
-          )}
-        >
-          <span className='text-sm'>🐧</span>
-          Linux
-        </a>
-      </aside>
-
-      {/* RIGHT: scan content */}
-      <div className='flex-1 text-center p-8 sm:p-9 order-1 sm:order-2'>
+      {/* Scan content */}
+      <div className='flex-1 text-center p-8 sm:p-9'>
         <div
           className='mb-7 relative z-10'
           style={{ animation: 'title-mount 0.95s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both' }}
