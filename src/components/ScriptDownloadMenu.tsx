@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, useId } from 'react';
+import { createPortal } from 'react-dom';
 import { Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -15,16 +16,50 @@ const PLATFORMS = [
 
 export function ScriptDownloadMenu () {
   const [open, setOpen] = useState(false);
+  const [panelPos, setPanelPos] = useState<{ top: number; right: number } | null>(null);
+  const [mounted, setMounted] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const panelId = useId();
   const { sede } = useSede();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const updatePosition = useCallback(() => {
+    const btn = buttonRef.current;
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    setPanelPos({
+      top: rect.bottom + 6,
+      right: window.innerWidth - rect.right,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    updatePosition();
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [open, updatePosition]);
 
   useEffect(() => {
     if (!open) return;
 
     function handleClickOutside (e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
-        setOpen(false);
+      const target = e.target as Node;
+      if (
+        wrapperRef.current?.contains(target) ||
+        document.getElementById(panelId)?.contains(target)
+      ) {
+        return;
       }
+      setOpen(false);
     }
 
     function handleEscape (e: KeyboardEvent) {
@@ -37,17 +72,26 @@ export function ScriptDownloadMenu () {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [open]);
+  }, [open, panelId]);
 
   const downloadUrl = (plataforma: string) =>
     `/api/descargar-script?sede=${sede}&plataforma=${plataforma}`;
 
+  const handleToggle = () => {
+    setOpen((prev) => {
+      const next = !prev;
+      if (next) updatePosition();
+      return next;
+    });
+  };
+
   return (
     <div ref={wrapperRef} className='relative'>
       <Button
+        ref={buttonRef}
         variant='ghost'
         size='icon'
-        onClick={() => setOpen((v) => !v)}
+        onClick={handleToggle}
         className={cn('rounded-xl', open && 'bg-surface-hover text-foreground')}
         title={
           sede
@@ -57,16 +101,24 @@ export function ScriptDownloadMenu () {
         aria-label='Descargar scripts de inventario'
         aria-expanded={open}
         aria-haspopup='menu'
+        aria-controls={open ? panelId : undefined}
         disabled={!sede}
       >
         <Download className='h-[18px] w-[18px]' />
       </Button>
 
-      {open && sede && (
+      {mounted && open && sede && panelPos && createPortal(
         <div
+          id={panelId}
           role='menu'
+          style={{
+            position: 'fixed',
+            top: panelPos.top,
+            right: panelPos.right,
+            zIndex: 1000,
+          }}
           className={cn(
-            'absolute right-0 top-[calc(100%+6px)] z-[60] min-w-[200px]',
+            'min-w-[200px] pointer-events-auto',
             'rounded-xl border border-border-default bg-surface-elevated shadow-[var(--shadow-md)]',
             'animate-dropdown-in overflow-hidden'
           )}
@@ -100,7 +152,8 @@ export function ScriptDownloadMenu () {
               </a>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
