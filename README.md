@@ -175,11 +175,15 @@ Esto permite que una misma placa exista en sedes diferentes sin contaminar resul
 
 | Método | Ruta | Parámetros | Descripción |
 |--------|------|-----------|-------------|
+| `POST` | `/api/auth/login` | `{ key }` | Inicia sesión con PAGE_KEY |
+| `GET` | `/api/auth/check` | — | Verifica sesión activa |
+| `POST` | `/api/auth/logout` | — | Cierra sesión |
 | `GET` | `/api/equipos/buscar` | `placa`, `sede` | Busca equipo en la sede |
 | `POST` | `/api/equipos/actualizar` | `{ placa, data, sede }` | Actualiza fila |
 | `POST` | `/api/equipos/crear` | `{ placa, data, sede }` | Crea equipo nuevo |
 | `GET` | `/api/validaciones` | `sede` | Valores para dropdowns |
 | `GET` | `/api/mapeo-sede` | `sede` | Mapeo ID ↔ nombre de sedes |
+| `GET` | `/api/health` | — | Health check
 
 
 

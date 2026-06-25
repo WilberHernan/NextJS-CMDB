@@ -106,12 +106,6 @@ La app usa una **cookie de sesión** llamada `cmdb-auth`:
 5. Cada ruta `/api/auth/check` verifica que la cookie coincida con el
    `PAGE_KEY` del servidor.
 
-### Rate Limiting
-
-El login tiene un límite de **5 intentos cada 15 minutos** por IP. Usa un
-mapa en memoria con ventana de tiempo. Pasado el límite, el servidor responde
-con HTTP 429 y un mensaje en español.
-
 ### Protecciones adicionales
 
 - La cookie es `httpOnly` (JavaScript no puede leerla) y `secure` (solo HTTPS).
@@ -122,20 +116,27 @@ con HTTP 429 y un mensaje en español.
 
 ## Scripts de Inventario
 
-En la carpeta `Script New PCs/` hay scripts para **PowerShell** (Windows) y
-**Bash** (Linux) que automatizan el registro de equipos nuevos.
+En la carpeta `inventario-scripts/` hay scripts por sede que automatizan el
+registro de equipos nuevos en Windows.
 
 ### ¿Qué hacen?
 
-1. Detectan el hostname, la IP y la sede del equipo automáticamente.
-2. Abren el navegador con la URL de la app y pasan los parámetros:
-   ```
-   ?key=SENA2026_&sede=CCYS&modo=nuevo&hostname=PC-123&ip=192.168.1.10
-   ```
-3. La app recibe la `key` en la URL, la usa para autenticarse automáticamente
-   (sin que el usuario escriba nada), y precarga los datos del hostname e IP.
-4. El inspector solo completa los campos restantes (marca, modelo, serial, etc.)
-   y guarda.
+Cada sede tiene su propia carpeta con un script `.ps1` y un `.bat`:
+
+```
+inventario-scripts/
+├── CCYS/
+│   ├── inventarioWin.ps1
+│   └── PermisosWin.bat
+├── CIUDAD_JARDIN/
+│   ├── inventarioWin.ps1
+│   └── PermisosWin.bat
+└── REGIONAL/
+    ├── inventarioWin.ps1
+    └── PermisosWin.bat
+```
+
+Los scripts:
 
 ### Seguridad en los scripts
 
@@ -235,5 +236,6 @@ npm run dev          # Iniciar en desarrollo (localhost:3000)
 npm run build        # Compilar para producción
 npm run test         # Ejecutar tests (Vitest)
 npm run lint         # Verificar código con ESLint
+npm run lint:fix     # Corregir problemas automáticamente
 npm run type-check   # Verificar tipos de TypeScript
 ```
