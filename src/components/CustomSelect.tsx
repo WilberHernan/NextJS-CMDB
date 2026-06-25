@@ -1,16 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, useMemo, useId } from 'react';
-import { createPortal } from 'react-dom';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { ChevronDown } from 'lucide-react';
-import {
-  formControlBase,
-  formControlOpen,
-  formOptionClasses,
-  formOptionSelectedClasses,
-  formPanelClasses,
-} from '@/lib/form-styles';
+import { ChevronDown, Check } from 'lucide-react';
 
 type SelectOption = string | { value: string; label: string };
 
@@ -36,72 +28,33 @@ export function CustomSelect ({
   className,
 }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
-  const [panelPos, setPanelPos] = useState<{
-    top: number;
-    left: number;
-    width: number;
-  } | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [openUp, setOpenUp] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const panelId = useId();
   const items = useMemo(() => normalizeOptions(options), [options]);
 
   useEffect(() => {
-    setMounted(true);
+    function handleClickOutside (e: MouseEvent) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  const updatePosition = useCallback(() => {
-    const btn = buttonRef.current;
-    if (!btn) return;
-    const rect = btn.getBoundingClientRect();
-    const panelHeight = Math.min(items.length * 44 + 12, 280);
-    const spaceBelow = window.innerHeight - rect.bottom;
-    const openAbove = spaceBelow < panelHeight + 16;
-
-    setPanelPos({
-      top: openAbove ? rect.top - panelHeight - 8 : rect.bottom + 8,
-      left: rect.left,
-      width: rect.width,
-    });
+  const toggleOpen = useCallback(() => {
+    if (wrapperRef.current) {
+      const rect = wrapperRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const estimatedHeight = Math.min(items.length * 48 + 72, 300);
+      setOpenUp(spaceBelow < estimatedHeight);
+    }
+    setOpen((prev) => !prev);
   }, [items.length]);
-
-  useEffect(() => {
-    if (!open) return;
-    updatePosition();
-    window.addEventListener('scroll', updatePosition, true);
-    window.addEventListener('resize', updatePosition);
-    return () => {
-      window.removeEventListener('scroll', updatePosition, true);
-      window.removeEventListener('resize', updatePosition);
-    };
-  }, [open, updatePosition]);
-
-  useEffect(() => {
-    if (!open) return;
-
-    function handleClickOutside (e: MouseEvent) {
-      const target = e.target as Node;
-      if (
-        wrapperRef.current?.contains(target) ||
-        document.getElementById(panelId)?.contains(target)
-      ) {
-        return;
-      }
-      setOpen(false);
-    }
-
-    function handleEscape (e: KeyboardEvent) {
-      if (e.key === 'Escape') setOpen(false);
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [open, panelId]);
 
   const handleSelect = useCallback(
     (optValue: string) => {
@@ -117,14 +70,6 @@ export function CustomSelect ({
     return match ? match.label : value;
   }, [value, items]);
 
-  const toggleOpen = useCallback(() => {
-    setOpen((prev) => {
-      const next = !prev;
-      if (next) updatePosition();
-      return next;
-    });
-  }, [updatePosition]);
-
   return (
     <div
       ref={wrapperRef}
@@ -135,9 +80,12 @@ export function CustomSelect ({
         type='button'
         onClick={toggleOpen}
         className={cn(
-          formControlBase,
-          'items-center justify-between gap-2 text-left cursor-pointer',
-          open && formControlOpen
+          'flex w-full items-center justify-between gap-2 rounded-xl bg-surface-input px-4 py-3 text-sm text-left text-foreground relative',
+          'border border-border-default shadow-neu-pressed',
+          'transition-all duration-200 ease-cinematic outline-none font-sans',
+          'hover:border-border-hover',
+          'focus-visible:border-accent focus-visible:shadow-[var(--focus-ring)]',
+          open && 'border-accent shadow-[var(--focus-ring)]'
         )}
       >
         <span className={cn('truncate', !value && 'text-muted-foreground')}>
@@ -151,36 +99,44 @@ export function CustomSelect ({
         />
       </button>
 
-      {mounted && open && panelPos && createPortal(
+      {open && (
         <div
-          id={panelId}
-          role='listbox'
-          style={{
-            position: 'fixed',
-            top: panelPos.top,
-            left: panelPos.left,
-            width: panelPos.width,
-            zIndex: 1000,
-          }}
-          className={formPanelClasses}
+          className={cn(
+            'absolute left-0 right-0 z-50',
+            openUp
+              ? 'bottom-[calc(100%+8px)]'
+              : 'top-[calc(100%+8px)]',
+            'rounded-xl bg-surface-elevated border border-border-default shadow-neu-flat',
+            'p-2 max-h-[300px] overflow-y-auto overscroll-contain',
+            'animate-dropdown-in'
+          )}
         >
           {items.map((item) => (
             <button
               key={item.value}
               type='button'
-              role='option'
-              aria-selected={item.value === value}
               onClick={() => handleSelect(item.value)}
               className={cn(
-                formOptionClasses,
-                item.value === value && formOptionSelectedClasses
+                'flex w-full items-center gap-2.5 rounded-xl px-4 py-3 text-sm text-left',
+                'transition-all duration-150',
+                'text-muted-foreground',
+                'hover:bg-surface-hover hover:text-foreground',
+                'hover:shadow-[inset_2px_2px_4px_var(--neu-shadow-dark),inset_-2px_-2px_4px_var(--neu-shadow-light)]',
+                'mb-0.5 last:mb-0',
+                item.value === value &&
+                  'bg-accent-soft text-accent font-semibold border border-border-accent'
               )}
             >
-              {item.label}
+              <Check
+                className={cn(
+                  'h-4 w-4 shrink-0 transition-opacity',
+                  item.value === value ? 'opacity-100' : 'opacity-0'
+                )}
+              />
+              <span>{item.label}</span>
             </button>
           ))}
-        </div>,
-        document.body
+        </div>
       )}
     </div>
   );

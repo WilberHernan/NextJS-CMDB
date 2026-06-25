@@ -1,14 +1,8 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import {
-  formControlBase,
-  formControlFocus,
-  formControlReadOnly,
-} from '@/lib/form-styles';
 import { CustomSelect } from '@/components/CustomSelect';
 import { DateField } from '@/components/DateField';
-import { Input } from '@/components/ui/input';
 
 interface DynamicFieldProps {
   index: number;
@@ -55,7 +49,7 @@ export function DynamicField ({
   }
 
   if (isDate) {
-    return <DateField value={value} onChange={handleChange} id={fieldId} />;
+    return <DateField value={value} onChange={handleChange} />;
   }
 
   if (isObservaciones) {
@@ -65,23 +59,22 @@ export function DynamicField ({
         rows={3}
         value={value || ''}
         onChange={(e) => handleChange(e.target.value)}
-        className={cn(
-          formControlBase,
-          formControlFocus,
-          'resize-vertical min-h-[90px] leading-relaxed'
-        )}
+        className='flex w-full rounded-xl border border-border-default bg-surface-input px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground-60 shadow-neu-pressed hover:border-border-hover focus:border-accent focus:shadow-[var(--focus-ring)] focus:outline-none transition-all duration-200 ease-cinematic font-sans resize-vertical min-h-[90px] leading-relaxed'
       />
     );
   }
 
   return (
-    <Input
+    <input
       id={fieldId}
       type='text'
       value={value || ''}
       readOnly={readOnly || isPlaca}
       onChange={(e) => handleChange(e.target.value)}
-      className={cn(isPlaca && formControlReadOnly)}
+      className={cn(
+        'flex w-full rounded-xl border border-border-default bg-surface-input px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground-60 shadow-neu-pressed hover:border-border-hover focus:border-accent focus:shadow-[var(--focus-ring)] focus:outline-none transition-all duration-200 ease-cinematic font-sans',
+        isPlaca && 'bg-surface-elevated text-muted-foreground font-semibold cursor-not-allowed border-dashed shadow-none'
+      )}
     />
   );
 }

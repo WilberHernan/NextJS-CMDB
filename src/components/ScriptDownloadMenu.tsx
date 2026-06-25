@@ -6,10 +6,6 @@ import { Download, Monitor, Apple, Terminal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useSede } from '@/contexts/sede-context';
-import {
-  formPanelClasses,
-  formOptionClasses,
-} from '@/lib/form-styles';
 
 const PLATFORMS = [
   { id: 'win', label: 'Windows', Icon: Monitor },
@@ -121,7 +117,11 @@ export function ScriptDownloadMenu () {
             right: anchorPos.right,
             zIndex: 1000,
           }}
-          className={cn(formPanelClasses, 'w-[11.5rem]')}
+          className={cn(
+            'w-[11.5rem] pointer-events-auto p-2',
+            'rounded-xl bg-surface-elevated border border-border-default shadow-neu-flat',
+            'animate-dropdown-in overscroll-contain'
+          )}
         >
           {PLATFORMS.map((platform) => (
             <a
@@ -129,7 +129,13 @@ export function ScriptDownloadMenu () {
               href={downloadUrl(platform.id)}
               role='menuitem'
               onClick={() => setOpen(false)}
-              className={cn(formOptionClasses, 'items-center gap-2.5 no-underline')}
+              className={cn(
+                'flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold no-underline',
+                'text-muted-foreground transition-all duration-150',
+                'hover:bg-surface-hover hover:text-foreground',
+                'hover:shadow-[inset_2px_2px_4px_var(--neu-shadow-dark),inset_-2px_-2px_4px_var(--neu-shadow-light)]',
+                'mb-0.5 last:mb-0 active:scale-[0.98]'
+              )}
             >
               <platform.Icon className='h-4 w-4 shrink-0 text-muted-foreground' />
               {platform.label}
