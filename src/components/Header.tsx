@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
-import { Sun, Moon, LogOut, Download } from 'lucide-react';
+import { Sun, Moon, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useSede } from '@/contexts/sede-context';
@@ -28,8 +28,6 @@ export function Header ({
   const sentinelRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const { sede } = useSede();
-  const [showDownloads, setShowDownloads] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     document.title = sede
@@ -83,17 +81,6 @@ export function Header ({
     check();
     return () => { cancelled = true; };
   }, []);
-
-  useEffect(() => {
-    if (!showDownloads) return;
-    const handleClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setShowDownloads(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [showDownloads]);
 
   const handleLogout = async () => {
     try {
@@ -172,61 +159,6 @@ export function Header ({
                   ? 'Activa'
                   : 'Inactiva'}
             </span>
-          </div>
-
-          {/* Downloads dropdown */}
-          <div className='relative'>
-            <Button
-              variant='ghost'
-              size='icon'
-              onClick={() => setShowDownloads((v) => !v)}
-              className='rounded-xl'
-              title='Descargar scripts de inventario'
-              aria-label='Descargar scripts de inventario'
-            >
-              <Download className='h-[18px] w-[18px]' />
-            </Button>
-
-            {showDownloads && (
-              <div
-                ref={dropdownRef}
-                className='absolute top-full right-0 mt-2 min-w-[220px] rounded-2xl glass border border-border-default shadow-[var(--shadow-md)] overflow-hidden z-50'
-              >
-                <div className='px-4 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground border-b border-border-default'>
-                  {sede ? SEDE_LABELS[sede] : 'SIN SEDE'}
-                </div>
-
-                <a
-                  href={`/api/descargar-script?sede=${sede}&plataforma=win`}
-                  onClick={() => setShowDownloads(false)}
-                  className='flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground hover:bg-surface-hover transition-colors'
-                >
-                  <span className='text-base'>🪟</span>
-                  Windows
-                  <span className='text-[10px] text-muted-foreground ml-auto'>
-                    .bat + .ps1
-                  </span>
-                </a>
-
-                <a
-                  href={`/api/descargar-script?sede=${sede}&plataforma=mac`}
-                  onClick={() => setShowDownloads(false)}
-                  className='flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground hover:bg-surface-hover transition-colors'
-                >
-                  <span className='text-base'>🍎</span>
-                  macOS
-                </a>
-
-                <a
-                  href={`/api/descargar-script?sede=${sede}&plataforma=linux`}
-                  onClick={() => setShowDownloads(false)}
-                  className='flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-foreground hover:bg-surface-hover transition-colors'
-                >
-                  <span className='text-base'>🐧</span>
-                  Linux
-                </a>
-              </div>
-            )}
           </div>
 
           <Button
