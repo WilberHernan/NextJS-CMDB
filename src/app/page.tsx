@@ -38,7 +38,7 @@ export default function Home () {
   const isSuccess = form.equipmentFound || form.alertInfo?.type === 'success';
 
   return (
-    <div className='relative min-h-screen bg-surface-base'>
+    <div className='relative min-h-screen'>
       <div className='relative z-10 max-w-[1200px] mx-auto px-4 sm:px-8 py-5 sm:py-7 flex flex-col gap-5'>
         {/* Stagger mount: header → scanner → form.
             Status area (for save messages) mounts on demand after scanner. */}
