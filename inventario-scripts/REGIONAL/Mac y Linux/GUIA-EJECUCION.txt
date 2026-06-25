@@ -1,0 +1,53 @@
+============================================
+  CMDB SENA — GUIA RAPIDA DE EJECUCION
+  Scripts de inventario para Mac y Linux
+============================================
+
+Los 2 scripts (inventarioMac e inventarioLinux) detectan el hardware
+del equipo y abren automaticamente el navegador con los datos
+cargados en el formulario web.
+
+
+--- LINUX ----------------------------------------------------
+
+1. Abre una Terminal:
+   - Ctrl + Alt + T
+   - O boton derecho > "Abrir terminal"
+
+2. Navega a la carpeta donde esta el script:
+   cd /ruta/de/la/carpeta/Mac\ y\ Linux/
+
+3. Da permisos de ejecucion (solo la primera vez):
+   chmod +x inventarioLinux
+
+4. Ejecuta el script:
+   bash inventarioLinux
+
+5. El navegador se abrira solo con el formulario listo.
+
+
+--- MAC --------------------------------------------------------
+
+1. Abre Terminal:
+   - Finder > Aplicaciones > Utilidades > Terminal
+   - O busca "Terminal" con Cmd + Espacio (Spotlight)
+
+2. Navega a la carpeta donde esta el script:
+   cd /ruta/de/la/carpeta/Mac\ y\ Linux/
+
+3. Da permisos de ejecucion (solo la primera vez):
+   chmod +x inventarioMac
+
+4. Ejecuta el script:
+   bash inventarioMac
+
+5. El navegador se abrira solo con el formulario listo.
+
+
+--- POSIBLES ERRORES ------------------------------------------
+
+? "Permission denied"  ->  falta el paso 3 (chmod +x)
+? "Command not found"  ->  estas en la carpeta incorrecta
+? No abre el navegador ->  revisa que tengas internet
+
+Si algo falla, llama al administrador del sistema.

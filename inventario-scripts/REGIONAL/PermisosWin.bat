@@ -1,20 +1,21 @@
 @echo off
 chcp 65001 >nul
-title CMDB SENA - Lanzador de Inventario
+title CMDB SENA - Lanzador de Inventario [REGIONAL]
 color 0A
 
 echo ============================================
-echo   CMDB SENA CCYS - Lanzador de Inventario
+echo   CMDB SENA REGIONAL - Inventario de Equipos
+echo   SEDE: REGIONAL
 echo ============================================
 echo.
 
 set "SCRIPT_DIR=%~dp0"
-set "PS1_FILE=%SCRIPT_DIR%Inventario.ps1"
+set "PS1_FILE=%SCRIPT_DIR%inventarioWin.ps1"
 
 if not exist "%PS1_FILE%" (
-    echo [ERROR] No se encontro el archivo Inventario.ps1
+    echo [ERROR] No se encontro el archivo inventarioWin.ps1
     echo.
-    echo Asegurate de que este archivo .bat este en la misma carpeta que Inventario.ps1
+    echo Asegurate de que este archivo .bat este en la misma carpeta que inventarioWin.ps1
     echo.
     pause
     exit /b 1

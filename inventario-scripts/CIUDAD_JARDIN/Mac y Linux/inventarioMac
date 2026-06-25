@@ -1,0 +1,422 @@
+#!/usr/bin/env bash
+# ============================================================================
+# Script de inventario de hardware — CMDB SENA SEDE CIUDAD_JARDIN (macOS)
+# Funciona en Intel y Apple Silicon (M1/M2/M3/M4)
+# Detecta hardware con multiples metodos de fallback y abre el navegador
+# con los datos para autorellenar el formulario.
+#
+# USO: bash inventario.sh  (funciona en cualquier Mac con bash)
+# ============================================================================
+
+set -euo pipefail
+
+CMDB_URL="https://next-js-cmdb.vercel.app"
+CMDB_KEY="SeguridadSENA2026+"
+SEDE="CIUDAD_JARDIN"
+
+# ========================================================================
+# AUXILIARES
+# ========================================================================
+urlencode() {
+  local s="$1" e="" p c o
+  local l=${#s}
+  for (( p=0; p<l; p++ )); do
+    c="${s:$p:1}"
+    case "$c" in [-_.~a-zA-Z0-9]) o="$c" ;; *) printf -v o '%%%02x' "'$c" ;; esac
+    e+="$o"
+  done
+  echo "$e"
+}
+norm_mac() { local r="$1"; [[ -z "$r" ]] && { echo ""; return; }; echo "$r" | tr -d ' \t\n\r' | tr '[:lower:]' '[:upper:]' | tr '-' ':'; }
+
+# ========================================================================
+# DETECCIONES — cada una prioriza velocidad y funciona en ambas
+# arquitecturas (Intel x86_64 y Apple Silicon arm64)
+# ========================================================================
+
+hostname() {
+  local h
+  # scutil es nativo de macOS y mas rapido
+  h=$(scutil --get ComputerName 2>/dev/null) && [[ -n "$h" ]] && { echo "$h" | tr '[:lower:]' '[:upper:]'; return; }
+  h=$(scutil --get LocalHostName 2>/dev/null) && [[ -n "$h" ]] && { echo "$h" | tr '[:lower:]' '[:upper:]'; return; }
+  h=$(hostname -s 2>/dev/null) && [[ -n "$h" ]] && { echo "$h" | tr '[:lower:]' '[:upper:]'; return; }
+  h=$(hostname 2>/dev/null) && [[ -n "$h" ]] && { echo "$h" | tr '[:lower:]' '[:upper:]'; return; }
+  echo "DESCONOCIDO"
+}
+
+marca() {
+  # En Mac siempre es Apple — no hace falta detectarlo
+  echo "Apple"
+}
+
+modelo() {
+  local v
+  # Metodo 1: system_profiler da el nombre humano (ej. "MacBook Pro")
+  v=$(system_profiler SPHardwareDataType 2>/dev/null | grep "Model Name" | head -1 | sed 's/.*: *//' | xargs)
+  [[ -n "$v" && "$v" != "Model Name" ]] && { echo "$v"; return; }
+  # Metodo 2: hw.model da el identificador (ej. "MacBookPro18,3")
+  v=$(sysctl -n hw.model 2>/dev/null) && [[ -n "$v" ]] && { echo "$v"; return; }
+  echo ""
+}
+
+serial() {
+  local v
+  # Metodo 1: ioreg — el metodo mas rapido en todas las versiones de macOS
+  v=$(ioreg -rd1 -c IOPlatformExpertDevice 2>/dev/null | awk -F'"' '/IOPlatformSerialNumber/{print $4}')
+  [[ -n "$v" ]] && { echo "$v"; return; }
+  # Metodo 2: system_profiler fallback
+  v=$(system_profiler SPHardwareDataType 2>/dev/null | grep "Serial Number (system)" | head -1 | sed 's/.*: *//' | xargs)
+  [[ -n "$v" ]] && { echo "$v"; return; }
+  echo ""
+}
+
+cpu() {
+  local v
+  # Metodo 1: sysctl — funciona en Intel ("Intel(R) Core(TM) i7-12700H...")
+  #            y Apple Silicon ("Apple M3 Pro")
+  v=$(sysctl -n machdep.cpu.brand_string 2>/dev/null) && [[ -n "$v" ]] && { echo "$v"; return; }
+  # Metodo 2: system_profiler — para Apple Silicon muestra "Chip: Apple M3 Pro"
+  v=$(system_profiler SPHardwareDataType 2>/dev/null | grep "Chip" | head -1 | sed 's/.*: *//' | xargs)
+  [[ -n "$v" ]] && { echo "$v"; return; }
+  # Metodo 3: system_profiler — para Intel muestra "Processor Name: Intel Core i7"
+  v=$(system_profiler SPHardwareDataType 2>/dev/null | grep "Processor Name" | head -1 | sed 's/.*: *//' | xargs)
+  [[ -n "$v" ]] && { echo "$v"; return; }
+  echo ""
+}
+
+ram_bytes() {
+  local b
+  # sysctl hw.memsize funciona en Intel y Apple Silicon, da bytes exactos
+  b=$(sysctl -n hw.memsize 2>/dev/null) && [[ "$b" -gt 0 ]] && { echo "$b"; return; }
+  # Fallback: system_profiler
+  local line
+  line=$(system_profiler SPHardwareDataType 2>/dev/null | grep "Memory:" | head -1 | sed 's/.*: *//')
+  if [[ "$line" =~ ([0-9]+)[[:space:]]*GB ]]; then
+    echo $((BASH_REMATCH[1] * 1073741824))
+    return
+  fi
+  echo 0
+}
+ram_norm() {
+  local b=$1 g
+  g=$(( (b + 500000000) / 1000000000 ))
+  [[ "$b" -le 0 ]] && { echo ""; return; }
+  if   [[ "$g" -le 5 ]];   then echo "4 GB"
+  elif [[ "$g" -le 10 ]];  then echo "8 GB"
+  elif [[ "$g" -le 18 ]];  then echo "16 GB"
+  elif [[ "$g" -le 36 ]];  then echo "32 GB"
+  elif [[ "$g" -le 72 ]];  then echo "64 GB"
+  elif [[ "$g" -le 140 ]]; then echo "128 GB"
+  else echo "${g} GB"; fi
+}
+
+tipo_mem() {
+  # En Macs modernos (Apple Silicon) la RAM es unificada LPDDR.
+  # En Intel Macs varia. Intentamos detectarlo pero no es critico.
+  local v
+  v=$(system_profiler SPHardwareDataType 2>/dev/null | grep "Memory:" | head -1 | sed 's/.*: *//')
+  # Ejemplo: "32 GB 3200 MHz LPDDR5" → extraemos el tipo
+  if [[ "$v" =~ (DDR|LPDDR[0-9]*) ]]; then
+    echo "${BASH_REMATCH[1]}"
+    return
+  fi
+  # En Apple Silicon, la RAM es LPDDR5/LPDDR5X — lo sabemos por el chip
+  local chip
+  chip=$(sysctl -n machdep.cpu.brand_string 2>/dev/null)
+  if [[ "$chip" == *"Apple"* ]]; then
+    echo "LPDDR5"
+    return
+  fi
+  echo ""
+}
+
+video() {
+  local v
+  # system_profiler SPDisplaysDataType funciona en todos los Macs
+  # En Apple Silicon muestra "Chipset Model: Apple M3 Pro"
+  # En Intel muestra "Chipset Model: Intel UHD Graphics 630"
+  v=$(system_profiler SPDisplaysDataType 2>/dev/null | grep "Chipset Model" | head -1 | sed 's/.*: *//' | xargs)
+  [[ -n "$v" ]] && { echo "$v"; return; }
+  echo ""
+}
+
+so() {
+  local name version build
+  name=$(sw_vers -productName 2>/dev/null || echo "macOS")
+  version=$(sw_vers -productVersion 2>/dev/null || echo "")
+  build=$(sw_vers -buildVersion 2>/dev/null || echo "")
+  echo "${name} ${version} (${build})"
+}
+
+red() {
+  local me="" mw="" iface mac
+  # networksetup es nativo de macOS — lista hardware ports con dispositivos
+  # y direcciones MAC de forma limpia y confiable
+  while IFS= read -r line; do
+    if [[ "$line" =~ ^Hardware\ Port:\ (.*) ]]; then
+      iface=""
+      continue
+    fi
+    if [[ "$line" =~ ^Device:\ (en[0-9]+) ]]; then
+      iface="${BASH_REMATCH[1]}"
+      continue
+    fi
+    if [[ "$line" =~ ^Ethernet\ Address:\ (.*) ]]; then
+      mac=$(norm_mac "${BASH_REMATCH[1]}")
+      [[ -z "$mac" || "$mac" == "00:00:00:00:00:00" ]] && continue
+      # Identificar tipo por el nombre del Hardware Port
+      if [[ "$line" =~ Wi-Fi|AirPort|Wireless|WLAN ]]; then
+        [[ -z "$mw" ]] && mw="$mac"
+      else
+        [[ -z "$me" ]] && me="$mac"
+      fi
+      continue
+    fi
+  done < <(networksetup -listallhardwareports 2>/dev/null || true)
+
+  # Si no se detecto nada con networksetup, probar ifconfig
+  if [[ -z "$me" && -z "$mw" ]]; then
+    for iface in $(ifconfig -l 2>/dev/null || true); do
+      [[ "$iface" == lo* || "$iface" == awdl* || "$iface" == llw* || "$iface" == bridge* || "$iface" == utun* || "$iface" == gif* || "$iface" == stf* || "$iface" == XHC* ]] && continue
+      mac=$(ifconfig "$iface" 2>/dev/null | grep "ether" | head -1 | awk '{print $2}' | tr '[:lower:]' '[:upper:]' | tr '-' ':')
+      [[ -z "$mac" || "$mac" == "00:00:00:00:00:00" ]] && continue
+      # En macOS moderno: en0=WiFi, en1=Thunderbolt Ethernet, en2=USB Ethernet
+      local name
+      name=$(networksetup -getairportnetwork "$iface" 2>/dev/null) && [[ -n "$name" ]] && { [[ -z "$mw" ]] && mw="$mac"; continue; }
+      [[ -z "$me" ]] && me="$mac"
+    done
+  fi
+
+  echo "${me}|${mw}"
+}
+
+discos() {
+  local d1t="" d1s="" d2t="N/A" d2s="N/A" cnt=0 idx=0 disk info media_name protocol raw_size g ts
+
+  # Obtener lista de discos fisicos internos
+  while IFS= read -r disk; do
+    disk=$(echo "$disk" | xargs)
+    [[ -z "$disk" || "$disk" != /dev/disk* ]] && continue
+    local disk_name
+    disk_name=$(basename "$disk")
+    idx=$((idx + 1)); [[ $idx -gt 2 ]] && break
+
+    info=$(diskutil info "$disk_name" 2>/dev/null) || continue
+
+    # Solo discos internos fijos (no externos, no virtuales)
+    local device_loc removable
+    device_loc=$(echo "$info" | grep "Device Location" | sed 's/.*: *//' | xargs)
+    [[ "$device_loc" != "Internal" ]] && continue
+    removable=$(echo "$info" | grep "Removable Media" | sed 's/.*: *//' | xargs)
+    [[ "$removable" != "Fixed" ]] && continue
+
+    cnt=$((cnt + 1))
+
+    # Tipo: NVMe → M2, SSD → SSD, resto → HDD
+    media_name=$(echo "$info" | grep "Device / Media Name" | sed 's/.*: *//' | xargs)
+    protocol=$(echo "$info" | grep "Protocol:" | head -1 | sed 's/.*: *//' | xargs)
+
+    if [[ "$protocol" == "NVMe" ]]; then
+      tipo="M2"
+    elif [[ "$media_name" == *SSD* || "$protocol" == "SATA" ]]; then
+      tipo="SSD"
+    else
+      tipo="HDD"
+    fi
+
+    # Tamano
+    raw_size=$(echo "$info" | grep "Total Size:" | grep -oE '[0-9.]+')
+    [[ -z "$raw_size" ]] && continue
+    local unit
+    unit=$(echo "$info" | grep "Total Size:" | grep -oE '(TB|GB)')
+    if [[ "$unit" == "TB" ]]; then
+      g=$(LC_ALL=C printf "%.0f" "$(echo "$raw_size * 1000" | bc -l 2>/dev/null || echo "$raw_size")")
+    else
+      g=$(LC_ALL=C printf "%.0f" "$raw_size" 2>/dev/null || echo "$raw_size")
+    fi
+
+    if   [[ "$(echo "$g < 150" | bc -l 2>/dev/null || echo 1)" == "1" ]]; then ts="120 GB"
+    elif [[ "$(echo "$g < 380" | bc -l 2>/dev/null || echo 1)" == "1" ]]; then ts="256 GB"
+    elif [[ "$(echo "$g < 750" | bc -l 2>/dev/null || echo 1)" == "1" ]]; then ts="512 GB"
+    elif [[ "$(echo "$g < 1500" | bc -l 2>/dev/null || echo 1)" == "1" ]]; then ts="1 TB"
+    elif [[ "$(echo "$g < 2500" | bc -l 2>/dev/null || echo 1)" == "1" ]]; then ts="2 TB"
+    elif [[ "$(echo "$g < 4500" | bc -l 2>/dev/null || echo 1)" == "1" ]]; then ts="4 TB"
+    else ts="${g} GB"; fi
+
+    if   [[ $idx -eq 1 ]]; then d1t="$tipo"; d1s="$ts"
+    elif [[ $idx -eq 2 ]]; then d2t="$tipo"; d2s="$ts"; fi
+  done < <(diskutil list internal physical 2>/dev/null | grep '^/' || echo "")
+
+  # Fallback: si no se detectaron discos, usar el volumen de arranque
+  if [[ "$cnt" -eq 0 ]]; then
+    local boot_size
+    boot_size=$(df -B1 / 2>/dev/null | awk 'NR==2{print $2}' || echo "0")
+    if [[ "$boot_size" -gt 0 ]]; then
+      g=$(( (boot_size + 500000000) / 1000000000 ))
+      if   [[ "$g" -lt 150 ]]; then ts="120 GB"
+      elif [[ "$g" -lt 380 ]]; then ts="256 GB"
+      elif [[ "$g" -lt 750 ]]; then ts="512 GB"
+      elif [[ "$g" -lt 1500 ]]; then ts="1 TB"
+      else ts="${g} GB"; fi
+      d1t="SSD"; d1s="$ts"; cnt=1
+    fi
+  fi
+
+  echo "${d1t}|${d1s}|${d2t}|${d2s}|${cnt}"
+}
+
+abrir_navegador() {
+  local u="$1"
+  # En macOS, 'open' siempre esta disponible
+  open "$u" &>/dev/null && return 0
+  return 1
+}
+
+# ========================================================================
+# VALIDACION
+# ========================================================================
+if [[ "$CMDB_URL" == *XXXXXXXX* ]]; then
+  echo "ERROR: Configura CMDB_URL en este archivo."; read -n 1 -rp "Presiona cualquier tecla..."; exit 1
+fi
+if [[ "$CMDB_KEY" == *XXXXXXXX* ]]; then
+  echo "ERROR: Configura CMDB_KEY en este archivo."; read -n 1 -rp "Presiona cualquier tecla..."; exit 1
+fi
+
+# ========================================================================
+# MAIN
+# ========================================================================
+echo ""
+echo "============================================================"
+echo "  CMDB SENA CIUDAD JARDIN - SEDE ${SEDE} (macOS)"
+echo "============================================================"
+echo ""
+echo "Detectando hardware..."
+echo ""
+
+HOSTNAME=$(hostname)
+MARCA=$(marca)
+MODELO=$(modelo)
+SERIAL=$(serial)
+CPU=$(cpu)
+RB=$(ram_bytes)
+RAM=$(ram_norm "$RB")
+TM=$(tipo_mem)
+VID=$(video)
+SO=$(so)
+
+echo "  Hostname:     ${HOSTNAME}"
+echo "  Marca:        ${MARCA}"
+echo "  Modelo:       ${MODELO:-No detectado}"
+echo "  Serial:       ${SERIAL:-No detectado}"
+echo "  CPU:          ${CPU:-No detectado}"
+echo "  RAM:          ${RAM:-No detectado}"
+echo "  Tipo Memoria: ${TM:-No detectado}"
+echo "  Video:        ${VID:-No detectado}"
+echo "  S.O.:         ${SO:-No detectado}"
+
+echo ""
+echo "-- Almacenamiento ------------------------------------------"
+DR=$(discos)
+IFS='|' read -r D1T D1S D2T D2S DC <<< "$DR"
+[[ "$DC" -gt 0 ]] && echo "  + Disco 1: ${D1T:-?} / ${D1S:-?}"
+[[ "$DC" -gt 1 ]] && echo "  + Disco 2: ${D2T:-N/A} / ${D2S:-N/A}"
+
+echo ""
+echo "-- Red -----------------------------------------------------"
+RR=$(red)
+IFS='|' read -r ME MW <<< "$RR"
+[[ -n "$ME" ]] && echo "  + MAC Cableada: ${ME}"
+[[ -n "$MW" ]] && echo "  + MAC WiFi:     ${MW}"
+[[ -z "$ME" && -z "$MW" ]] && echo "  + No se detectaron adaptadores de red con MAC"
+
+FH=$(date +"%d/%m/%Y" 2>/dev/null || echo "")
+
+# ========================================================================
+# PREVIEW
+# ========================================================================
+echo ""
+echo "------------------------------------------------------------"
+echo ""
+echo "Datos detectados:"
+echo ""
+echo "  Hostname:     ${HOSTNAME}"
+echo "  Marca:        ${MARCA:----}"
+echo "  Modelo:       ${MODELO:----}"
+echo "  Serial:       ${SERIAL:----}"
+echo "  CPU:          ${CPU:----}"
+echo "  RAM:          ${RAM:----}"
+echo "  Memoria:      ${TM:----}"
+echo "  Disco 1:      ${D1T:----} / ${D1S:----}"
+[[ "$DC" -gt 1 ]] && echo "  Disco 2:      ${D2T} / ${D2S}"
+echo "  Video:        ${VID:----}"
+echo "  S.O.:         ${SO:----}"
+echo "  MAC Eth:      ${ME:----}"
+echo "  MAC WiFi:     ${MW:----}"
+echo ""
+
+# ========================================================================
+# PLACA
+# ========================================================================
+echo "------------------------------------------------------------"
+echo ""
+read -rp "Escribe o escanea la placa y presiona ENTER: " PI
+PI=$(echo "$PI" | tr '[:lower:]' '[:upper:]' | tr "'" "-" | sed 's/[^A-Z0-9\-]//g')
+if [[ -z "$PI" ]]; then
+  echo ""; echo "La placa es obligatoria. Proceso cancelado."
+  read -n 1 -rp "Presiona cualquier tecla para cerrar..."; exit 1
+fi
+
+# ========================================================================
+# URL + NAVEGADOR
+# ========================================================================
+echo ""
+echo "------------------------------------------------------------"
+echo ""
+
+# Construir query string (compatible con bash 3.2 — sin associative arrays)
+_qs=""
+_q() { local k="$1" v="$2"; [[ -n "$_qs" ]] && _qs+="&"; _qs+="${k}=$(urlencode "$v")"; }
+
+_q ciudad "POPAYAN"
+_q disco1_tam "${D1S}"
+_q disco1_tipo "${D1T}"
+_q disco2_tam "${D2S}"
+_q disco2_tipo "${D2T}"
+_q fecha_impacto "${FH}"
+_q fecha_mantenimiento "${FH}"
+_q hostname "${HOSTNAME}"
+_q mac_cableada "${ME}"
+_q mac_wifi "${MW}"
+_q marca "${MARCA}"
+_q modelo "${MODELO}"
+_q modo "nuevo"
+_q placa "${PI}"
+_q procesador "${CPU}"
+_q propietario "SENA"
+_q ram "${RAM}"
+_q serial "${SERIAL}"
+_q so "${SO}"
+_q tipo_memoria "${TM}"
+_q version_so ""
+_q video "${VID}"
+_q key "${CMDB_KEY}"
+_q sede "${SEDE}"
+
+FU="${CMDB_URL}?${_qs}"
+
+echo "Abriendo CMDB..."
+echo ""
+if abrir_navegador "$FU"; then
+  echo "Navegador abierto."
+else
+  echo "No se pudo abrir el navegador automaticamente."
+  echo "Abre esta URL manualmente:"
+  echo "${FU}"
+fi
+
+echo ""
+echo "------------------------------------------------------------"
+echo ""
+echo "Completa los datos faltantes en la pagina y guarda."
+read -n 1 -rp "Presiona cualquier tecla para cerrar..."
+echo ""
