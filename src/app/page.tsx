@@ -6,7 +6,6 @@ import { useEquipmentForm } from '@/hooks/useEquipmentForm';
 import { useSede } from '@/contexts/sede-context';
 import { SEDE_LABELS } from '@/lib/sedes';
 import { Header } from '@/components/Header';
-import { DownloadBar } from '@/components/DownloadBar';
 import { EquipmentForm } from '@/components/EquipmentForm';
 import { Alert } from '@/components/Alert';
 import { EmptyState } from '@/components/EmptyState';
@@ -53,10 +52,6 @@ export default function Home () {
 
         <div className='animate-stagger-2'>
           <ScannerSection key={form.searchResetKey} loading={form.loading} onScan={form.handleScan} equipmentFound={form.equipmentFound} />
-        </div>
-
-        <div className='animate-stagger-2'>
-          <DownloadBar />
         </div>
 
         {/* Status area — solo para mensajes de guardar (el scan usa equipmentFound) */}
