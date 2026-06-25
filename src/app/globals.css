@@ -57,7 +57,7 @@
     --shadow-button-hover: 0 8px 40px rgba(22, 163, 74, 0.4);
     --focus-ring: inset 0 0 0 3px rgba(22, 163, 74, 0.10);
 
-    --glass-bg: rgb(255, 255, 255);
+    --glass-bg: rgba(255, 255, 255, 0.3);
     --glass-border: rgba(0, 0, 0, 0.06);
     --glass-border-hover: rgba(0, 0, 0, 0.12);
     --glass-highlight: rgba(255, 255, 255, 0.5);
@@ -145,7 +145,7 @@
     /* SENA brand glow — used by "Registrar nuevo" button. */
     --sena-green-glow: rgba(74, 222, 128, 0.06);
 
-    --glass-bg: rgb(12, 12, 12);
+    --glass-bg: rgba(12, 12, 12, 0.5);
     --glass-border: rgba(255, 255, 255, 0.08);
     --glass-border-hover: rgba(255, 255, 255, 0.14);
     --glass-highlight: rgba(255, 255, 255, 0.03);
