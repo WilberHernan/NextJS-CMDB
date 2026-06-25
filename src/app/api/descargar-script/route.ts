@@ -42,27 +42,20 @@ export async function GET (request: NextRequest) {
       const ps1Content = fs.readFileSync(ps1Path);
       const batContent = fs.readFileSync(batPath);
 
-      const stream = new ReadableStream({
-        async start (controller) {
-          const archive = new ZipArchive();
+      // Collect ZIP into buffer (más confiable que streaming en serverless)
+      const chunks: Buffer[] = [];
+      const archive = new ZipArchive();
 
-          archive.on('data', (chunk: Buffer) => {
-            controller.enqueue(new Uint8Array(chunk));
-          });
-          archive.on('end', () => {
-            controller.close();
-          });
-          archive.on('error', (err: Error) => {
-            controller.error(err);
-          });
+      archive.on('data', (chunk: Buffer) => chunks.push(chunk));
 
-          archive.append(ps1Content, { name: 'inventarioWin.ps1' });
-          archive.append(batContent, { name: 'PermisosWin.bat' });
-          await archive.finalize();
-        },
-      });
+      archive.append(ps1Content, { name: 'inventarioWin.ps1' });
+      archive.append(batContent, { name: 'PermisosWin.bat' });
 
-      return new NextResponse(stream, {
+      await archive.finalize();
+
+      const zipBuffer = Buffer.concat(chunks);
+
+      return new NextResponse(zipBuffer, {
         status: 200,
         headers: {
           'Content-Type': 'application/zip',
