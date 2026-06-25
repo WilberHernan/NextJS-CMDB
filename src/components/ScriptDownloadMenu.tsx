@@ -131,7 +131,7 @@ export function ScriptDownloadMenu () {
               onClick={() => setOpen(false)}
               className={cn(formOptionClasses, 'items-center gap-2.5 no-underline')}
             >
-              <platform.Icon className='h-4 w-4 shrink-0 opacity-70' />
+              <platform.Icon className='h-4 w-4 shrink-0 text-muted-foreground' />
               {platform.label}
             </a>
           ))}

@@ -19,19 +19,21 @@ export const formControlReadOnly = cn(
   'cursor-not-allowed border-dashed shadow-none'
 );
 
-/** Floating panel — matches header download menu */
+/** Floating panel — solid neumorphic surface, no glass/transparency */
 export const formPanelClasses = cn(
-  'pointer-events-auto p-1.5 max-h-[280px] overflow-y-auto overscroll-contain',
-  'rounded-xl glass border border-border-default shadow-[var(--shadow-md)]',
+  'pointer-events-auto p-2 max-h-[280px] overflow-y-auto overscroll-contain',
+  'rounded-xl bg-surface-elevated border border-border-default shadow-neu-flat',
   'animate-dropdown-in'
 );
 
 export const formOptionClasses = cn(
-  'flex w-full items-center px-3 py-2.5 rounded-lg text-sm font-semibold text-left',
-  'text-muted-foreground',
+  'flex w-full items-center px-3 py-2.5 rounded-xl text-sm font-semibold text-left',
+  'text-foreground',
   'transition-all duration-200 ease-cinematic',
-  'hover:bg-surface-hover hover:text-foreground',
+  'hover:bg-surface-input hover:shadow-neu-pressed',
   'active:scale-[0.98]'
 );
 
-export const formOptionSelectedClasses = 'bg-accent-soft text-accent';
+export const formOptionSelectedClasses = cn(
+  'bg-surface-input text-accent shadow-neu-pressed border border-border-accent'
+);
