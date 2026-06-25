@@ -57,7 +57,7 @@
     --shadow-button-hover: 0 8px 40px rgba(22, 163, 74, 0.4);
     --focus-ring: inset 0 0 0 3px rgba(22, 163, 74, 0.10);
 
-    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-bg: rgb(255, 255, 255);
     --glass-border: rgba(0, 0, 0, 0.06);
     --glass-border-hover: rgba(0, 0, 0, 0.12);
     --glass-highlight: rgba(255, 255, 255, 0.5);
@@ -145,7 +145,7 @@
     /* SENA brand glow — used by "Registrar nuevo" button. */
     --sena-green-glow: rgba(74, 222, 128, 0.06);
 
-    --glass-bg: rgba(12, 12, 12, 0.85);
+    --glass-bg: rgb(12, 12, 12);
     --glass-border: rgba(255, 255, 255, 0.08);
     --glass-border-hover: rgba(255, 255, 255, 0.14);
     --glass-highlight: rgba(255, 255, 255, 0.03);
@@ -292,8 +292,6 @@
 
   .dark .glass {
     background: var(--glass-bg);
-    backdrop-filter: blur(24px) saturate(140%);
-    -webkit-backdrop-filter: blur(24px) saturate(140%);
     border: 1px solid var(--glass-border);
     box-shadow:
       3px 3px 14px var(--neu-shadow-dark),
@@ -361,8 +359,6 @@
 
   .glass {
     background: var(--glass-bg);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
     border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-md), inset 0 1px 0 var(--glass-highlight);
   }
