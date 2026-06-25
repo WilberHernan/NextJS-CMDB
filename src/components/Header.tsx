@@ -273,7 +273,6 @@ export function Header ({
             }}
           />
         )}
-
       </header>
     </>
   );
