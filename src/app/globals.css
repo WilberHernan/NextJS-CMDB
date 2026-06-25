@@ -544,6 +544,15 @@
     animation: dropdown-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
+  /* Floating download pills — staggered pop from the trigger */
+  @keyframes pill-float-in {
+    from { opacity: 0; transform: translateY(-8px) scale(0.88); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .animate-pill-float-in {
+    animation: pill-float-in 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
   /* SENA logo aura: green glow behind the icon that breathes.
      Uses two drop-shadows — tight (main glow) + spread (soft halo) —
      so the light pools behind the logo, not a contour outline. */
