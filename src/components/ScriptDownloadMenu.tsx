@@ -157,7 +157,7 @@ export function ScriptDownloadMenu () {
             )}
           >
             <FileText className='h-4 w-4 shrink-0 text-muted-foreground' />
-            Guía de ejecución
+            Guía Mac y Linux
           </a>
         </div>,
         document.body
