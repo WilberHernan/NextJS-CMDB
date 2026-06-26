@@ -69,7 +69,6 @@ export function useEquipment (): UseEquipmentReturn {
 
   const actualizar = useCallback(
     async (fila: string, hoja: string, valores: EquipmentValue[]) => {
-      setLoading(true);
       setError(null);
       try {
         const res = await fetch('/api/equipos/actualizar', {
@@ -85,15 +84,12 @@ export function useEquipment (): UseEquipmentReturn {
         setError(msg);
         // Return as ApiResult so the caller has the actual error message
         return { exito: false, mensaje: msg };
-      } finally {
-        setLoading(false);
       }
     },
     [currentSede]
   );
 
   const crear = useCallback(async (hoja: string, valores: EquipmentValue[]) => {
-    setLoading(true);
     setError(null);
     try {
       const res = await fetch('/api/equipos/crear', {
@@ -108,8 +104,6 @@ export function useEquipment (): UseEquipmentReturn {
       const msg = e instanceof Error ? e.message : 'Error al crear equipo';
       setError(msg);
       return { exito: false, mensaje: msg };
-    } finally {
-      setLoading(false);
     }
   }, [currentSede]);
 

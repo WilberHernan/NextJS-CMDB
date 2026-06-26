@@ -4,6 +4,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { Scan, Camera, Search, ImageIcon, CheckCircle2, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Loader } from '@/components/Loader';
+import { NeuSpinner } from '@/components/NeuSpinner';
 import { TypewriterText } from '@/components/TypewriterText';
 import type { ScanStage } from '@/hooks/useScanner';
 
@@ -77,6 +78,7 @@ export function ScanCard ({
   const handleCameraMode = () => onSwitchMode('camera');
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (loading) return;
     clearTimeout(typingTimerRef.current);
     const val = e.target.value;
     setHasInputValue(val.length > 0);
@@ -86,6 +88,7 @@ export function ScanCard ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (loading) return;
     if (e.key === 'Enter') {
       e.preventDefault();
       clearTimeout(typingTimerRef.current);
@@ -120,7 +123,7 @@ export function ScanCard ({
   };
 
   return (
-    <section className='relative rounded-3xl glass border-border-default overflow-hidden flex flex-col'>
+    <section className='relative rounded-3xl glass border-border-default flex flex-col'>
 
       {/* Scan content */}
       <div className='flex-1 text-center p-8 sm:p-9'>
@@ -146,7 +149,7 @@ export function ScanCard ({
             : 'Sacá una foto clara a la placa del equipo.'}
         </p>
 
-        <div className='flex gap-3 justify-center mb-6 relative z-10'>
+        <div className='flex flex-wrap gap-3 justify-center mb-6 relative z-10 px-1'>
           <button
             type='button'
             onClick={handleScannerMode}
@@ -178,14 +181,15 @@ export function ScanCard ({
         </div>
 
         {scanMode === 'scanner' && (
-          <div className='relative max-w-lg mx-auto group'>
+          <div className='relative max-w-lg mx-auto group w-full'>
             <div
               className={cn(
                 'relative flex items-center rounded-xl bg-surface-input',
                 'border border-border-default',
                 'shadow-neu-pressed',
                 'transition-all duration-200 ease-cinematic',
-                'group-focus-within:border-accent group-focus-within:shadow-[var(--focus-ring)]'
+                'group-focus-within:border-accent group-focus-within:shadow-[var(--focus-ring)]',
+                loading && 'opacity-80'
               )}
             >
               <Search
@@ -215,17 +219,22 @@ export function ScanCard ({
                 type='text'
                 onChange={handleInput}
                 onKeyDown={handleKeyDown}
+                disabled={loading}
                 autoFocus
                 autoComplete='off'
                 spellCheck={false}
+                aria-busy={loading}
                 className={cn(
                   'w-full bg-transparent py-[18px] pl-14 pr-5 relative z-10',
                   'text-base font-semibold text-foreground',
-                  'outline-none'
+                  'outline-none disabled:cursor-wait'
                 )}
               />
             </div>
 
+            {loading && (
+              <Loader className='mt-5' />
+            )}
           </div>
         )}
 
@@ -329,14 +338,7 @@ export function ScanCard ({
               >
                 {isInProgress(stage) ? (
                   <>
-                    <span className='relative block w-14 h-14 shrink-0 mx-auto mb-2'>
-                      {/* Neumorphic base ring */}
-                      <span className='absolute inset-0 rounded-full shadow-neu-flat bg-surface-elevated border border-border-default' />
-                      {/* Orbiting accent dot */}
-                      <span className='absolute inset-0 animate-[neu-spin_1s_linear_infinite]'>
-                        <span className='block w-[5px] h-[5px] rounded-full bg-accent mx-auto' />
-                      </span>
-                    </span>
+                    <NeuSpinner size='lg' className='mx-auto mb-2' />
                     <div>
                       <p className='text-sm font-medium text-foreground mb-1'>
                         {STAGE_COPY[stage]}
@@ -432,9 +434,8 @@ export function ScanCard ({
           </div>
         </div>
 
-      </div>{/* end: right wrapper */}
+      </div>
 
-      {loading && <Loader />}
     </section>
   );
 }

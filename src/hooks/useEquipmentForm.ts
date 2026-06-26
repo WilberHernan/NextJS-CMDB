@@ -195,21 +195,22 @@ export function useEquipmentForm (): UseEquipmentFormReturn {
 
   const handleScan = useCallback(
     async (placa: string) => {
-      // Mark this as the latest search BEFORE clearing state
-      latestSearchRef.current = placa;
+      const clean = sanitizarPlaca(placa.trim());
+      if (!clean) return;
+
+      latestSearchRef.current = clean;
 
       setAlertInfo(null);
       setEmptyStatePlaca(null);
       setEquipmentFound(false);
 
-      const data = await buscar(placa);
+      const data = await buscar(clean);
 
-      // Stale response — a newer search already superseded this one
-      if (latestSearchRef.current !== placa) return;
+      if (latestSearchRef.current !== clean) return;
 
       if (!data) {
         setFormVisible(false);
-        setEmptyStatePlaca(placa);
+        setEmptyStatePlaca(clean);
         return;
       }
 
