@@ -1,17 +1,20 @@
 #!/usr/bin/env bash
 # ============================================================================
-# Script de inventario de hardware — CMDB SENA SEDE CCYS (Linux)
-# Detecta hardware con multiples metodos de fallback y abre el navegador
-# con los datos para autorellenar el formulario.
+# CMDB SENA — Inventario de Hardware (Linux)
+# Sede: CCYS  |  Version: 2.1.0
 #
-# USO: bash inventario.sh  (funciona en cualquier distro Linux con bash)
+# Detecta hardware con fallback por capas y abre el navegador con los
+# datos para autorellenar el formulario CMDB.
+#
+# USO: bash inventarioLinux
 # ============================================================================
 
-set -euo pipefail
+set -uo pipefail
 
 CMDB_URL="https://next-js-cmdb.vercel.app"
 CMDB_KEY="SeguridadSENA2026+"
 SEDE="CCYS"
+SCRIPT_VERSION="2.1.0"
 
 # ========================================================================
 # AUXILIARES
@@ -33,7 +36,7 @@ have() { command -v "$1" &>/dev/null; }
 # DETECCIONES — cada una con fallback por capas
 # ========================================================================
 
-hostname() {
+get_hostname() {
     local h
     h=$(command hostname -s 2>/dev/null) && { echo "$h" | tr '[:lower:]' '[:upper:]'; return; }
     h=$(command hostname 2>/dev/null) && { echo "$h" | tr '[:lower:]' '[:upper:]'; return; }
@@ -213,7 +216,7 @@ discos() {
     echo "${d1t}|${d1s}|${d2t}|${d2s}|${cnt}"
 }
 
-abrir_naveragor() {
+abrir_navegador() {
     local u="$1"
     have xdg-open && { xdg-open "$u" &>/dev/null & return 0; }
     have sensible-browser && { sensible-browser "$u" &>/dev/null & return 0; }
@@ -236,13 +239,14 @@ fi
 # ========================================================================
 echo ""
 echo "============================================================"
-echo "  CMDB SENA CCYS - SEDE ${SEDE}"
+echo "  CMDB SENA — Inventario de Hardware (Linux)"
+echo "  Sede: ${SEDE}  |  v${SCRIPT_VERSION}"
 echo "============================================================"
 echo ""
-echo "Detectando hardware con multiples metodos..."
+echo "[*] Iniciando deteccion de hardware..."
 echo ""
 
-HOSTNAME=$(hostname)
+HOSTNAME=$(get_hostname)
 MARCA=$(marca)
 MODELO=$(modelo)
 SERIAL=$(serial)
@@ -281,19 +285,6 @@ IFS='|' read -r ME MW <<< "$RR"
 FH=$(date +"%d/%m/%Y" 2>/dev/null || echo "")
 
 # ========================================================================
-# QUERY PARAMS
-# ========================================================================
-declare -A P=(
-    [ciudad]="POPAYAN" [disco1_tam]="${D1S}" [disco1_tipo]="${D1T}"
-    [disco2_tam]="${D2S}" [disco2_tipo]="${D2T}" [fecha_impacto]="${FH}"
-    [fecha_mantenimiento]="${FH}" [hostname]="${HOSTNAME}" [mac_cableada]="${ME}"
-    [mac_wifi]="${MW}" [marca]="${MARCA}" [modelo]="${MODELO}" [modo]="nuevo"
-    [placa]="" [procesador]="${CPU}" [propietario]="SENA" [ram]="${RAM}"
-    [serial]="${SERIAL}" [so]="${SO}" [tipo_memoria]="${TM}" [version_so]=""
-    [video]="${VID}"
-)
-
-# ========================================================================
 # PREVIEW
 # ========================================================================
 echo ""
@@ -301,19 +292,19 @@ echo "------------------------------------------------------------"
 echo ""
 echo "Datos detectados:"
 echo ""
-echo "  Hostname:     ${P[hostname]}"
-echo "  Marca:        ${P[marca]:----}"
-echo "  Modelo:       ${P[modelo]:----}"
-echo "  Serial:       ${P[serial]:----}"
-echo "  CPU:          ${P[procesador]:----}"
-echo "  RAM:          ${P[ram]:----}"
-echo "  Memoria:      ${P[tipo_memoria]:----}"
-echo "  Disco 1:      ${P[disco1_tipo]:----} / ${P[disco1_tam]:----}"
-[[ "$DC" -gt 1 ]] && echo "  Disco 2:      ${P[disco2_tipo]} / ${P[disco2_tam]}"
-echo "  Video:        ${P[video]:----}"
-echo "  S.O.:         ${P[so]:----}"
-echo "  MAC Eth:      ${P[mac_cableada]:----}"
-echo "  MAC WiFi:     ${P[mac_wifi]:----}"
+echo "  Hostname:     ${HOSTNAME}"
+echo "  Marca:        ${MARCA:----}"
+echo "  Modelo:       ${MODELO:----}"
+echo "  Serial:       ${SERIAL:----}"
+echo "  CPU:          ${CPU:----}"
+echo "  RAM:          ${RAM:----}"
+echo "  Memoria:      ${TM:----}"
+echo "  Disco 1:      ${D1T:----} / ${D1S:----}"
+[[ "$DC" -gt 1 ]] && echo "  Disco 2:      ${D2T} / ${D2S}"
+echo "  Video:        ${VID:----}"
+echo "  S.O.:         ${SO:----}"
+echo "  MAC Eth:      ${ME:----}"
+echo "  MAC WiFi:     ${MW:----}"
 echo ""
 
 # ========================================================================
@@ -327,7 +318,6 @@ if [[ -z "$PI" ]]; then
     echo ""; echo "La placa es obligatoria. Proceso cancelado."
     read -n 1 -rp "Presiona cualquier tecla para cerrar..."; exit 1
 fi
-P[placa]="${PI}"
 
 # ========================================================================
 # URL + NAVEGADOR
@@ -336,21 +326,39 @@ echo ""
 echo "------------------------------------------------------------"
 echo ""
 
-QS=()
-for k in "${!P[@]}"; do QS+=("${k}=$(urlencode "${P[$k]}")"); done
-QS+=("key=$(urlencode "${CMDB_KEY}")")
-QS+=("sede=$(urlencode "${SEDE}")")
+_qs=""
+_q() { local k="$1" v="$2"; [[ -n "$_qs" ]] && _qs+="&"; _qs+="${k}=$(urlencode "$v")"; }
 
-u=""
-f=true
-for part in "${QS[@]}"; do
-    if $f; then u="$part"; f=false; else u+="&${part}"; fi
-done
-FU="${CMDB_URL}?${u}"
+_q ciudad "POPAYAN"
+_q disco1_tam "${D1S}"
+_q disco1_tipo "${D1T}"
+_q disco2_tam "${D2S}"
+_q disco2_tipo "${D2T}"
+_q fecha_impacto "${FH}"
+_q fecha_mantenimiento "${FH}"
+_q hostname "${HOSTNAME}"
+_q mac_cableada "${ME}"
+_q mac_wifi "${MW}"
+_q marca "${MARCA}"
+_q modelo "${MODELO}"
+_q modo "nuevo"
+_q placa "${PI}"
+_q procesador "${CPU}"
+_q propietario "SENA"
+_q ram "${RAM}"
+_q serial "${SERIAL}"
+_q so "${SO}"
+_q tipo_memoria "${TM}"
+_q version_so ""
+_q video "${VID}"
+_q key "${CMDB_KEY}"
+_q sede "${SEDE}"
+
+FU="${CMDB_URL}?${_qs}"
 
 echo "Abriendo CMDB..."
 echo ""
-if abrir_naveragor "$FU"; then
+if abrir_navegador "$FU"; then
     echo "Navegador abierto."
 else
     echo "No se pudo abrir el navegador automaticamente."

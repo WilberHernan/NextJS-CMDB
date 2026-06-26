@@ -1,6 +1,6 @@
 ============================================================
   CMDB SENA — Guia de ejecucion (Mac / Linux)
-  Sede: REGIONAL  |  v2.1.0
+  Sede: __SEDE_LABEL__  |  v__SCRIPT_VERSION__
 ============================================================
 
 Los scripts inventarioMac e inventarioLinux detectan el hardware
@@ -65,4 +65,4 @@ del equipo y abren el navegador con el formulario CMDB precargado.
 --- SOPORTE ---------------------------------------------------
 
   Si el problema persiste, contactar al administrador del sistema
-  o al area de tecnologia de la sede REGIONAL.
+  o al area de tecnologia de la sede __SEDE_LABEL__.

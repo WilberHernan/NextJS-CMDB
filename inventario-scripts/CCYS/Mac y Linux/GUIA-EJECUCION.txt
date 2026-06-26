@@ -1,53 +1,68 @@
-============================================
-  CMDB SENA — GUIA RAPIDA DE EJECUCION
-  Scripts de inventario para Mac y Linux
-============================================
+============================================================
+  CMDB SENA — Guia de ejecucion (Mac / Linux)
+  Sede: CCYS  |  v2.1.0
+============================================================
 
-Los 2 scripts (inventarioMac e inventarioLinux) detectan el hardware
-del equipo y abren automaticamente el navegador con los datos
-cargados en el formulario web.
-
-
---- LINUX ----------------------------------------------------
-
-1. Abre una Terminal:
-   - Ctrl + Alt + T
-   - O boton derecho > "Abrir terminal"
-
-2. Navega a la carpeta donde esta el script:
-   cd /ruta/de/la/carpeta/Mac\ y\ Linux/
-
-3. Da permisos de ejecucion (solo la primera vez):
-   chmod +x inventarioLinux
-
-4. Ejecuta el script:
-   bash inventarioLinux
-
-5. El navegador se abrira solo con el formulario listo.
+Los scripts inventarioMac e inventarioLinux detectan el hardware
+del equipo y abren el navegador con el formulario CMDB precargado.
 
 
---- MAC --------------------------------------------------------
+--- REQUISITOS ------------------------------------------------
 
-1. Abre Terminal:
-   - Finder > Aplicaciones > Utilidades > Terminal
-   - O busca "Terminal" con Cmd + Espacio (Spotlight)
-
-2. Navega a la carpeta donde esta el script:
-   cd /ruta/de/la/carpeta/Mac\ y\ Linux/
-
-3. Da permisos de ejecucion (solo la primera vez):
-   chmod +x inventarioMac
-
-4. Ejecuta el script:
-   bash inventarioMac
-
-5. El navegador se abrira solo con el formulario listo.
+  - Conexion a internet
+  - Terminal con bash
+  - Navegador web instalado (Chrome, Firefox, etc.)
 
 
---- POSIBLES ERRORES ------------------------------------------
+--- LINUX -----------------------------------------------------
 
-? "Permission denied"  ->  falta el paso 3 (chmod +x)
-? "Command not found"  ->  estas en la carpeta incorrecta
-? No abre el navegador ->  revisa que tengas internet
+  1. Abrir terminal (Ctrl + Alt + T)
 
-Si algo falla, llama al administrador del sistema.
+  2. Ir a la carpeta del script:
+     cd /ruta/a/Mac\ y\ Linux/
+
+  3. Dar permisos (solo la primera vez):
+     chmod +x inventarioLinux
+
+  4. Ejecutar:
+     bash inventarioLinux
+
+  5. Escanear o escribir la placa cuando lo solicite.
+
+
+--- macOS -----------------------------------------------------
+
+  1. Abrir Terminal (Spotlight: Cmd + Espacio, escribir "Terminal")
+
+  2. Ir a la carpeta del script:
+     cd /ruta/a/Mac\ y\ Linux/
+
+  3. Dar permisos (solo la primera vez):
+     chmod +x inventarioMac
+
+  4. Ejecutar:
+     bash inventarioMac
+
+  5. Escanear o escribir la placa cuando lo solicite.
+
+
+--- SOLUCION DE PROBLEMAS -------------------------------------
+
+  Permission denied
+    -> Ejecutar el paso chmod +x antes de correr el script.
+
+  Command not found
+    -> Verificar que estas en la carpeta correcta (paso cd).
+
+  No abre el navegador
+    -> Comprobar conexion a internet. El script mostrara la URL
+       para abrirla manualmente.
+
+  Datos incompletos en el formulario
+    -> Completar los campos faltantes en la pagina y guardar.
+
+
+--- SOPORTE ---------------------------------------------------
+
+  Si el problema persiste, contactar al administrador del sistema
+  o al area de tecnologia de la sede CCYS.

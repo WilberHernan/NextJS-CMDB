@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-  Inventario de hardware — CMDB SENA CCYS
+  Inventario de hardware — CMDB SENA __SEDE_LABEL__
 
 .DESCRIPTION
   Detecta especificaciones del equipo local (WMI/CIM/Registry/CLI con fallback).
@@ -15,9 +15,9 @@
   O via PermisosWin.bat (recomendado: desbloquea y aplica ExecutionPolicy Bypass).
 
 .NOTES
-  Version : 2.1.0
-  Sede    : CCYS
-  Autor   : CMDB SENA / CCYS
+  Version : __SCRIPT_VERSION__
+  Sede    : __SEDE__
+  Autor   : __ORG_LABEL__
 #>
 
 # ============================================
@@ -29,8 +29,8 @@ $script:CMDB_URL = "https://next-js-cmdb.vercel.app"
 # Reemplazar XXXXXXXX con la clave definida en Vercel como PAGE_KEY
 $script:CMDB_KEY = "SeguridadSENA2026+"
 # Sede: CCYS | REGIONAL | CIUDAD_JARDIN
-$script:SEDE = "CCYS"
-$Script:Version = "2.1.0"
+$script:SEDE = "__SEDE__"
+$Script:Version = "__SCRIPT_VERSION__"
 $ErrorActionPreference = 'SilentlyContinue'
 
 if ($CMDB_URL -match "XXXXXXXX") {
@@ -582,7 +582,7 @@ function Get-OSCaptionUniversal {
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor DarkGray
 Write-Host "  CMDB SENA — Inventario de Hardware" -ForegroundColor Green
-Write-Host "  Sede: CCYS  |  v$Script:Version" -ForegroundColor DarkGray
+Write-Host "  Sede: __SEDE_LABEL__  |  v$Script:Version" -ForegroundColor DarkGray
 Write-Host "============================================================" -ForegroundColor DarkGray
 Write-Host ""
 Write-Host "[*] Iniciando deteccion de hardware..." -ForegroundColor DarkGray

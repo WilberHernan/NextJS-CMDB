@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
 # ============================================================================
-# Script de inventario de hardware — CMDB SENA SEDE CIUDAD_JARDIN (macOS)
-# Funciona en Intel y Apple Silicon (M1/M2/M3/M4)
-# Detecta hardware con multiples metodos de fallback y abre el navegador
-# con los datos para autorellenar el formulario.
+# CMDB SENA — Inventario de Hardware (macOS)
+# Sede: CIUDAD JARDIN  |  Version: 2.1.0
 #
-# USO: bash inventario.sh  (funciona en cualquier Mac con bash)
+# Detecta hardware (Intel / Apple Silicon) con fallback por capas y abre
+# el navegador con los datos para autorellenar el formulario CMDB.
+#
+# USO: bash inventarioMac
 # ============================================================================
 
-set -euo pipefail
+set -uo pipefail
 
 CMDB_URL="https://next-js-cmdb.vercel.app"
 CMDB_KEY="SeguridadSENA2026+"
 SEDE="CIUDAD_JARDIN"
+SCRIPT_VERSION="2.1.0"
 
 # ========================================================================
 # AUXILIARES
@@ -34,13 +36,13 @@ norm_mac() { local r="$1"; [[ -z "$r" ]] && { echo ""; return; }; echo "$r" | tr
 # arquitecturas (Intel x86_64 y Apple Silicon arm64)
 # ========================================================================
 
-hostname() {
+get_hostname() {
   local h
   # scutil es nativo de macOS y mas rapido
   h=$(scutil --get ComputerName 2>/dev/null) && [[ -n "$h" ]] && { echo "$h" | tr '[:lower:]' '[:upper:]'; return; }
   h=$(scutil --get LocalHostName 2>/dev/null) && [[ -n "$h" ]] && { echo "$h" | tr '[:lower:]' '[:upper:]'; return; }
-  h=$(hostname -s 2>/dev/null) && [[ -n "$h" ]] && { echo "$h" | tr '[:lower:]' '[:upper:]'; return; }
-  h=$(hostname 2>/dev/null) && [[ -n "$h" ]] && { echo "$h" | tr '[:lower:]' '[:upper:]'; return; }
+  h=$(command hostname -s 2>/dev/null) && [[ -n "$h" ]] && { echo "$h" | tr '[:lower:]' '[:upper:]'; return; }
+  h=$(command hostname 2>/dev/null) && [[ -n "$h" ]] && { echo "$h" | tr '[:lower:]' '[:upper:]'; return; }
   echo "DESCONOCIDO"
 }
 
@@ -149,11 +151,12 @@ so() {
 }
 
 red() {
-  local me="" mw="" iface mac
+  local me="" mw="" iface="" port_name mac
   # networksetup es nativo de macOS — lista hardware ports con dispositivos
   # y direcciones MAC de forma limpia y confiable
   while IFS= read -r line; do
     if [[ "$line" =~ ^Hardware\ Port:\ (.*) ]]; then
+      port_name="${BASH_REMATCH[1]}"
       iface=""
       continue
     fi
@@ -164,8 +167,8 @@ red() {
     if [[ "$line" =~ ^Ethernet\ Address:\ (.*) ]]; then
       mac=$(norm_mac "${BASH_REMATCH[1]}")
       [[ -z "$mac" || "$mac" == "00:00:00:00:00:00" ]] && continue
-      # Identificar tipo por el nombre del Hardware Port
-      if [[ "$line" =~ Wi-Fi|AirPort|Wireless|WLAN ]]; then
+      # Identificar tipo por el nombre del Hardware Port (no por la linea MAC)
+      if [[ "$port_name" =~ Wi-Fi|AirPort|Wireless|WLAN ]]; then
         [[ -z "$mw" ]] && mw="$mac"
       else
         [[ -z "$me" ]] && me="$mac"
@@ -287,13 +290,14 @@ fi
 # ========================================================================
 echo ""
 echo "============================================================"
-echo "  CMDB SENA CIUDAD JARDIN - SEDE ${SEDE} (macOS)"
+echo "  CMDB SENA — Inventario de Hardware (macOS)"
+echo "  Sede: ${SEDE}  |  v${SCRIPT_VERSION}"
 echo "============================================================"
 echo ""
-echo "Detectando hardware..."
+echo "[*] Iniciando deteccion de hardware..."
 echo ""
 
-HOSTNAME=$(hostname)
+HOSTNAME=$(get_hostname)
 MARCA=$(marca)
 MODELO=$(modelo)
 SERIAL=$(serial)

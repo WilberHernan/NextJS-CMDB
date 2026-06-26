@@ -1,23 +1,23 @@
 ﻿<#
 .SYNOPSIS
-  Script de inventario de hardware UNIVERSAL para CMDB SENA CIUDAD JARDIN.
-  Lee especificaciones del equipo local con multiples metodos de fallback.
+  Inventario de hardware — CMDB SENA CIUDAD JARDIN
 
 .DESCRIPTION
-  Ejecutar en el equipo nuevo (Windows).
-  Detecta hardware via WMI/CIM/Registry/CLI con fallback por capas.
-  Abre el navegador en el CMDB con query parameters listos para autorellenar
-  el formulario en la web de Next.js - SEDE CIUDAD JARDIN.
+  Detecta especificaciones del equipo local (WMI/CIM/Registry/CLI con fallback).
+  Abre el navegador en el CMDB con parametros de consulta para autorellenar
+  el formulario web de Next.js.
 
-.USAGE
-  1. Copiar este archivo al equipo nuevo.
-  2. Click derecho > "Ejecutar con PowerShell"
-  3. Escanear o escribir la placa cuando lo solicite.
-  4. El navegador se abre solo con los datos detectados.
-  5. Revisar/Completar campos faltantes y hacer clic en Guardar.
+.PARAMETER None
+  Ejecutar en el equipo destino. No requiere argumentos.
+
+.EXAMPLE
+  .\inventarioWin.ps1
+  O via PermisosWin.bat (recomendado: desbloquea y aplica ExecutionPolicy Bypass).
 
 .NOTES
-  Requiere configurar la URL del deployment de Next.js en $CMDB_URL.
+  Version : 2.1.0
+  Sede    : CIUDAD_JARDIN
+  Autor   : CMDB SENA / CIUDAD JARDIN
 #>
 
 # ============================================
@@ -30,6 +30,8 @@ $script:CMDB_URL = "https://next-js-cmdb.vercel.app"
 $script:CMDB_KEY = "SeguridadSENA2026+"
 # Sede: CCYS | REGIONAL | CIUDAD_JARDIN
 $script:SEDE = "CIUDAD_JARDIN"
+$Script:Version = "2.1.0"
+$ErrorActionPreference = 'SilentlyContinue'
 
 if ($CMDB_URL -match "XXXXXXXX") {
     Write-Host "ERROR: Debes configurar la URL del CMDB." -ForegroundColor Red
@@ -579,10 +581,11 @@ function Get-OSCaptionUniversal {
 # ============================================
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor DarkGray
-Write-Host "  CMDB SENA CCYS - SEDE CIUDAD JARDIN" -ForegroundColor Green
+Write-Host "  CMDB SENA — Inventario de Hardware" -ForegroundColor Green
+Write-Host "  Sede: CIUDAD JARDIN  |  v$Script:Version" -ForegroundColor DarkGray
 Write-Host "============================================================" -ForegroundColor DarkGray
 Write-Host ""
-Write-Host "Detectando hardware con multiples metodos..." -ForegroundColor DarkGray
+Write-Host "[*] Iniciando deteccion de hardware..." -ForegroundColor DarkGray
 Write-Host ""
 
 # --- Hostname ---
@@ -697,8 +700,8 @@ Write-Host "-- Red -----------------------------------------------------" -Foreg
 $netInfo = Get-NetworkInfoUniversal
 $macEth = $netInfo.Ethernet
 $macWifi = $netInfo.WiFi
-if ($macEth)  { Write-Host "  + MAC Cableada: $macEth [$($netInfo.Source)]" -ForegroundColor Green }
-if ($macWifi) { Write-Host "  + MAC WiFi:     $macWifi [$($netInfo.Source)]" -ForegroundColor Green }
+if ($macEth)  { Write-Host "  + MAC Cableada: $macEth" -ForegroundColor Green }
+if ($macWifi) { Write-Host "  + MAC WiFi:     $macWifi" -ForegroundColor Green }
 if (-not $macEth -and -not $macWifi) {
     Write-Host "  + No se detectaron adaptadores de red con MAC" -ForegroundColor Yellow
 }
@@ -784,10 +787,17 @@ $params.placa = $placaInput
 Write-Host "------------------------------------------------------------" -ForegroundColor DarkGray
 Write-Host ""
 
+$orderedKeys = @(
+    'ciudad', 'disco1_tam', 'disco1_tipo', 'disco2_tam', 'disco2_tipo',
+    'fecha_impacto', 'fecha_mantenimiento', 'hostname', 'mac_cableada', 'mac_wifi',
+    'marca', 'modelo', 'modo', 'placa', 'procesador', 'propietario', 'ram',
+    'serial', 'so', 'tipo_memoria', 'version_so', 'video'
+)
 $qsParts = @()
-foreach ($kv in $params.GetEnumerator()) {
-    $encoded = Url-Encode -Value $kv.Value
-    $qsParts += "$($kv.Key)=$encoded"
+foreach ($key in $orderedKeys) {
+    if ($params.ContainsKey($key)) {
+        $qsParts += "$key=$(Url-Encode -Value $params[$key])"
+    }
 }
 $qsParts += "key=$(Url-Encode -Value $CMDB_KEY)"
 $qsParts += "sede=$(Url-Encode -Value $SEDE)"

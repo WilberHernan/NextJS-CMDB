@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================================
 # CMDB SENA — Inventario de Hardware (Linux)
-# Sede: REGIONAL  |  Version: 2.1.0
+# Sede: __SEDE_LABEL__  |  Version: __SCRIPT_VERSION__
 #
 # Detecta hardware con fallback por capas y abre el navegador con los
 # datos para autorellenar el formulario CMDB.
@@ -13,8 +13,8 @@ set -uo pipefail
 
 CMDB_URL="https://next-js-cmdb.vercel.app"
 CMDB_KEY="SeguridadSENA2026+"
-SEDE="REGIONAL"
-SCRIPT_VERSION="2.1.0"
+SEDE="__SEDE__"
+SCRIPT_VERSION="__SCRIPT_VERSION__"
 
 # ========================================================================
 # AUXILIARES

@@ -1,11 +1,11 @@
 @echo off
 chcp 65001 >nul
-title CMDB SENA — Inventario [CCYS]
+title CMDB SENA — Inventario [__SEDE_LABEL__]
 color 0A
 
 echo ============================================================
 echo   CMDB SENA — Inventario de Hardware
-echo   Sede: CCYS  |  v2.1.0
+echo   Sede: __SEDE_LABEL__  |  v__SCRIPT_VERSION__
 echo ============================================================
 echo.
 
