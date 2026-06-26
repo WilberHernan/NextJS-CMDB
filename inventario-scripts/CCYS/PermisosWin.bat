@@ -5,7 +5,7 @@ color 0A
 
 echo ============================================================
 echo   CMDB SENA — Inventario de Hardware
-echo   Sede: CCYS  |  v2.1.0
+echo   Sede: CCYS  ^|  v2.1.0
 echo ============================================================
 echo.
 
