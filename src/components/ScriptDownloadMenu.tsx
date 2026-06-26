@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useId } from 'react';
 import { createPortal } from 'react-dom';
-import { Download, Monitor, Apple, Terminal } from 'lucide-react';
+import { Download, Monitor, Apple, Terminal, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useSede } from '@/contexts/sede-context';
@@ -141,6 +141,24 @@ export function ScriptDownloadMenu () {
               {platform.label}
             </a>
           ))}
+
+          {/* Separator + execution guide */}
+          <div className='border-t border-border-default my-1.5' />
+          <a
+            href={downloadUrl('guia')}
+            role='menuitem'
+            onClick={() => setOpen(false)}
+            className={cn(
+              'flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold no-underline',
+              'text-muted-foreground transition-all duration-150',
+              'hover:bg-surface-hover hover:text-foreground',
+              'hover:shadow-[inset_2px_2px_4px_var(--neu-shadow-dark),inset_-2px_-2px_4px_var(--neu-shadow-light)]',
+              'active:scale-[0.98]'
+            )}
+          >
+            <FileText className='h-4 w-4 shrink-0 text-muted-foreground' />
+            Guía de ejecución
+          </a>
         </div>,
         document.body
       )}

@@ -19,9 +19,9 @@ export async function GET (request: NextRequest) {
       );
     }
 
-    if (!plataforma || !['win', 'mac', 'linux'].includes(plataforma)) {
+    if (!plataforma || !['win', 'mac', 'linux', 'guia'].includes(plataforma)) {
       return NextResponse.json(
-        { ok: false, error: "Parámetro 'plataforma' inválido. Usa: win, mac, linux" },
+        { ok: false, error: "Parámetro 'plataforma' inválido. Usa: win, mac, linux, guia" },
         { status: 400 }
       );
     }
@@ -60,6 +60,28 @@ export async function GET (request: NextRequest) {
         headers: {
           'Content-Type': 'application/zip',
           'Content-Disposition': `attachment; filename="inventario-${sede}.zip"`,
+        },
+      });
+    }
+
+    // Execution guide (same for all platforms)
+    if (plataforma === 'guia') {
+      const guiaPath = path.join(SCRIPTS_DIR, sede, 'Mac y Linux', 'GUIA-EJECUCION.txt');
+
+      if (!fs.existsSync(guiaPath)) {
+        return NextResponse.json(
+          { ok: false, error: 'Guía de ejecución no encontrada para esta sede' },
+          { status: 404 }
+        );
+      }
+
+      const content = fs.readFileSync(guiaPath);
+
+      return new NextResponse(content, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Content-Disposition': 'attachment; filename="GUIA-EJECUCION.txt"',
         },
       });
     }
