@@ -31,7 +31,10 @@ export async function GET (request: NextRequest) {
     const content = renderGuiaTemplate(template, sede);
     return new NextResponse(content, {
       status: 200,
-      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+      },
     });
   } catch {
     return new NextResponse(
