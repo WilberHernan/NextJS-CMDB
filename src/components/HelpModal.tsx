@@ -158,13 +158,13 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
         transition: 'opacity 0.35s ease-out',
       }}
     >
-      {/* Blur backdrop — separate from content (same pattern as AuthGate) */}
+      {/* Blur backdrop — same as AuthGate: 8px blur + subtle tint */}
       <div
         className='absolute inset-0'
         style={{
-          backgroundColor: 'rgba(0,0,0,0.35)',
-          backdropFilter: 'blur(4px)',
-          WebkitBackdropFilter: 'blur(4px)',
+          backgroundColor: 'rgba(0,0,0,0.12)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
         }}
       />
 
