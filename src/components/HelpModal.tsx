@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, type MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Terminal } from 'lucide-react';
 import type { Sede } from '@/lib/sedes';
@@ -15,6 +15,9 @@ interface HelpModalProps {
 
 const EXIT_MS = 500;
 
+const CARD_IN = '0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+const CARD_OUT = '0.35s cubic-bezier(0.4, 0, 0.2, 1)';
+
 export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
   const [mounted, setMounted] = useState(false);
   const [animIn, setAnimIn] = useState(false);
@@ -24,18 +27,14 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
 
   useEffect(() => {
     setMounted(true);
-    return () => {
-      if (closeTimer.current) clearTimeout(closeTimer.current);
-    };
+    return () => clearTimeout(closeTimer.current);
   }, []);
 
   useEffect(() => {
     if (open) {
-      if (closeTimer.current) clearTimeout(closeTimer.current);
+      clearTimeout(closeTimer.current);
       setVisible(true);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => setAnimIn(true));
-      });
+      requestAnimationFrame(() => setAnimIn(true));
     } else {
       setAnimIn(false);
       closeTimer.current = setTimeout(() => setVisible(false), EXIT_MS);
@@ -58,8 +57,8 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
     return () => { document.body.style.overflow = prev; };
   }, [open]);
 
-  const handleBackdrop = useCallback(
-    (e: React.MouseEvent) => {
+  const onBackdrop = useCallback(
+    (e: MouseEvent) => {
       if (e.target === e.currentTarget) onClose();
     },
     [onClose]
@@ -72,7 +71,7 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
       className='fixed inset-0 z-[9999]'
       style={{
         opacity: animIn ? 1 : 0,
-        transition: `opacity ${EXIT_MS * 0.6}ms cubic-bezier(0.4, 0, 0.2, 1)`,
+        transition: `opacity ${animIn ? '0.25s' : '0.3s'} ease`,
       }}
     >
       <div
@@ -86,14 +85,14 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
 
       <div
         className='relative z-10 flex items-center justify-center min-h-screen p-4 sm:p-6'
-        onClick={handleBackdrop}
+        onClick={onBackdrop}
       >
         <div
           className='w-full max-w-xl'
           style={{
-            animation: animIn
-              ? 'gate-card-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both'
-              : 'gate-card-in 0.4s cubic-bezier(0.4, 0, 0.2, 1) reverse both',
+            opacity: animIn ? 1 : 0,
+            transform: animIn ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.96)',
+            transition: `all ${animIn ? CARD_IN : CARD_OUT}`,
             willChange: 'transform, opacity',
           }}
         >
@@ -162,19 +161,11 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
                 <button
                   type='button'
                   onClick={onClose}
-                  className='flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200'
+                  className='flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200 hover:brightness-125'
                   style={{
                     background: 'var(--bg-hover)',
                     border: '1px solid var(--border-default)',
                     color: 'var(--text-secondary)',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--bg-active)';
-                    e.currentTarget.style.color = 'var(--text-primary)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'var(--bg-hover)';
-                    e.currentTarget.style.color = 'var(--text-secondary)';
                   }}
                   aria-label='Cerrar'
                 >
