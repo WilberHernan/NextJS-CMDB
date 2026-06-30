@@ -8,18 +8,6 @@ procesador, red) y abren el navegador con el formulario CMDB
 con los datos ya precargados.
 
 
---- QUE ES "LA PLACA" ----------------------------------------
-
-  La placa es el numero de inventario del equipo fisico.
-  Suele ser una etiqueta blanca con codigo de barras pegada
-  en el monitor, la torre o la notebook.
-
-  Ejemplos: SENA-002341, EQ-98432, CMDB-2024-001
-
-  Si no encontras la etiqueta, consulta con el area de
-  tecnologia antes de continuar.
-
-
 --- REQUISITOS ------------------------------------------------
 
   - Conexion a internet
