@@ -150,214 +150,230 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
 
   if (!mounted || !open) return null;
 
+  const cardShadow = `
+    4px 4px 16px var(--neu-shadow-dark),
+    -4px -4px 16px var(--neu-shadow-light),
+    0 1px 0 0 var(--glass-highlight) inset,
+    0 0 0 1px rgba(255,255,255,0.03) inset
+  `;
+
   return createPortal(
     <div
-      className='fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6'
+      className='fixed inset-0 z-[9999]'
       style={{
         opacity: animIn ? 1 : 0,
         transition: 'opacity 0.35s ease-out',
-        backgroundColor: 'rgba(0,0,0,0.35)',
-        backdropFilter: 'blur(4px)',
-        WebkitBackdropFilter: 'blur(4px)',
       }}
-      onClick={handleBackdrop}
     >
-      {/* ── Card ── */}
+      {/* Blur backdrop — separate from content (same pattern as AuthGate) */}
       <div
-        className='relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-[1.25rem] p-7 sm:p-8'
+        className='absolute inset-0'
         style={{
-          background: 'var(--glass-bg)',
-          backdropFilter: 'blur(32px) saturate(160%)',
-          WebkitBackdropFilter: 'blur(32px) saturate(160%)',
-          border: '1px solid var(--glass-border)',
-          boxShadow: `
-            4px 4px 16px var(--neu-shadow-dark),
-            -4px -4px 16px var(--neu-shadow-light),
-            0 1px 0 0 var(--glass-highlight) inset,
-            0 0 0 1px rgba(255,255,255,0.03) inset
-          `,
-          transform: animIn ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.97)',
-          transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          backgroundColor: 'rgba(0,0,0,0.35)',
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
         }}
+      />
+
+      {/* Content container — above the backdrop so glass transparency shows real page content */}
+      <div
+        className='relative z-10 flex items-center justify-center min-h-screen p-4 sm:p-6'
+        onClick={handleBackdrop}
       >
-        {/* Grain texture */}
+        {/* ── Card ── */}
         <div
-          className='absolute inset-0 pointer-events-none rounded-[inherit]'
+          className='w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-[1.25rem] p-7 sm:p-8'
           style={{
-            opacity: 0.035,
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")',
-            backgroundRepeat: 'repeat',
-            backgroundSize: '180px 180px',
-            mixBlendMode: 'overlay' as React.CSSProperties['mixBlendMode'],
+            background: 'var(--glass-bg)',
+            backdropFilter: 'blur(32px) saturate(160%)',
+            WebkitBackdropFilter: 'blur(32px) saturate(160%)',
+            border: '1px solid var(--glass-border)',
+            boxShadow: cardShadow,
+            transform: animIn ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.97)',
+            transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
           }}
-        />
+        >
+          {/* Grain texture */}
+          <div
+            className='absolute inset-0 pointer-events-none rounded-[inherit]'
+            style={{
+              opacity: 0.035,
+              backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")',
+              backgroundRepeat: 'repeat',
+              backgroundSize: '180px 180px',
+              mixBlendMode: 'overlay' as React.CSSProperties['mixBlendMode'],
+            }}
+          />
 
-        {/* Top edge glow */}
-        <div
-          className='absolute top-0 left-[15%] right-[15%] h-[1px] pointer-events-none rounded-full'
-          style={{
-            background:
+          {/* Top edge glow */}
+          <div
+            className='absolute top-0 left-[15%] right-[15%] h-[1px] pointer-events-none rounded-full'
+            style={{
+              background:
               'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)',
-          }}
-        />
+            }}
+          />
 
-        {/* ── Header row ── */}
-        <div className='relative z-10 flex items-center justify-between mb-6'>
-          <div className='flex items-center gap-3'>
-            <div
-              className='flex h-9 w-9 items-center justify-center rounded-lg'
-              style={{
-                background: 'var(--accent-muted)',
-                boxShadow: `
+          {/* ── Header row ── */}
+          <div className='relative z-10 flex items-center justify-between mb-6'>
+            <div className='flex items-center gap-3'>
+              <div
+                className='flex h-9 w-9 items-center justify-center rounded-lg'
+                style={{
+                  background: 'var(--accent-muted)',
+                  boxShadow: `
                   inset 1.5px 1.5px 3px var(--neu-shadow-dark),
                   inset -1.5px -1.5px 3px var(--neu-shadow-light)
                 `,
-              }}
-            >
-              <Terminal className='h-[18px] w-[18px]' style={{ color: 'var(--accent)' }} strokeWidth={1.75} />
-            </div>
-            <div>
-              <h2
-                className='text-base font-bold tracking-[-0.02em]'
-                style={{ fontFamily: 'var(--font-display), sans-serif' }}
+                }}
               >
-                Uso de los scripts
-              </h2>
-              <p className='text-[0.6rem] uppercase tracking-[0.15em]' style={{ color: 'var(--text-tertiary)' }}>
-                Mac / Linux — {sede}
-              </p>
+                <Terminal className='h-[18px] w-[18px]' style={{ color: 'var(--accent)' }} strokeWidth={1.75} />
+              </div>
+              <div>
+                <h2
+                  className='text-base font-bold tracking-[-0.02em]'
+                  style={{ fontFamily: 'var(--font-display), sans-serif' }}
+                >
+                  Uso de los scripts
+                </h2>
+                <p className='text-[0.6rem] uppercase tracking-[0.15em]' style={{ color: 'var(--text-tertiary)' }}>
+                  Mac / Linux — {sede}
+                </p>
+              </div>
             </div>
+
+            {/* Close button */}
+            <button
+              type='button'
+              onClick={onClose}
+              className='flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200'
+              style={{
+                background: 'var(--bg-hover)',
+                border: '1px solid var(--border-default)',
+                color: 'var(--text-secondary)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--bg-active)';
+                e.currentTarget.style.color = 'var(--text-primary)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--bg-hover)';
+                e.currentTarget.style.color = 'var(--text-secondary)';
+              }}
+              aria-label='Cerrar'
+            >
+              <X className='h-[16px] w-[16px]' strokeWidth={2} />
+            </button>
           </div>
 
-          {/* Close button */}
-          <button
-            type='button'
-            onClick={onClose}
-            className='flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200'
-            style={{
-              background: 'var(--bg-hover)',
-              border: '1px solid var(--border-default)',
-              color: 'var(--text-secondary)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--bg-active)';
-              e.currentTarget.style.color = 'var(--text-primary)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'var(--bg-hover)';
-              e.currentTarget.style.color = 'var(--text-secondary)';
-            }}
-            aria-label='Cerrar'
-          >
-            <X className='h-[16px] w-[16px]' strokeWidth={2} />
-          </button>
-        </div>
+          {/* ── Content ── */}
+          <div className='relative z-10 space-y-2'>
+            {loading && (
+              <div className='flex items-center justify-center py-12'>
+                <div
+                  className='h-6 w-6 rounded-full animate-spin'
+                  style={{
+                    border: '2px solid var(--border-default)',
+                    borderTopColor: 'var(--accent)',
+                  }}
+                />
+              </div>
+            )}
 
-        {/* ── Content ── */}
-        <div className='relative z-10 space-y-2'>
-          {loading && (
-            <div className='flex items-center justify-center py-12'>
-              <div
-                className='h-6 w-6 rounded-full animate-spin'
-                style={{
-                  border: '2px solid var(--border-default)',
-                  borderTopColor: 'var(--accent)',
-                }}
-              />
-            </div>
-          )}
+            {error && (
+              <p className='text-sm text-center py-8' style={{ color: 'var(--text-secondary)' }}>
+                No se pudo cargar la guía para esta sede.
+              </p>
+            )}
 
-          {error && (
-            <p className='text-sm text-center py-8' style={{ color: 'var(--text-secondary)' }}>
-              No se pudo cargar la guía para esta sede.
-            </p>
-          )}
-
-          {!loading && !error && parsed.map((section, i) => {
-            switch (section.kind) {
-              case 'header':
-                return (
-                  <h3
-                    key={i}
-                    className='text-[0.8rem] font-bold uppercase tracking-[0.18em] pt-4 pb-1'
-                    style={{
-                      color: 'var(--accent)',
-                      fontFamily: 'var(--font-display), sans-serif',
-                    }}
-                  >
-                    {section.text}
-                  </h3>
-                );
-
-              case 'step':
-                return (
-                  <div key={i} className='flex items-start gap-2 pl-1'>
-                    <span
-                      className='inline-flex items-center justify-center shrink-0 mt-0.5 w-[18px] h-[18px] rounded-md text-[0.6rem] font-bold'
+            {!loading && !error && parsed.map((section, i) => {
+              switch (section.kind) {
+                case 'header':
+                  return (
+                    <h3
+                      key={i}
+                      className='text-[0.8rem] font-bold uppercase tracking-[0.18em] pt-4 pb-1'
                       style={{
-                        background: 'var(--accent-muted)',
                         color: 'var(--accent)',
-                        fontFamily: 'var(--font-mono, monospace)',
+                        fontFamily: 'var(--font-display), sans-serif',
                       }}
                     >
-                      {section.num}
-                    </span>
-                    <p className='text-sm leading-relaxed' style={{ color: 'var(--text-secondary)' }}>
+                      {section.text}
+                    </h3>
+                  );
+
+                case 'step':
+                  return (
+                    <div key={i} className='flex items-start gap-2 pl-1'>
+                      <span
+                        className='inline-flex items-center justify-center shrink-0 mt-0.5 w-[18px] h-[18px] rounded-md text-[0.6rem] font-bold'
+                        style={{
+                          background: 'var(--accent-muted)',
+                          color: 'var(--accent)',
+                          fontFamily: 'var(--font-mono, monospace)',
+                        }}
+                      >
+                        {section.num}
+                      </span>
+                      <p className='text-sm leading-relaxed' style={{ color: 'var(--text-secondary)' }}>
+                        {section.text}
+                      </p>
+                    </div>
+                  );
+
+                case 'code':
+                  return (
+                    <code
+                      key={i}
+                      className='block text-[0.8rem] px-3 py-1.5 rounded-lg'
+                      style={{
+                        background: 'var(--bg-elevated)',
+                        border: '1px solid var(--border-default)',
+                        color: 'var(--accent)',
+                        fontFamily: 'var(--font-mono, "Cascadia Code", "Fira Code", monospace)',
+                      }}
+                    >
+                      {section.text}
+                    </code>
+                  );
+
+                case 'tip':
+                  return (
+                    <p
+                      key={i}
+                      className='text-sm leading-relaxed pl-3 border-l-2'
+                      style={{
+                        color: 'var(--text-secondary)',
+                        borderColor: 'var(--accent-soft)',
+                      }}
+                    >
+                      {section.text.split('->').map((part, j) =>
+                        j === 0 ? (
+                          <span key={j}>{part.trim()}</span>
+                        ) : (
+                          <span key={j} className='block mt-0.5 font-semibold' style={{ color: 'var(--text-primary)' }}>
+                            → {part.trim()}
+                          </span>
+                        )
+                      )}
+                    </p>
+                  );
+
+                case 'blank':
+                  return <div key={i} className='h-1' />;
+
+                default:
+                  return (
+                    <p key={i} className='text-sm leading-relaxed' style={{ color: 'var(--text-secondary)' }}>
                       {section.text}
                     </p>
-                  </div>
-                );
-
-              case 'code':
-                return (
-                  <code
-                    key={i}
-                    className='block text-[0.8rem] px-3 py-1.5 rounded-lg'
-                    style={{
-                      background: 'var(--bg-elevated)',
-                      border: '1px solid var(--border-default)',
-                      color: 'var(--accent)',
-                      fontFamily: 'var(--font-mono, "Cascadia Code", "Fira Code", monospace)',
-                    }}
-                  >
-                    {section.text}
-                  </code>
-                );
-
-              case 'tip':
-                return (
-                  <p
-                    key={i}
-                    className='text-sm leading-relaxed pl-3 border-l-2'
-                    style={{
-                      color: 'var(--text-secondary)',
-                      borderColor: 'var(--accent-soft)',
-                    }}
-                  >
-                    {section.text.split('->').map((part, j) =>
-                      j === 0 ? (
-                        <span key={j}>{part.trim()}</span>
-                      ) : (
-                        <span key={j} className='block mt-0.5 font-semibold' style={{ color: 'var(--text-primary)' }}>
-                          → {part.trim()}
-                        </span>
-                      )
-                    )}
-                  </p>
-                );
-
-              case 'blank':
-                return <div key={i} className='h-1' />;
-
-              default:
-                return (
-                  <p key={i} className='text-sm leading-relaxed' style={{ color: 'var(--text-secondary)' }}>
-                    {section.text}
-                  </p>
-                );
-            }
-          })}
+                  );
+              }
+            })}
+          </div>
+          {/* ── closes card ── */}
         </div>
+        {/* ── closes content container ── */}
       </div>
     </div>,
     document.body
