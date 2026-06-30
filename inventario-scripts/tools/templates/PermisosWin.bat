@@ -5,7 +5,7 @@ color 0A
 
 echo ============================================================
 echo   CMDB SENA — Inventario de Hardware
-echo   Sede: __SEDE_LABEL__  |  v__SCRIPT_VERSION__
+echo   Sede: __SEDE_LABEL__  ^|  v__SCRIPT_VERSION__
 echo ============================================================
 echo.
 

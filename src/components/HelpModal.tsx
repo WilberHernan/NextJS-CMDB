@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Terminal } from 'lucide-react';
 import type { Sede } from '@/lib/sedes';
+import { SEDE_LABELS } from '@/lib/sedes';
+import { getHelpSections } from '@/lib/help-guide';
 
 interface HelpModalProps {
   open: boolean;
@@ -11,115 +13,19 @@ interface HelpModalProps {
   sede: Sede;
 }
 
-/* ── Section type for parsed content ── */
-type Section =
-  | { kind: 'header'; text: string }
-  | { kind: 'step'; text: string; num: string }
-  | { kind: 'code'; text: string }
-  | { kind: 'tip'; text: string }
-  | { kind: 'text'; text: string }
-  | { kind: 'blank' };
-
-function parseContent (raw: string): Section[] {
-  const lines = raw.split('\n');
-  const sections: Section[] = [];
-  let inBanner = false;
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-
-    // Skip banner (==== lines and lines inside it)
-    if (trimmed.startsWith('===')) {
-      inBanner = !inBanner;
-      continue;
-    }
-    if (inBanner) continue;
-    if (/^ {2}CMDB SENA/.test(trimmed)) continue;
-    if (/^ {2}Sede:/.test(trimmed)) continue;
-
-    // Section header: --- TITLE ---
-    if (/^---/.test(trimmed)) {
-      const title = trimmed.replace(/^-{3,}\s*/, '').replace(/\s*-{3,}$/, '').trim();
-      if (title) {
-        sections.push({ kind: 'header', text: title });
-      }
-      continue;
-    }
-
-    // Blank line
-    if (trimmed.length === 0) {
-      sections.push({ kind: 'blank' });
-      continue;
-    }
-
-    // Troubleshooting tip:   Something -> do this
-    if (trimmed.includes('->')) {
-      sections.push({ kind: 'tip', text: trimmed });
-      continue;
-    }
-
-    // Numbered step:   1. something  or  4. something
-    if (/^\d+\.\s/.test(trimmed)) {
-      const [, num, ...rest] = trimmed.match(/^(\d+)\.\s+(.*)/)!;
-      sections.push({ kind: 'step', text: rest.join(' '), num });
-      continue;
-    }
-
-    // Code-like line (contains typical shell commands)
-    if (/^ {6}(bash |cd |chmod |sudo |\.\/)/.test(line) || /^\s{2,}(bash |cd |chmod )/.test(trimmed)) {
-      sections.push({ kind: 'code', text: trimmed });
-      continue;
-    }
-
-    // Regular text
-    sections.push({ kind: 'text', text: trimmed });
-  }
-
-  return sections;
-}
-
 export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
   const [mounted, setMounted] = useState(false);
-  const [content, setContent] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
   const [animIn, setAnimIn] = useState(false);
+  const sections = open ? getHelpSections(sede) : [];
 
-  // Mount for portal
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Reset + fetch when opening
-  useEffect(() => {
-    if (!open) {
-      setAnimIn(false);
-      return;
-    }
+  useLayoutEffect(() => {
+    setAnimIn(open);
+  }, [open]);
 
-    setLoading(true);
-    setError(false);
-    setContent(null);
-
-    fetch(`/api/guia-contenido?sede=${sede}`)
-      .then((r) => {
-        if (!r.ok) throw new Error();
-        return r.text();
-      })
-      .then((text) => {
-        setContent(text);
-        setLoading(false);
-        // Trigger entrance animation on next frame
-        requestAnimationFrame(() => setAnimIn(true));
-      })
-      .catch(() => {
-        setError(true);
-        setLoading(false);
-        requestAnimationFrame(() => setAnimIn(true));
-      });
-  }, [open, sede]);
-
-  // Close on Escape
   useEffect(() => {
     if (!open) return;
     const handleKey = (e: KeyboardEvent) => {
@@ -129,14 +35,11 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
     return () => document.removeEventListener('keydown', handleKey);
   }, [open, onClose]);
 
-  // Prevent body scroll when open
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => { document.body.style.overflow = ''; };
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
   }, [open]);
 
   const handleBackdrop = useCallback(
@@ -146,19 +49,10 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
     [onClose]
   );
 
-  const parsed = content ? parseContent(content) : [];
-
   if (!mounted || !open) return null;
 
   return createPortal(
-    <div
-      className='fixed inset-0 z-[9999]'
-      style={{
-        opacity: animIn ? 1 : 0,
-        transition: 'opacity 0.35s ease-out',
-      }}
-    >
-      {/* Blur backdrop — same as AuthGate: 8px blur + subtle tint */}
+    <div className='fixed inset-0 z-[9999]'>
       <div
         className='absolute inset-0'
         style={{
@@ -168,16 +62,15 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
         }}
       />
 
-      {/* Content container — above the backdrop so glass transparency shows real page content */}
       <div
         className='relative z-10 flex items-center justify-center min-h-screen p-4 sm:p-6'
         onClick={handleBackdrop}
       >
-        {/* ── Card wrapper — same pattern as PasswordCard ── */}
         <div
           className='w-full max-w-xl'
           style={{
             animation: animIn ? 'gate-card-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both' : 'none',
+            willChange: animIn ? 'transform, opacity' : undefined,
           }}
         >
           <div
@@ -195,7 +88,6 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
               `,
             }}
           >
-            {/* Grain texture — identical to PasswordCard */}
             <div
               className='absolute inset-0 pointer-events-none rounded-[inherit]'
               style={{
@@ -207,7 +99,6 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
               }}
             />
 
-            {/* Top edge glow — identical to PasswordCard */}
             <div
               className='absolute top-0 left-[15%] right-[15%] h-[1px] pointer-events-none rounded-full'
               style={{
@@ -216,9 +107,7 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
               }}
             />
 
-            {/* ── Scrollable content area ── */}
             <div className='relative z-10 max-h-[75vh] overflow-y-auto pr-2'>
-              {/* ── Header row ── */}
               <div className='flex items-center justify-between mb-6'>
                 <div className='flex items-center gap-3'>
                   <div
@@ -241,12 +130,11 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
                       Uso de los scripts
                     </h2>
                     <p className='text-[0.6rem] uppercase tracking-[0.15em]' style={{ color: 'var(--text-tertiary)' }}>
-                      Mac / Linux — {sede}
+                      Windows / Mac / Linux — {SEDE_LABELS[sede]}
                     </p>
                   </div>
                 </div>
 
-                {/* Close button */}
                 <button
                   type='button'
                   onClick={onClose}
@@ -270,27 +158,8 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
                 </button>
               </div>
 
-              {/* ── Content ── */}
               <div className='space-y-2'>
-                {loading && (
-                  <div className='flex items-center justify-center py-12'>
-                    <div
-                      className='h-6 w-6 rounded-full animate-spin'
-                      style={{
-                        border: '2px solid var(--border-default)',
-                        borderTopColor: 'var(--accent)',
-                      }}
-                    />
-                  </div>
-                )}
-
-                {error && (
-                  <p className='text-sm text-center py-8' style={{ color: 'var(--text-secondary)' }}>
-                    No se pudo cargar la guía para esta sede.
-                  </p>
-                )}
-
-                {!loading && !error && parsed.map((section, i) => {
+                {sections.map((section, i) => {
                   switch (section.kind) {
                     case 'header':
                       return (

@@ -23,8 +23,7 @@ const FILES = [
   { template: 'inventarioWin.ps1', dest: (s) => path.join(ROOT, s.id, 'inventarioWin.ps1') },
   { template: 'PermisosWin.bat', dest: (s) => path.join(ROOT, s.id, 'PermisosWin.bat') },
   { template: 'inventarioMac', dest: (s) => path.join(ROOT, s.id, 'Mac y Linux', 'inventarioMac') },
-  { template: 'inventarioLinux', dest: (s) => path.join(ROOT, s.id, 'Mac y Linux', 'inventarioLinux') },
-  { template: 'GUIA-EJECUCION.txt', dest: (s) => path.join(ROOT, s.id, 'Mac y Linux', 'GUIA-EJECUCION.txt') }
+  { template: 'inventarioLinux', dest: (s) => path.join(ROOT, s.id, 'Mac y Linux', 'inventarioLinux') }
 ];
 
 function render (templateName, sede) {

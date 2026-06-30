@@ -5,7 +5,7 @@ color 0A
 
 echo ============================================================
 echo   CMDB SENA — Inventario de Hardware
-echo   Sede: CIUDAD JARDIN  ^|  v2.1.3
+echo   Sede: CIUDAD JARDIN  ^|  v2.1.0
 echo ============================================================
 echo.
 
