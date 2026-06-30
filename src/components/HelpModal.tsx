@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Terminal } from 'lucide-react';
 import type { Sede } from '@/lib/sedes';
@@ -81,28 +81,25 @@ function parseContent (raw: string): Section[] {
 export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
   const [mounted, setMounted] = useState(false);
   const [content, setContent] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [animIn, setAnimIn] = useState(false);
-  const cacheRef = useRef<Map<string, string>>(new Map());
 
   // Mount for portal
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Pre-fetch on mount + sede change (not on open/close)
+  // Reset + fetch when opening
   useEffect(() => {
-    const cached = cacheRef.current.get(sede);
-    if (cached) {
-      setContent(cached);
-      setLoading(false);
-      setError(false);
+    if (!open) {
+      setAnimIn(false);
       return;
     }
 
     setLoading(true);
     setError(false);
+    setContent(null);
 
     fetch(`/api/guia-contenido?sede=${sede}`)
       .then((r) => {
@@ -110,24 +107,17 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
         return r.text();
       })
       .then((text) => {
-        cacheRef.current.set(sede, text);
         setContent(text);
         setLoading(false);
+        // Trigger entrance animation on next frame
+        requestAnimationFrame(() => setAnimIn(true));
       })
       .catch(() => {
         setError(true);
         setLoading(false);
+        requestAnimationFrame(() => setAnimIn(true));
       });
-  }, [sede]);
-
-  // Animate entrance when opening (content already loaded or loading started)
-  useEffect(() => {
-    if (open) {
-      requestAnimationFrame(() => setAnimIn(true));
-    } else {
-      setAnimIn(false);
-    }
-  }, [open]);
+  }, [open, sede]);
 
   // Close on Escape
   useEffect(() => {
@@ -156,7 +146,7 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
     [onClose]
   );
 
-  const parsed = useMemo(() => (content ? parseContent(content) : []), [content]);
+  const parsed = content ? parseContent(content) : [];
 
   if (!mounted || !open) return null;
 
@@ -166,18 +156,15 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
       style={{
         opacity: animIn ? 1 : 0,
         transition: 'opacity 0.35s ease-out',
-        willChange: 'opacity',
       }}
     >
-      {/* Blur backdrop — backdropFilter starts AFTER entrance animation
-          to avoid janky compositing during the opacity/transform transition. */}
+      {/* Blur backdrop — same as AuthGate: 8px blur + subtle tint */}
       <div
-        className='absolute inset-0 transition-[backdrop-filter,background-color] duration-500 ease-out'
+        className='absolute inset-0'
         style={{
-          backgroundColor: animIn ? 'rgba(0,0,0,0.12)' : 'rgba(0,0,0,0)',
-          backdropFilter: animIn ? 'blur(8px)' : 'blur(0px)',
-          WebkitBackdropFilter: animIn ? 'blur(8px)' : 'blur(0px)',
-          willChange: 'backdrop-filter',
+          backgroundColor: 'rgba(0,0,0,0.12)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
         }}
       />
 
