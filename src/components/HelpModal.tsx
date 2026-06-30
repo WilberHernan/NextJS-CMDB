@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Terminal } from 'lucide-react';
 import type { Sede } from '@/lib/sedes';
@@ -13,17 +13,33 @@ interface HelpModalProps {
   sede: Sede;
 }
 
+const EXIT_MS = 500;
+
 export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
   const [mounted, setMounted] = useState(false);
   const [animIn, setAnimIn] = useState(false);
-  const sections = open ? getHelpSections(sede) : [];
+  const [visible, setVisible] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const sections = getHelpSections(sede);
 
   useEffect(() => {
     setMounted(true);
+    return () => {
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+    };
   }, []);
 
-  useLayoutEffect(() => {
-    setAnimIn(open);
+  useEffect(() => {
+    if (open) {
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+      setVisible(true);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setAnimIn(true));
+      });
+    } else {
+      setAnimIn(false);
+      closeTimer.current = setTimeout(() => setVisible(false), EXIT_MS);
+    }
   }, [open]);
 
   useEffect(() => {
@@ -49,10 +65,16 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
     [onClose]
   );
 
-  if (!mounted || !open) return null;
+  if (!mounted || !visible) return null;
 
   return createPortal(
-    <div className='fixed inset-0 z-[9999]'>
+    <div
+      className='fixed inset-0 z-[9999]'
+      style={{
+        opacity: animIn ? 1 : 0,
+        transition: `opacity ${EXIT_MS * 0.6}ms cubic-bezier(0.4, 0, 0.2, 1)`,
+      }}
+    >
       <div
         className='absolute inset-0'
         style={{
@@ -69,8 +91,10 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
         <div
           className='w-full max-w-xl'
           style={{
-            animation: animIn ? 'gate-card-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both' : 'none',
-            willChange: animIn ? 'transform, opacity' : undefined,
+            animation: animIn
+              ? 'gate-card-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both'
+              : 'gate-card-in 0.4s cubic-bezier(0.4, 0, 0.2, 1) reverse both',
+            willChange: 'transform, opacity',
           }}
         >
           <div
