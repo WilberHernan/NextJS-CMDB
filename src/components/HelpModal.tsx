@@ -175,7 +175,7 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
       >
         {/* ── Card wrapper — same pattern as PasswordCard ── */}
         <div
-          className='w-full max-w-lg'
+          className='w-full max-w-xl'
           style={{
             animation: animIn ? 'gate-card-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both' : 'none',
           }}
@@ -217,7 +217,7 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
             />
 
             {/* ── Scrollable content area ── */}
-            <div className='relative z-10 max-h-[75vh] overflow-y-auto pr-1'>
+            <div className='relative z-10 max-h-[75vh] overflow-y-auto pr-2'>
               {/* ── Header row ── */}
               <div className='flex items-center justify-between mb-6'>
                 <div className='flex items-center gap-3'>
