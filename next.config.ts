@@ -28,6 +28,7 @@ const nextConfig: NextConfig = {
   },
   outputFileTracingIncludes: {
     '/api/descargar-script': ['./inventario-scripts/**/*'],
+    '/api/guia-contenido': ['./inventario-scripts/**/*'],
   },
 };
 

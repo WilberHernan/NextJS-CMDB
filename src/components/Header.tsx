@@ -1,12 +1,13 @@
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
-import { Sun, Moon, LogOut } from 'lucide-react';
+import { Sun, Moon, LogOut, CircleHelp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useSede } from '@/contexts/sede-context';
 import { SEDE_LABELS } from '@/lib/sedes';
 import { ScriptDownloadMenu } from '@/components/ScriptDownloadMenu';
+import { HelpModal } from '@/components/HelpModal';
 
 interface HeaderProps {
   theme: 'dark' | 'light';
@@ -26,6 +27,7 @@ export function Header ({
 }: HeaderProps) {
   const [stuck, setStuck] = useState(false);
   const [connStatus, setConnStatus] = useState<'loading' | 'connected' | 'error'>('loading');
+  const [showHelp, setShowHelp] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const { sede } = useSede();
@@ -167,6 +169,18 @@ export function Header ({
           <Button
             variant='ghost'
             size='icon'
+            onClick={() => setShowHelp(true)}
+            className='rounded-xl'
+            disabled={!sede}
+            title='Cómo usar los scripts'
+            aria-label='Cómo usar los scripts'
+          >
+            <CircleHelp className='h-[18px] w-[18px]' />
+          </Button>
+
+          <Button
+            variant='ghost'
+            size='icon'
             data-theme-toggle
             onClick={onToggleTheme}
             className='rounded-xl'
@@ -208,6 +222,14 @@ export function Header ({
           />
         )}
       </header>
+
+      {sede && (
+        <HelpModal
+          open={showHelp}
+          onClose={() => setShowHelp(false)}
+          sede={sede}
+        />
+      )}
     </>
   );
 }
