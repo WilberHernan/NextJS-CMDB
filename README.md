@@ -13,14 +13,16 @@ datos sin reescribir la UI.
 
 | Capa | Tecnología |
 |------|-----------|
-| Framework | Next.js 16 (App Router) |
-| UI | React 19 + Tailwind CSS + diseño neumórfico |
+| Framework | Next.js 16 (App Router, Turbopack) |
+| UI | React 19 + Tailwind CSS 3 + diseño neumórfico |
 | Tipado | TypeScript 5.8 (strict) |
 | Fuentes | Space Grotesk / Inter / IBM Plex Mono |
 | Iconos | Lucide React |
 | Escaneo | `@zxing/browser` + `@zxing/library` (cámara y lector USB) |
 | Persistencia | Google Sheets API v4 (`@googleapis/sheets`) |
 | Acceso | Password gate via `PAGE_KEY` |
+| Testing | Vitest + Testing Library (unit) · Playwright (E2E) |
+| CI/CD | GitHub Actions (type-check + lint + tests + build + E2E) |
 
 ---
 
@@ -74,45 +76,56 @@ filtra por sede usando la columna 8.
 src/
 ├── app/
 │   ├── api/                          # Route Handlers
+│   │   ├── auth/                     # login, check, logout
 │   │   ├── equipos/
 │   │   │   ├── buscar/route.ts       # GET  ?placa=X&sede=CCYS
-│   │   │   ├── actualizar/route.ts   # POST { placa, data, sede }
-│   │   │   └── crear/route.ts        # POST { placa, data, sede }
+│   │   │   ├── actualizar/route.ts   # POST { fila, hoja, valores, sede }
+│   │   │   └── crear/route.ts        # POST { hoja, valores, sede }
 │   │   ├── validaciones/route.ts     # GET  ?sede=CCYS
-│   │   └── mapeo-sede/route.ts       # GET  ?sede=CCYS
-│   ├── globals.css                   # Design tokens + utilidades neumórficas
+│   │   ├── mapeo-sede/route.ts       # GET  ?sede=CCYS
+│   │   ├── descargar-script/route.ts # GET  — genera .bat/.ps1
+│   │   └── health/route.ts           # GET  — health check
+│   ├── globals.css                   # Design tokens + z-index + utilidades neumórficas
 │   ├── layout.tsx                    # Providers, fuentes, theme-script
 │   └── page.tsx                      # Página principal
 ├── components/
-│   ├── AuthGate.tsx                  # Password + selector de sede (burbujas neumórficas via portal)
+│   ├── AuthGate.tsx                  # Password + selector de sede
+│   ├── PasswordCard.tsx              # Card de acceso (glassmorphism)
+│   ├── SedeBubbleSelector.tsx        # Selector de sede (burbujas via portal)
+│   ├── BubbleList.tsx                # Lista de burbujas + keyboard nav
 │   ├── Header.tsx                    # Nav + título dinámico + theme toggle
-│   ├── ScanCard.tsx                  # Escaneo por lector + cámara
+│   ├── ScannerSection.tsx            # Escaneo por lector + cámara
+│   ├── ScanCard.tsx                  # UI del escaneo
 │   ├── EquipmentForm.tsx             # Formulario de 53 campos
-│   ├── DynamicField.tsx              # Campo con dropdown dinámico
+│   ├── DynamicField.tsx              # Campo con dropdown dinámico (React.memo)
 │   ├── DateField.tsx                 # Campo de fecha
-│   ├── CustomSelect.tsx              # Select nativo estilizado
-│   ├── SedeSelector.tsx              # Selector de sede en footer
-│   ├── Alert.tsx / EmptyState.tsx / Loader.tsx
-│   ├── ErrorBoundary.tsx
+│   ├── CustomSelect.tsx              # Select con ARIA + keyboard nav + portal
+│   ├── HelpModal.tsx                 # Modal de ayuda (contenido inline)
+│   ├── ScriptDownloadMenu.tsx        # Descarga de scripts de sincronización
+│   ├── Alert.tsx / EmptyState.tsx / ErrorBoundary.tsx
 │   └── ui/
-│       ├── gradient-button.tsx
-│       └── skeleton.tsx
+│       ├── badge.tsx
+│       └── button.tsx
 ├── contexts/
 │   └── sede-context.tsx              # SedeProvider + hook useSede()
 ├── hooks/
-│   ├── useEquipment.ts               # Lógica CRUD
-│   ├── useEquipmentForm.ts           # Lógica del formulario
-│   ├── useScanner.ts                 # Lógica de escaneo
+│   ├── useEquipment.ts               # Lógica CRUD (API integration)
+│   ├── useEquipmentForm.ts           # Lógica del formulario (useReducer)
+│   ├── useScanner.ts                 # Lógica de escaneo (isMountedRef guard)
 │   └── useTheme.ts                   # Toggle dark/light
 ├── lib/
 │   ├── sedes.ts                      # SEDES, SEDE_LABELS, Sede, isSede()
-│   └── utils.ts                      # cn(), sanitize(), formatDate()
+│   ├── utils.ts                      # cn(), sanitize(), formatDate()
+│   ├── version.ts                    # APP_VERSION (single source of truth)
+│   ├── help-guide.ts                 # Contenido de ayuda (inline, O(1))
+│   ├── rate-limiter.ts               # Rate limiting in-memory
+│   └── api-error-handler.ts          # Helpers de error para API routes
 ├── repositories/
 │   └── equipment.repository.ts       # Acceso a datos (única capa que cambia al migrar a SQL)
 ├── services/
 │   └── sheets.ts                     # Cliente Google Sheets API v4
 └── types/
-    └── equipment.ts                  # Tipos: Columnas, Secciones, Equipo
+    └── equipment.ts                  # Tipos: COLUMNAS, SECCIONES, EquipoResponse
 ```
 
 ---
@@ -175,15 +188,77 @@ Esto permite que una misma placa exista en sedes diferentes sin contaminar resul
 
 | Método | Ruta | Parámetros | Descripción |
 |--------|------|-----------|-------------|
-| `POST` | `/api/auth/login` | `{ key }` | Inicia sesión con PAGE_KEY |
+| `POST` | `/api/auth/login` | `{ password }` | Inicia sesión con PAGE_KEY |
 | `GET` | `/api/auth/check` | — | Verifica sesión activa |
 | `POST` | `/api/auth/logout` | — | Cierra sesión |
 | `GET` | `/api/equipos/buscar` | `placa`, `sede` | Busca equipo en la sede |
-| `POST` | `/api/equipos/actualizar` | `{ placa, data, sede }` | Actualiza fila |
-| `POST` | `/api/equipos/crear` | `{ placa, data, sede }` | Crea equipo nuevo |
+| `POST` | `/api/equipos/actualizar` | `{ fila, hoja, valores, sede }` | Actualiza fila |
+| `POST` | `/api/equipos/crear` | `{ hoja, valores, sede }` | Crea equipo nuevo |
 | `GET` | `/api/validaciones` | `sede` | Valores para dropdowns |
 | `GET` | `/api/mapeo-sede` | `sede` | Mapeo ID ↔ nombre de sedes |
-| `GET` | `/api/health` | — | Health check
+| `GET` | `/api/descargar-script` | `sede`, `tipo` | Descarga scripts de sincronización |
+| `GET` | `/api/health` | — | Health check |
+
+---
+
+## Scripts
+
+```bash
+npm run dev          # Servidor de desarrollo (puerto 3000)
+npm run build        # Build de producción
+npm run start        # Servidor de producción
+npm run type-check   # Verificación de tipos (tsc --noEmit)
+npm run lint         # ESLint
+npm run test         # Tests unitarios (Vitest)
+npm run test:watch   # Tests unitarios en watch mode
+npm run test:e2e     # Tests E2E (Playwright)
+```
+
+---
+
+## Testing
+
+### Tests Unitarios (Vitest + Testing Library)
+
+114 tests cubriendo:
+
+| Archivo | Tests | Cobertura |
+|---------|-------|-----------|
+| `formReducer.test.ts` | 18 | Reducer puro: 13 acciones, inmutabilidad, sede sync |
+| `useEquipment.test.ts` | 19 | Hook CRUD: buscar, actualizar, crear, cargarValidaciones, cargarMapeoSede |
+| `CustomSelect.test.tsx` | 19 | ARIA, keyboard nav (↑↓/Home/End/Escape/Enter), selección |
+| `EquipmentForm.test.tsx` | 16 | Renderizado, 53 campos, secciones, modos, saving |
+| `utils.test.ts` | 20 | cn(), sanitize(), formatDate() |
+| `PasswordCard.test.tsx` | 6 | Renderizado, sede, password toggle, submit |
+| `rate-limiter.test.ts` | 5 | Rate limiting in-memory |
+| `sedes.test.ts` | 5 | SEDES, SEDE_LABELS, isSede() |
+| `help-guide.test.ts` | 4 | getHelpSections() por sede |
+| `version.test.ts` | 2 | APP_VERSION consistency |
+
+### Tests E2E (Playwright)
+
+7 tests cubriendo el flujo de autenticación:
+
+- Carga de página y password card
+- Selector de sede visible
+- Input de contraseña
+- Toggle mostrar/ocultar contraseña
+- Validación client-side (contraseña vacía)
+- Error de API (contraseña incorrecta, mockeada)
+- Footer visible
+
+Las APIs se mockean con `page.route()` para que los tests sean determinísticos.
+
+---
+
+## CI/CD
+
+GitHub Actions (`.github/workflows/ci.yml`) ejecuta en cada push/PR a `main`:
+
+1. **Job `quality`**: type-check → lint → tests unitarios → build
+2. **Job `e2e`**: instala Playwright + chromium → tests E2E
+
+Concurrencia con cancelación de runs obsoletas. Artefactos de test subidos en caso de fallo.
 
 
 
@@ -197,6 +272,35 @@ Esto permite que una misma placa exista en sedes diferentes sin contaminar resul
   1. Agregar a `SEDES` y `SEDE_LABELS` en `src/lib/sedes.ts`.
   2. Agregar `SPREADSHEET_ID_<SEDE>` en `src/services/sheets.ts`.
   3. Agregar variable de entorno correspondiente.
+
+---
+
+## Design System
+
+### Z-Index Tokens
+
+```css
+--z-header: 30;      /* Header sticky */
+--z-dropdown: 40;    /* CustomSelect, SedeBubbleSelector */
+--z-modal: 50;       /* HelpModal, AuthGate */
+--z-bubble: 45;      /* Sede bubbles portal */
+```
+
+### Clases Utilitarias
+
+| Clase | Uso |
+|-------|-----|
+| `.glass-card` | Tarjetas glassmorphism (PasswordCard, HelpModal) |
+| `.header-stuck` | Header con sombra al hacer scroll |
+| `.btn-lift` | Botones con hover lift + active press |
+| `.success-bar-gradient` | Barra de éxito con gradiente animado |
+
+### Accesibilidad
+
+- `CustomSelect`: `role="combobox"` + `aria-haspopup="listbox"` + keyboard nav completa (WAI-ARIA APG)
+- `SedeBubbleSelector`: `aria-expanded` + `aria-controls` + keyboard nav (↑↓/Escape)
+- `prefers-reduced-motion`: todas las animaciones se reducen a 0.01ms
+- Focus rings visibles en todos los interactivos (`focus-visible`)
 
 ---
 
