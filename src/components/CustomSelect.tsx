@@ -223,6 +223,7 @@ export function CustomSelect ({
       <button
         ref={buttonRef}
         type='button'
+        role='combobox'
         onClick={toggleOpen}
         onKeyDown={handleTriggerKeyDown}
         aria-haspopup='listbox'
