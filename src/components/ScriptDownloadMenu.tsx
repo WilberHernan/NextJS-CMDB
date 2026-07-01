@@ -19,6 +19,7 @@ export function ScriptDownloadMenu () {
   const [mounted, setMounted] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
   const panelId = useId();
   const { sede } = useSede();
 
@@ -73,6 +74,11 @@ export function ScriptDownloadMenu () {
     };
   }, [open, panelId]);
 
+  useEffect(() => {
+    if (!open) return;
+    itemRefs.current[0]?.focus();
+  }, [open]);
+
   const downloadUrl = (plataforma: string) =>
     `/api/descargar-script?sede=${sede}&plataforma=${plataforma}`;
 
@@ -82,6 +88,39 @@ export function ScriptDownloadMenu () {
       if (next) updatePosition();
       return next;
     });
+  };
+
+  const handleMenuKeyDown = (e: React.KeyboardEvent) => {
+    const refs = itemRefs.current.filter(
+      (el): el is HTMLAnchorElement => el !== null
+    );
+    if (refs.length === 0) return;
+    const currentIndex = refs.findIndex((el) => el === document.activeElement);
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        {
+          const next = currentIndex === -1 ? 0 : (currentIndex + 1) % refs.length;
+          refs[next]?.focus();
+        }
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        {
+          const prev =
+            currentIndex === -1
+              ? refs.length - 1
+              : (currentIndex - 1 + refs.length) % refs.length;
+          refs[prev]?.focus();
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setOpen(false);
+        buttonRef.current?.focus();
+        break;
+    }
   };
 
   return (
@@ -111,6 +150,7 @@ export function ScriptDownloadMenu () {
           id={panelId}
           role='menu'
           aria-label='Plataformas de descarga'
+          onKeyDown={handleMenuKeyDown}
           style={{
             position: 'fixed',
             top: anchorPos.top,
@@ -123,9 +163,13 @@ export function ScriptDownloadMenu () {
             'animate-dropdown-in overscroll-contain'
           )}
         >
-          {PLATFORMS.map((platform) => (
+          {PLATFORMS.map((platform, index) => (
             <a
               key={platform.id}
+              ref={(el) => {
+                itemRefs.current[index] = el;
+              }}
+              tabIndex={-1}
               href={downloadUrl(platform.id)}
               role='menuitem'
               onClick={() => setOpen(false)}

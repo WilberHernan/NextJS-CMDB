@@ -47,7 +47,10 @@ export function PasswordCard ({
   /* ── Cinematic bubble selector ── */
   const [bubblesOpen, setBubblesOpen] = useState(false);
   const [exiting, setExiting] = useState<string | null>(null);
+  const [pendingBubbleFocus, setPendingBubbleFocus] = useState<'first' | 'last' | null>(null);
   const bubbleTriggerRef = useRef<HTMLDivElement>(null);
+  const sedeButtonRef = useRef<HTMLButtonElement>(null);
+  const bubbleRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const cardRef = useRef<HTMLDivElement>(null);
   const [bubblePos, setBubblePos] = useState({
     triggerLeft: 0,
@@ -106,6 +109,93 @@ export function PasswordCard ({
       document.removeEventListener('click', handleClick);
     };
   }, [bubblesOpen]);
+
+  useEffect(() => {
+    if (!bubblesOpen || !pendingBubbleFocus) return;
+    const refs = bubbleRefs.current.filter(
+      (el): el is HTMLButtonElement => el !== null
+    );
+    if (refs.length === 0) return;
+    if (pendingBubbleFocus === 'first') {
+      refs[0]?.focus();
+    } else {
+      refs[refs.length - 1]?.focus();
+    }
+    setPendingBubbleFocus(null);
+  }, [bubblesOpen, pendingBubbleFocus]);
+
+  const closeBubbles = () => {
+    setExiting('__all__');
+    setTimeout(() => {
+      setExiting(null);
+      setBubblesOpen(false);
+    }, 300);
+  };
+
+  const handleSedeKeyDown = (e: React.KeyboardEvent) => {
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        if (!bubblesOpen) {
+          openBubbles();
+          setPendingBubbleFocus('first');
+        }
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        if (!bubblesOpen) {
+          openBubbles();
+          setPendingBubbleFocus('last');
+        }
+        break;
+      case 'Escape':
+        if (bubblesOpen) {
+          e.preventDefault();
+          closeBubbles();
+        }
+        break;
+    }
+  };
+
+  const handleBubbleListKeyDown = (e: React.KeyboardEvent) => {
+    const refs = bubbleRefs.current.filter(
+      (el): el is HTMLButtonElement => el !== null
+    );
+    if (refs.length === 0) return;
+    const currentIndex = refs.findIndex((el) => el === document.activeElement);
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        {
+          const next = currentIndex === -1 ? 0 : (currentIndex + 1) % refs.length;
+          refs[next]?.focus();
+        }
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        {
+          const prev =
+            currentIndex === -1
+              ? refs.length - 1
+              : (currentIndex - 1 + refs.length) % refs.length;
+          refs[prev]?.focus();
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        closeBubbles();
+        sedeButtonRef.current?.focus();
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        if (currentIndex >= 0) {
+          selectBubble(BUBBLE_ITEMS[currentIndex].value);
+        }
+        break;
+    }
+  };
 
   return (
     <div
@@ -193,6 +283,7 @@ export function PasswordCard ({
         <form onSubmit={onSubmit} noValidate>
           {/* ── Sede selector — cinematic floating bubbles ── */}
           <label
+            htmlFor='gate-sede'
             className='block text-[0.65rem] font-semibold uppercase tracking-[0.13em] mb-2'
             style={{ color: 'var(--text-tertiary)' }}
           >
@@ -200,8 +291,14 @@ export function PasswordCard ({
           </label>
           <div ref={bubbleTriggerRef} className='mb-5'>
             <button
+              ref={sedeButtonRef}
+              id='gate-sede'
               type='button'
               onClick={openBubbles}
+              onKeyDown={handleSedeKeyDown}
+              aria-haspopup='listbox'
+              aria-expanded={bubblesOpen}
+              aria-controls={bubblesOpen ? 'gate-sede-list' : undefined}
               className={cn(
                 'flex w-full items-center justify-between gap-2 rounded-xl bg-surface-input px-4 py-3 text-sm text-left text-foreground',
                 'border border-border-default shadow-neu-pressed',
@@ -239,6 +336,9 @@ export function PasswordCard ({
               >
                 <div
                   data-bubble
+                  id='gate-sede-list'
+                  role='listbox'
+                  onKeyDown={handleBubbleListKeyDown}
                   style={{
                     position: 'absolute',
                     top: bubblePos.triggerTop + bubblePos.triggerHeight + 6,
@@ -263,7 +363,12 @@ export function PasswordCard ({
                       return (
                         <button
                           key={b.value}
+                          ref={(el) => {
+                            bubbleRefs.current[i] = el;
+                          }}
                           type='button'
+                          role='option'
+                          aria-selected={isSelected}
                           onClick={(e) => {
                             e.stopPropagation();
                             selectBubble(b.value);
@@ -338,6 +443,7 @@ export function PasswordCard ({
               type={showPassword ? 'text' : 'password'}
               placeholder='••••••••'
               autoComplete='current-password'
+              aria-describedby='gate-error'
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
@@ -368,6 +474,7 @@ export function PasswordCard ({
 
           {/* ── Error ── */}
           <div
+            id='gate-error'
             className='text-xs font-medium min-h-[1.25rem] transition-opacity'
             style={{
               color: 'var(--danger)',

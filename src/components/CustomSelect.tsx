@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, useId } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 import { ChevronDown, Check } from 'lucide-react';
 
@@ -29,40 +30,184 @@ export function CustomSelect ({
 }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
   const [openUp, setOpenUp] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [pendingFocus, setPendingFocus] = useState<'first' | 'last' | 'selected' | null>(null);
+  const [pos, setPos] = useState<{
+    top: number;
+    bottom: number;
+    left: number;
+    width: number;
+  } | null>(null);
+
+  const listId = useId();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const items = useMemo(() => normalizeOptions(options), [options]);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const updatePosition = useCallback(() => {
+    if (!wrapperRef.current) return;
+    const rect = wrapperRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const estimatedHeight = Math.min(items.length * 48 + 72, 300);
+    setOpenUp(spaceBelow < estimatedHeight);
+    setPos({
+      top: rect.bottom + 8,
+      bottom: window.innerHeight - rect.top + 8,
+      left: rect.left,
+      width: rect.width,
+    });
+  }, [items.length]);
+
+  useEffect(() => {
+    if (!open) return;
+    updatePosition();
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [open, updatePosition]);
+
+  useEffect(() => {
     function handleClickOutside (e: MouseEvent) {
+      const target = e.target as Node;
       if (
-        wrapperRef.current &&
-        !wrapperRef.current.contains(e.target as Node)
+        wrapperRef.current?.contains(target) ||
+        document.getElementById(listId)?.contains(target)
       ) {
-        setOpen(false);
+        return;
       }
+      setOpen(false);
     }
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
+  }, [listId]);
+
+  useEffect(() => {
+    if (!open || !pendingFocus) return;
+    const refs = optionRefs.current.filter(
+      (el): el is HTMLButtonElement => el !== null
+    );
+    if (refs.length === 0) return;
+
+    let targetIndex = 0;
+    if (pendingFocus === 'last') {
+      targetIndex = refs.length - 1;
+    } else if (pendingFocus === 'selected') {
+      const selectedIdx = items.findIndex((i) => i.value === value);
+      targetIndex = selectedIdx >= 0 ? selectedIdx : 0;
+    }
+    refs[targetIndex]?.focus();
+    setPendingFocus(null);
+  }, [open, pendingFocus, items, value]);
+
+  const openList = useCallback(
+    (focusTarget: 'first' | 'last' | 'selected' = 'selected') => {
+      updatePosition();
+      setOpen(true);
+      setPendingFocus(focusTarget);
+    },
+    [updatePosition]
+  );
+
+  const closeList = useCallback(() => {
+    setOpen(false);
+    buttonRef.current?.focus();
   }, []);
 
   const toggleOpen = useCallback(() => {
-    if (wrapperRef.current) {
-      const rect = wrapperRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const estimatedHeight = Math.min(items.length * 48 + 72, 300);
-      setOpenUp(spaceBelow < estimatedHeight);
+    if (open) {
+      setOpen(false);
+    } else {
+      openList('selected');
     }
-    setOpen((prev) => !prev);
-  }, [items.length]);
+  }, [open, openList]);
 
   const handleSelect = useCallback(
     (optValue: string) => {
       onChange(optValue);
       setOpen(false);
+      buttonRef.current?.focus();
     },
     [onChange]
   );
+
+  const handleTriggerKeyDown = (e: React.KeyboardEvent) => {
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        if (!open) openList('first');
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        if (!open) openList('last');
+        break;
+      case 'Escape':
+        if (open) {
+          e.preventDefault();
+          closeList();
+        }
+        break;
+      case ' ':
+        e.preventDefault();
+        toggleOpen();
+        break;
+    }
+  };
+
+  const handleListKeyDown = (e: React.KeyboardEvent) => {
+    const refs = optionRefs.current.filter(
+      (el): el is HTMLButtonElement => el !== null
+    );
+    if (refs.length === 0) return;
+    const currentIndex = refs.findIndex((el) => el === document.activeElement);
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        {
+          const next = currentIndex === -1 ? 0 : (currentIndex + 1) % refs.length;
+          refs[next]?.focus();
+        }
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        {
+          const prev =
+            currentIndex === -1
+              ? refs.length - 1
+              : (currentIndex - 1 + refs.length) % refs.length;
+          refs[prev]?.focus();
+        }
+        break;
+      case 'Home':
+        e.preventDefault();
+        refs[0]?.focus();
+        break;
+      case 'End':
+        e.preventDefault();
+        refs[refs.length - 1]?.focus();
+        break;
+      case 'Escape':
+        e.preventDefault();
+        closeList();
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        if (currentIndex >= 0) {
+          handleSelect(items[currentIndex].value);
+        }
+        break;
+    }
+  };
 
   const displayLabel = useMemo(() => {
     if (!value) return null;
@@ -79,6 +224,10 @@ export function CustomSelect ({
         ref={buttonRef}
         type='button'
         onClick={toggleOpen}
+        onKeyDown={handleTriggerKeyDown}
+        aria-haspopup='listbox'
+        aria-expanded={open}
+        aria-controls={open ? listId : undefined}
         className={cn(
           'flex w-full items-center justify-between gap-2 rounded-xl bg-surface-input px-4 py-3 text-sm text-left text-foreground relative',
           'border border-border-default shadow-neu-pressed',
@@ -99,22 +248,34 @@ export function CustomSelect ({
         />
       </button>
 
-      {open && (
+      {mounted && open && pos && createPortal(
         <div
+          id={listId}
+          ref={listRef}
+          role='listbox'
+          onKeyDown={handleListKeyDown}
+          style={{
+            position: 'fixed',
+            left: pos.left,
+            width: pos.width,
+            ...(openUp ? { bottom: pos.bottom } : { top: pos.top }),
+            zIndex: 1000,
+          }}
           className={cn(
-            'absolute left-0 right-0 z-50',
-            openUp
-              ? 'bottom-[calc(100%+8px)]'
-              : 'top-[calc(100%+8px)]',
             'rounded-xl bg-surface-elevated border border-border-default shadow-neu-flat',
             'p-2 max-h-[300px] overflow-y-auto overscroll-contain',
             'animate-dropdown-in'
           )}
         >
-          {items.map((item) => (
+          {items.map((item, index) => (
             <button
               key={item.value}
+              ref={(el) => {
+                optionRefs.current[index] = el;
+              }}
               type='button'
+              role='option'
+              aria-selected={item.value === value}
               onClick={() => handleSelect(item.value)}
               className={cn(
                 'flex w-full items-center gap-2.5 rounded-xl px-4 py-3 text-sm text-left',
@@ -136,7 +297,8 @@ export function CustomSelect ({
               <span>{item.label}</span>
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
