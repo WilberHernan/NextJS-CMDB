@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Type-Check + Lint + Tests + Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npm run type-check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+        env:
+          # Build-time only — runtime secrets are NOT exposed
+          GOOGLE_SERVICE_ACCOUNT_KEY_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY_JSON }}
+          GOOGLE_SHEETS_ID_CCYS: ${{ secrets.GOOGLE_SHEETS_ID_CCYS }}
+          GOOGLE_SHEETS_ID_REGIONAL: ${{ secrets.GOOGLE_SHEETS_ID_REGIONAL }}
+          GOOGLE_SHEETS_ID_CIUDAD_JARDIN: ${{ secrets.GOOGLE_SHEETS_ID_CIUDAD_JARDIN }}
+          PAGE_KEY: ${{ secrets.PAGE_KEY }}
