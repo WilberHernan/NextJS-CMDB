@@ -106,7 +106,7 @@ export function Header ({
       <header
         ref={headerRef}
         className={cn(
-          'sticky top-0 z-50 flex items-center justify-between px-4 sm:px-6 py-3.5',
+          'sticky top-0 z-[var(--z-header)] flex items-center justify-between px-4 sm:px-6 py-3.5',
           'rounded-2xl glass border-border-default',
           'transition-all duration-350',
           stuck && 'rounded-b-[18px] rounded-t-none shadow-[var(--shadow-md)] border-border-hover header-stuck'

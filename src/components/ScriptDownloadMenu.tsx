@@ -167,7 +167,7 @@ export function ScriptDownloadMenu () {
             position: 'fixed',
             top: anchorPos.top,
             right: anchorPos.right,
-            zIndex: 1000,
+            zIndex: 'var(--z-dropdown)',
           }}
           className={cn(
             'w-[11.5rem] pointer-events-auto p-2',

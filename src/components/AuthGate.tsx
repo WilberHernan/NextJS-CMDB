@@ -125,7 +125,7 @@ export function AuthGate ({ children }: { children: React.ReactNode }) {
 
       {mounted && (
         <div
-          className='fixed inset-0 z-[9999] transition-opacity duration-500 ease-out'
+          className='fixed inset-0 z-[var(--z-modal)] transition-opacity duration-500 ease-out'
           style={{
             opacity: fade ? 0 : 1,
             pointerEvents: fade ? 'none' : 'auto',

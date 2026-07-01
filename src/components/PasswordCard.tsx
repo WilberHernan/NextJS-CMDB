@@ -328,7 +328,7 @@ export function PasswordCard ({
             createPortal(
               <div
                 className='fixed inset-0 pointer-events-none'
-                style={{ zIndex: 100000 }}
+                style={{ zIndex: 'var(--z-bubble)' }}
               >
                 <div
                   data-bubble

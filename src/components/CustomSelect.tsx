@@ -259,7 +259,7 @@ export function CustomSelect ({
             left: pos.left,
             width: pos.width,
             ...(openUp ? { bottom: pos.bottom } : { top: pos.top }),
-            zIndex: 1000,
+            zIndex: 'var(--z-dropdown)',
           }}
           className={cn(
             'rounded-xl bg-surface-elevated border border-border-default shadow-neu-flat',

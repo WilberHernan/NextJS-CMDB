@@ -68,7 +68,7 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
 
   return createPortal(
     <div
-      className='fixed inset-0 z-[9999]'
+      className='fixed inset-0 z-[var(--z-modal)]'
       style={{
         opacity: animIn ? 1 : 0,
         transition: `opacity ${animIn ? '0.25s' : '0.3s'} ease`,
