@@ -30,8 +30,8 @@ export function ScannerSection ({ loading, onScan, equipmentFound }: ScannerSect
     async (file: File) => {
       try {
         await scanFile(file);
-      } catch {
-        // status already set inside scanFile
+      } catch (err) {
+        console.error('[ScannerSection] scanFile error:', err);
       }
     },
     [scanFile]

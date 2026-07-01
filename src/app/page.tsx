@@ -76,8 +76,6 @@ export default function Home () {
             <EquipmentForm
               visible={form.formVisible}
               esModoNuevo={form.esModoNuevo}
-              hojaActual={form.hojaActual}
-              filaActual={form.filaActual}
               hojaBadgeText={form.hojaBadgeText}
               hojaBadgeVariant={form.hojaBadgeVariant}
               valores={form.valores}

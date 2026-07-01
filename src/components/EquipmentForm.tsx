@@ -12,8 +12,6 @@ type BadgeVariant = 'default' | 'blue' | 'secondary';
 interface EquipmentFormProps {
   visible: boolean;
   esModoNuevo: boolean;
-  hojaActual: string;
-  filaActual: string;
   hojaBadgeText: string;
   hojaBadgeVariant: BadgeVariant;
   valores: string[];

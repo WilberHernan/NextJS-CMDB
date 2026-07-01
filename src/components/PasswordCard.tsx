@@ -52,6 +52,7 @@ export function PasswordCard ({
   const sedeButtonRef = useRef<HTMLButtonElement>(null);
   const bubbleRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const cardRef = useRef<HTMLDivElement>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [bubblePos, setBubblePos] = useState({
     triggerLeft: 0,
     triggerTop: 0,
@@ -76,7 +77,8 @@ export function PasswordCard ({
     (sede: Sede) => {
       setSelectedSede(sede);
       setExiting('__all__');
-      setTimeout(() => {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = setTimeout(() => {
         setExiting(null);
         setBubblesOpen(false);
       }, 300);
@@ -110,6 +112,11 @@ export function PasswordCard ({
     };
   }, [bubblesOpen]);
 
+  // Cleanup bubble close timer on unmount
+  useEffect(() => {
+    return () => clearTimeout(closeTimerRef.current);
+  }, []);
+
   useEffect(() => {
     if (!bubblesOpen || !pendingBubbleFocus) return;
     const refs = bubbleRefs.current.filter(
@@ -126,7 +133,8 @@ export function PasswordCard ({
 
   const closeBubbles = () => {
     setExiting('__all__');
-    setTimeout(() => {
+    clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = setTimeout(() => {
       setExiting(null);
       setBubblesOpen(false);
     }, 300);
