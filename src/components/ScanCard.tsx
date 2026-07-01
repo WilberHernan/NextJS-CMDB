@@ -67,6 +67,7 @@ export function ScanCard ({
   useEffect(() => {
     return () => {
       if (cycleTimeoutRef.current) clearTimeout(cycleTimeoutRef.current);
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
     };
   }, []);
 

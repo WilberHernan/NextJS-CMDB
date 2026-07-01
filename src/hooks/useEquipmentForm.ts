@@ -204,7 +204,17 @@ export function useEquipmentForm (): UseEquipmentFormReturn {
       setEmptyStatePlaca(null);
       setEquipmentFound(false);
 
-      const data = await buscar(clean);
+      let data;
+      try {
+        data = await buscar(clean);
+      } catch {
+        if (latestSearchRef.current !== clean) return;
+        setAlertInfo({
+          type: 'error',
+          message: 'Error de conexión al buscar el equipo. Intentá de nuevo.',
+        });
+        return;
+      }
 
       if (latestSearchRef.current !== clean) return;
 
@@ -273,11 +283,16 @@ export function useEquipmentForm (): UseEquipmentFormReturn {
     [mapeoSedeId]
   );
 
+  /** Ref mirror of valores so handleGuardar doesn't depend on valores
+   *  in its useCallback deps — prevents recreation on every keystroke. */
+  const valoresRef = useRef(valores);
+  valoresRef.current = valores;
+
   const handleGuardar = useCallback(async () => {
     setSaving(true);
     setAlertInfo(null);
 
-    const valoresLimpios: EquipmentValue[] = valores.map((v, i) => {
+    const valoresLimpios: EquipmentValue[] = valoresRef.current.map((v, i) => {
       // Observaciones (index 50) preserves original case — free text field
       if (i === 50) return v.replace(/'/g, '-');
       return v.replace(/'/g, '-').toUpperCase();
@@ -286,21 +301,30 @@ export function useEquipmentForm (): UseEquipmentFormReturn {
     let respuesta: ApiResult | null = null;
     let successMessage = '';
 
-    if (esModoNuevo) {
-      const hojaDestino = getHojaDestino(valoresLimpios[2] || '');
+    try {
+      if (esModoNuevo) {
+        const hojaDestino = getHojaDestino(valoresLimpios[2] || '');
+        setAlertInfo({
+          type: 'info',
+          message: 'Registrando nuevo equipo en CMDB...',
+        });
+        respuesta = await crear(hojaDestino, valoresLimpios);
+        successMessage = 'registrado';
+      } else {
+        setAlertInfo({
+          type: 'info',
+          message: 'Sincronizando con CMDB, por favor espere...',
+        });
+        respuesta = await actualizar(filaActual, hojaActual, valoresLimpios);
+        successMessage = 'actualizado';
+      }
+    } catch {
+      setSaving(false);
       setAlertInfo({
-        type: 'info',
-        message: 'Registrando nuevo equipo en CMDB...',
+        type: 'error',
+        message: 'Error de conexión al guardar. Intentá de nuevo.',
       });
-      respuesta = await crear(hojaDestino, valoresLimpios);
-      successMessage = 'registrado';
-    } else {
-      setAlertInfo({
-        type: 'info',
-        message: 'Sincronizando con CMDB, por favor espere...',
-      });
-      respuesta = await actualizar(filaActual, hojaActual, valoresLimpios);
-      successMessage = 'actualizado';
+      return;
     }
 
     setSaving(false);
@@ -316,7 +340,7 @@ export function useEquipmentForm (): UseEquipmentFormReturn {
         message: `Error al ${successMessage}: ${respuesta?.mensaje || 'Error desconocido'}`,
       });
     }
-  }, [valores, esModoNuevo, crear, actualizar, filaActual, hojaActual, getHojaDestino]);
+  }, [esModoNuevo, crear, actualizar, filaActual, hojaActual, getHojaDestino]);
 
   const handleRetry = useCallback(() => {
     setEmptyStatePlaca(null);
