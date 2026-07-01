@@ -47,3 +47,9 @@ service-account-key.json
 
 # Reference material (not part of the project)
 /CMDB_SENA/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
