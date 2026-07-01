@@ -8,9 +8,10 @@ interface DateFieldProps {
   value?: string;
   onChange: (value: string) => void;
   className?: string;
+  id?: string;
 }
 
-export function DateField ({ value, onChange, className }: DateFieldProps) {
+export function DateField ({ value, onChange, className, id }: DateFieldProps) {
   const dateInputRef = useRef<HTMLInputElement>(null);
 
   const handleWrapperClick = useCallback(() => {
@@ -48,6 +49,7 @@ export function DateField ({ value, onChange, className }: DateFieldProps) {
       />
       <input
         ref={dateInputRef}
+        id={id}
         type='date'
         value={isoValue}
         onChange={handleDateChange}

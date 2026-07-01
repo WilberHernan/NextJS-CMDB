@@ -13,6 +13,7 @@ interface CustomSelectProps {
   placeholder?: string;
   onChange: (value: string) => void;
   className?: string;
+  id?: string;
 }
 
 function normalizeOptions (options: SelectOption[]): { value: string; label: string }[] {
@@ -27,6 +28,7 @@ export function CustomSelect ({
   placeholder = 'Seleccione...',
   onChange,
   className,
+  id,
 }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
   const [openUp, setOpenUp] = useState(false);
@@ -222,6 +224,7 @@ export function CustomSelect ({
     >
       <button
         ref={buttonRef}
+        id={id}
         type='button'
         role='combobox'
         onClick={toggleOpen}

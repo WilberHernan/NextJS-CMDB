@@ -58,12 +58,13 @@ export const DynamicField = memo(function DynamicField ({
         options={validaciones[index] || []}
         value={value || ''}
         onChange={handleChange}
+        id={fieldId}
       />
     );
   }
 
   if (isDate) {
-    return <DateField value={value} onChange={handleChange} />;
+    return <DateField value={value} onChange={handleChange} id={fieldId} />;
   }
 
   if (isObservaciones) {
