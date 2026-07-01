@@ -97,19 +97,7 @@ export function HelpModal ({ open, onClose, sede }: HelpModalProps) {
           }}
         >
           <div
-            className='relative rounded-[1.25rem] p-7 sm:p-8 overflow-hidden'
-            style={{
-              background: 'var(--glass-bg)',
-              backdropFilter: 'blur(32px) saturate(160%)',
-              WebkitBackdropFilter: 'blur(32px) saturate(160%)',
-              border: '1px solid var(--glass-border)',
-              boxShadow: `
-                4px 4px 16px var(--neu-shadow-dark),
-                -4px -4px 16px var(--neu-shadow-light),
-                0 1px 0 0 var(--glass-highlight) inset,
-                0 0 0 1px rgba(255,255,255,0.03) inset
-              `,
-            }}
+            className='relative rounded-[1.25rem] p-7 sm:p-8 overflow-hidden glass-card'
           >
             <div
               className='absolute inset-0 pointer-events-none rounded-[inherit]'

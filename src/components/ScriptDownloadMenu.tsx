@@ -37,16 +37,28 @@ export function ScriptDownloadMenu () {
     });
   }, []);
 
+  // Throttled scroll handler — rAF keeps getBoundingClientRect off the
+  // main thread during rapid scroll, avoiding jank on long pages.
+  const rafRef = useRef<number>(0);
+  const throttledUpdate = useCallback(() => {
+    if (rafRef.current) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = 0;
+      updatePosition();
+    });
+  }, [updatePosition]);
+
   useEffect(() => {
     if (!open) return;
     updatePosition();
-    window.addEventListener('scroll', updatePosition, true);
-    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', throttledUpdate, true);
+    window.addEventListener('resize', throttledUpdate);
     return () => {
-      window.removeEventListener('scroll', updatePosition, true);
-      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', throttledUpdate, true);
+      window.removeEventListener('resize', throttledUpdate);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [open, updatePosition]);
+  }, [open, updatePosition, throttledUpdate]);
 
   useEffect(() => {
     if (!open) return;

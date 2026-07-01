@@ -67,6 +67,12 @@
     --neu-shadow-light: rgba(255, 255, 255, 0.8);
     --neu-shadow-dark: rgba(148, 163, 184, 0.5);
 
+    /* Z-index scale — use these instead of ad-hoc numbers */
+    --z-header: 50;
+    --z-dropdown: 1000;
+    --z-modal: 9999;
+    --z-bubble: 100000;
+
     --grad-mesh: radial-gradient(ellipse 85% 65% at 12% 8%, rgba(57, 169, 0, 0.10) 0%, transparent 58%),
                  radial-gradient(ellipse 55% 48% at 88% 22%, rgba(74, 222, 128, 0.07) 0%, transparent 52%),
                  radial-gradient(ellipse 70% 58% at 72% 88%, rgba(22, 163, 74, 0.06) 0%, transparent 55%),
@@ -215,6 +221,14 @@
     overflow-x: hidden;
     font-feature-settings: "ss01", "cv11";
     text-rendering: optimizeLegibility;
+  }
+
+  /* iOS Safari repaints background-attachment: fixed on every scroll
+     frame, causing severe jank. Fall back to scroll on touch devices. */
+  @supports (-webkit-touch-callout: none) {
+    body {
+      background-attachment: scroll;
+    }
   }
 
   h1, h2, h3 {
@@ -372,6 +386,47 @@
     -webkit-backdrop-filter: blur(20px) saturate(160%);
     border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-md), inset 0 1px 0 var(--glass-highlight);
+  }
+
+  /* Deeper glass for cards/modals (32px blur + neumorphic shadows) */
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(32px) saturate(160%);
+    -webkit-backdrop-filter: blur(32px) saturate(160%);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      4px 4px 16px var(--neu-shadow-dark),
+      -4px -4px 16px var(--neu-shadow-light),
+      0 1px 0 0 var(--glass-highlight) inset,
+      0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  }
+
+  /* Sticky header enhanced blur when scrolled */
+  .header-stuck {
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+  }
+
+  /* Subtle lift on hover for primary action buttons.
+     Works with the @media (hover: none) guard in globals.css
+     to prevent sticky hover on touch devices. */
+  .btn-lift {
+    transition: transform 0.2s ease;
+  }
+  .btn-lift:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  /* Success bar gradient for header bottom highlight */
+  .success-bar-gradient {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--sena-green) 18%,
+      var(--sena-green-light) 50%,
+      var(--sena-green) 82%,
+      transparent 100%
+    );
   }
 
   .gradient-border {

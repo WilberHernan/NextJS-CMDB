@@ -109,13 +109,8 @@ export function Header ({
           'sticky top-0 z-50 flex items-center justify-between px-4 sm:px-6 py-3.5',
           'rounded-2xl glass border-border-default',
           'transition-all duration-350',
-          stuck && 'rounded-b-[18px] rounded-t-none shadow-[var(--shadow-md)] border-border-hover'
+          stuck && 'rounded-b-[18px] rounded-t-none shadow-[var(--shadow-md)] border-border-hover header-stuck'
         )}
-        style={
-          stuck
-            ? { backdropFilter: 'blur(28px) saturate(180%)', WebkitBackdropFilter: 'blur(28px) saturate(180%)' }
-            : undefined
-        }
       >
         <div className='flex items-center gap-3.5'>
           <img
@@ -215,10 +210,7 @@ export function Header ({
           <span
             key={highlightSuccess ? 'on' : 'off'}
             aria-hidden
-            className='pointer-events-none absolute left-0 right-0 bottom-0 h-[1.5px] rounded-b-2xl animate-success-bar'
-            style={{
-              background: 'linear-gradient(90deg, transparent 0%, var(--sena-green) 18%, var(--sena-green-light) 50%, var(--sena-green) 82%, transparent 100%)',
-            }}
+            className='pointer-events-none absolute left-0 right-0 bottom-0 h-[1.5px] rounded-b-2xl animate-success-bar success-bar-gradient'
           />
         )}
       </header>

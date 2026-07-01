@@ -206,19 +206,7 @@ export function PasswordCard ({
       }}
     >
       <div
-        className='relative rounded-[1.25rem] p-7 sm:p-8 overflow-hidden'
-        style={{
-          background: 'var(--glass-bg)',
-          backdropFilter: 'blur(32px) saturate(160%)',
-          WebkitBackdropFilter: 'blur(32px) saturate(160%)',
-          border: '1px solid var(--glass-border)',
-          boxShadow: `
-            4px 4px 16px var(--neu-shadow-dark),
-            -4px -4px 16px var(--neu-shadow-light),
-            0 1px 0 0 var(--glass-highlight) inset,
-            0 0 0 1px rgba(255,255,255,0.03) inset
-          `,
-        }}
+        className='relative rounded-[1.25rem] p-7 sm:p-8 overflow-hidden glass-card'
       >
         {/* Grain texture */}
         <div
@@ -488,7 +476,7 @@ export function PasswordCard ({
           <button
             type='submit'
             disabled={submitting}
-            className='w-full mt-1 rounded-xl px-5 py-[0.7rem] text-sm font-semibold transition-all duration-200 disabled:opacity-50'
+            className='w-full mt-1 rounded-xl px-5 py-[0.7rem] text-sm font-semibold transition-all duration-200 disabled:opacity-50 btn-lift'
             style={{
               background: 'var(--accent-muted)',
               color: 'var(--accent)',
@@ -496,12 +484,6 @@ export function PasswordCard ({
               boxShadow: submitting
                 ? 'inset 2px 2px 4px var(--neu-shadow-dark), inset -2px -2px 4px var(--neu-shadow-light)'
                 : '2px 2px 6px var(--neu-shadow-dark), -2px -2px 6px var(--neu-shadow-light)',
-            }}
-            onMouseEnter={(e) => {
-              if (!submitting) { e.currentTarget.style.transform = 'translateY(-1px)'; }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
             }}
           >
             {submitting ? 'Verificando\u2026' : 'Entrar'}
