@@ -51,6 +51,17 @@ export function useScanner (onScan: (placa: string) => void): UseScannerReturn {
     onScanRef.current = onScan;
   }, [onScan]);
 
+  // Guard against state updates after unmount (async scanFile may
+  // resolve after the component is gone) and release the reader ref.
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      readerRef.current = null;
+    };
+  }, []);
+
   const getReader = (): BrowserMultiFormatReader => {
     if (!readerRef.current) readerRef.current = new BrowserMultiFormatReader(HINTS);
     return readerRef.current;
@@ -74,12 +85,14 @@ export function useScanner (onScan: (placa: string) => void): UseScannerReturn {
     setStage('preprocessing');
     try {
       const img = await loadImage(file);
+      if (!isMountedRef.current) return null;
       const reader = getReader();
       setStage('decoding');
       const detected = await tryDecodeAggressive(img, reader, {
         budgetMs: 3000,
         onAttempt,
       });
+      if (!isMountedRef.current) return null;
       setCurrentAttempt(null);
       if (detected) {
         setPendingValue(detected);
@@ -92,6 +105,7 @@ export function useScanner (onScan: (placa: string) => void): UseScannerReturn {
       setPendingValue(null);
       return null;
     } catch {
+      if (!isMountedRef.current) return null;
       setCurrentAttempt(null);
       setStage('error');
       setCameraStatus('Error al procesar la imagen. Intentá de nuevo.');
