@@ -46,3 +46,36 @@ jobs:
           GOOGLE_SHEETS_ID_REGIONAL: ${{ secrets.GOOGLE_SHEETS_ID_REGIONAL }}
           GOOGLE_SHEETS_ID_CIUDAD_JARDIN: ${{ secrets.GOOGLE_SHEETS_ID_CIUDAD_JARDIN }}
           PAGE_KEY: ${{ secrets.PAGE_KEY }}
+
+  e2e:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          CI: true
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: test-results/
+          retention-days: 7
