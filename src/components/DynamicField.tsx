@@ -1,5 +1,6 @@
 'use client';
 
+import { memo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { CustomSelect } from '@/components/CustomSelect';
 import { DateField } from '@/components/DateField';
@@ -15,7 +16,20 @@ interface DynamicFieldProps {
   onChange: (index: number, value: string) => void;
 }
 
-export function DynamicField ({
+/**
+ * Single field renderer for the equipment form.
+ *
+ * Wrapped in React.memo because the parent (EquipmentForm) maps over 50
+ * columns — without memo, every keystroke in one field re-renders all 50.
+ * With memo, only the field whose `value` prop changed re-renders.
+ *
+ * All props are stable except `value`:
+ *  - onChange: useCallback'd in useEquipmentForm
+ *  - validaciones: useState'd in useEquipment (stable until data load)
+ *  - validacionesIndices: useMemo'd from validaciones
+ *  - index/nombre/fieldId/readOnly: primitives, never change after mount
+ */
+export const DynamicField = memo(function DynamicField ({
   index,
   nombre,
   value,
@@ -30,13 +44,13 @@ export function DynamicField ({
   const isSelect = validacionesIndices.includes(index) && index !== 6;
   const isPlaca = index === 6;
 
-  const handleChange = (newValue: string) => {
+  const handleChange = useCallback((newValue: string) => {
     let val = newValue;
     if (typeof val === 'string') {
       val = isObservaciones ? val.replace(/'/g, '-') : val.replace(/'/g, '-').toUpperCase();
     }
     onChange(index, val);
-  };
+  }, [index, isObservaciones, onChange]);
 
   if (isSelect) {
     return (
@@ -77,4 +91,4 @@ export function DynamicField ({
       )}
     />
   );
-}
+});
