@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { DecodeHintType, BarcodeFormat } from '@zxing/library';
 import {
@@ -62,23 +62,23 @@ export function useScanner (onScan: (placa: string) => void): UseScannerReturn {
     };
   }, []);
 
-  const getReader = (): BrowserMultiFormatReader => {
+  const getReader = useCallback((): BrowserMultiFormatReader => {
     if (!readerRef.current) readerRef.current = new BrowserMultiFormatReader(HINTS);
     return readerRef.current;
-  };
+  }, []);
 
-  const processScan = (text: string): string | null => {
+  const processScan = useCallback((text: string): string | null => {
     const limpia = text.toString().replace(/'/g, '-').replace(/[^a-zA-Z0-9-]/g, '').toUpperCase();
     if (limpia.length === 0) return null;
     onScanRef.current(limpia);
     return limpia;
-  };
+  }, []);
 
-  const onAttempt = (info: DecodeAttempt): void => {
+  const onAttempt = useCallback((info: DecodeAttempt): void => {
     setCurrentAttempt(`${info.variant} a ${info.angle}°`);
-  };
+  }, []);
 
-  const scanFile = async (file: File): Promise<string | null> => {
+  const scanFile = useCallback(async (file: File): Promise<string | null> => {
     setCameraStatus('Analizando imagen...');
     setCameraReady(false);
     setCurrentAttempt(null);
@@ -112,9 +112,9 @@ export function useScanner (onScan: (placa: string) => void): UseScannerReturn {
       setPendingValue(null);
       return null;
     }
-  };
+  }, [getReader, onAttempt]);
 
-  const confirmPending = (override?: string): string | null => {
+  const confirmPending = useCallback((override?: string): string | null => {
     const value = override ?? pendingValue;
     if (value === null) return null;
     const result = processScan(value);
@@ -122,14 +122,14 @@ export function useScanner (onScan: (placa: string) => void): UseScannerReturn {
     setStage('idle');
     setPendingValue(null);
     return result;
-  };
+  }, [pendingValue, processScan]);
 
-  const cancelPending = (): void => {
+  const cancelPending = useCallback((): void => {
     setStage('idle');
     setPendingValue(null);
     setCameraReady(false);
     setCameraStatus('');
-  };
+  }, []);
 
   return {
     scanMode,

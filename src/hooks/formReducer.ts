@@ -1,7 +1,4 @@
-import {
-  COLUMNAS,
-  type EquipmentValue,
-} from '@/types/equipment';
+import { COLUMNAS } from '@/types/equipment';
 import type { AlertInfo } from '@/hooks/useEquipmentForm';
 
 // ---------------------------------------------------------------------------
@@ -166,6 +163,3 @@ export function formReducer (state: FormState, action: FormAction): FormState {
       return state;
   }
 }
-
-// Re-export for convenience so the hook can import from one place
-export type { EquipmentValue };
